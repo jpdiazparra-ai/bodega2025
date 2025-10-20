@@ -1,7 +1,7 @@
-streamlit==1.38.0
-pandas==2.2.2
-plotly==5.24.1
-reportlab==4.2.5
-pillow==10.4.0
-matplotlib==3.9.2
-XlsxWriter==3.2.0
+streamlit>=1.33
+pandas>=2.0
+numpy>=1.24
+plotly>=5.20
+xlsxwriter>=3.1  # opcional, si quieres formatos en Excel
+reportlab>=4.0   # opcional, si quieres PDF bonito
+

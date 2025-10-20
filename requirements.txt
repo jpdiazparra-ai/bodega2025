@@ -2,6 +2,6 @@ streamlit>=1.33
 pandas>=2.0
 numpy>=1.24
 plotly>=5.20
-xlsxwriter>=3.1  # opcional, si quieres formatos en Excel
-reportlab>=4.0   # opcional, si quieres PDF bonito
-
+matplotlib>=3.7
+xlsxwriter>=3.1      # opcional (Excel)
+reportlab>=4.0  

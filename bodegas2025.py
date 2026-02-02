@@ -227,8 +227,8 @@ st.markdown("---")
 # =========================
 # TABS PRINCIPALES
 # =========================
-tab_overview, tab_riesgos, tab_canon, tab_canon_m2 = st.tabs(
-    ["🏠 Visión general", "⚠️ Riesgos & cobranzas", "🏢 Canon anual / mensual", "🧩 Canon por m²"]
+tab_overview, tab_riesgos, tab_canon, tab_canon_m2, tab_ing_eg = st.tabs(
+    ["🏠 Visión general", "⚠️ Riesgos & cobranzas", "🏢 Canon anual / mensual", "🧩 Canon por m²", "📈 Ingresos & egresos"]
 )
 
 # =========================================================
@@ -484,14 +484,25 @@ else:
             y=df_canon["Canon_anual_CLP"],
             name="Canon anual (CLP)",
             marker=dict(
-                color="#3B82F6",
-                line=dict(width=1.2, color="rgba(255,255,255,0.8)"),
+                color="rgba(37, 99, 235, 0.88)",
+                line=dict(width=1.0, color="rgba(255,255,255,0.6)"),
             ),
             hovertemplate="<b>Año %{x}</b><br>Canon: $%{y:,.0f}<extra></extra>",
         )
     )
 
-    # Línea: MA-3
+    # Línea: MA-3 (glow + línea principal)
+    fig.add_trace(
+        go.Scatter(
+            x=df_canon["Año"],
+            y=df_canon["MA3"],
+            name="Promedio móvil (MA-3)",
+            mode="lines",
+            line=dict(color="rgba(220,38,38,0.25)", width=8),
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
     fig.add_trace(
         go.Scatter(
             x=df_canon["Año"],
@@ -499,7 +510,7 @@ else:
             name="Promedio móvil (MA-3)",
             mode="lines+markers",
             line=dict(color="#DC2626", width=3),
-            marker=dict(color="#DC2626", size=6),
+            marker=dict(color="#DC2626", size=6, line=dict(color="white", width=1)),
             hovertemplate="<b>Año %{x}</b><br>MA-3: $%{y:,.0f}<extra></extra>",
         )
     )
@@ -523,35 +534,43 @@ else:
     )
 
     fig.update_layout(
-    template="plotly_white",
-    height=460,
-    margin=dict(l=20, r=20, t=40, b=20),
-    legend=dict(
-        orientation="h",
-        y=1.12,
-        x=0.5,
-        xanchor="center",
-        font=dict(size=12),
-    ),
-    xaxis=dict(
-        title="Año",
-        tickmode="linear",
-        showgrid=False,
-    ),
-    yaxis=dict(
-        title="Monto (CLP)",
-        tickformat=",.0f",
-        gridcolor="rgba(200,200,200,0.25)",
-        zeroline=False,
-    ),
-    hovermode="x unified",                      # <<<<🔥 ACTIVAMOS TOOLTIP UNIFICADO
-    hoverlabel=dict(
-        bgcolor="white",
-        font_size=13,
-        font_color="#111",                      # más limpio
-        bordercolor="#E5E7EB",
-    ),
-)
+        template="plotly_white",
+        height=480,
+        margin=dict(l=20, r=20, t=40, b=20),
+        legend=dict(
+            orientation="h",
+            y=1.12,
+            x=0.5,
+            xanchor="center",
+            font=dict(size=12),
+        ),
+        xaxis=dict(
+            title="Año",
+            tickmode="linear",
+            showgrid=False,
+            linecolor="rgba(15,23,42,0.25)",
+            tickfont=dict(size=12, color="#334155"),
+        ),
+        yaxis=dict(
+            title="Monto (CLP)",
+            tickformat=",.0f",
+            gridcolor="rgba(148,163,184,0.25)",
+            zeroline=False,
+            ticks="outside",
+            ticklen=6,
+            tickfont=dict(size=12, color="#334155"),
+        ),
+        plot_bgcolor="#F8FAFC",
+        paper_bgcolor="#F8FAFC",
+        hovermode="x unified",
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=13,
+            font_color="#111",
+            bordercolor="#E5E7EB",
+        ),
+        bargap=0.22,
+    )
 
 
     st.plotly_chart(fig, use_container_width=True)
@@ -865,78 +884,81 @@ with tab_riesgos:
         return series_values.apply(lambda v: "#10B981" if v >= 0 else "#EF4444")
 
     if chart_type == "Barras":
-        # Ordenar en el mismo sentido de la métrica seleccionada
-        topN = topN.sort_values(sort_col, ascending=True)
+        # Recalcular por dimensión con split Ingreso/Egreso
+        top_keys = topN[dim].tolist()
+        df_dim = df_f[df_f[dim].isin(top_keys)].copy()
+        df_dim["CC"] = df_dim["CC"].astype(str).str.strip().str.upper()
 
-        # Configuración según modo de ordenamiento
+        agg_cc = (
+            df_dim.groupby([dim, "CC"], as_index=False)["Monto"]
+            .sum()
+        )
+
+        ingresos = agg_cc[agg_cc["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+        egresos = agg_cc[agg_cc["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+
+        base_dim = pd.DataFrame({dim: top_keys})
+        base_dim = base_dim.merge(ingresos[[dim, "Ingresos"]], on=dim, how="left")
+        base_dim = base_dim.merge(egresos[[dim, "Egresos"]], on=dim, how="left")
+        base_dim = base_dim.fillna(0)
+
+        base_dim["Egresos_abs"] = base_dim["Egresos"].abs()
+        base_dim["Neto"] = base_dim["Ingresos"] - base_dim["Egresos_abs"]
+
+        # Orden según el criterio elegido
         if order_by == "Total CLP":
-            # Barras en CLP, colores por signo
-            bar_x = "Total CLP"
-            xaxis_title = "Total CLP"
-            topN["Etiqueta"] = topN["Total CLP"].apply(fmt_short)
-            bar_colors = color_by_sign_or_cc(
-                topN[dim] if dim == "CC" else topN["Total CLP"],
-                series_dim=dim,
-            )
-            customdata = topN[["Total CLP", "N° Transacciones"]].values
-            hovertemplate = (
-                "<b>%{y}</b><br>"
-                "Total CLP: $%{x:,.0f}<br>"
-                "Transacciones: %{customdata[1]:,}<extra></extra>"
-            )
+            base_dim = base_dim.merge(topN[[dim, "Total CLP"]], on=dim, how="left")
+            base_dim = base_dim.sort_values("Total CLP", ascending=True)
         else:
-            # Barras en N° de transacciones, color único
-            bar_x = "N° Transacciones"
-            xaxis_title = "N° Transacciones"
-            topN["Etiqueta"] = topN["N° Transacciones"].apply(
-                lambda v: f"{v:,}".replace(",", ".")
-            )
-            bar_colors = "#2563EB"
-            customdata = topN[["Total CLP", "N° Transacciones"]].values
-            hovertemplate = (
-                "<b>%{y}</b><br>"
-                "N° Transacciones: %{x:,.0f}<br>"
-                "Total CLP: $%{customdata[0]:,.0f}<extra></extra>"
-            )
+            base_dim = base_dim.merge(topN[[dim, "N° Transacciones"]], on=dim, how="left")
+            base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
 
-        fig_top = px.bar(
-            topN,
-            x=bar_x,
-            y=dim,
-            orientation="h",
-            title=f"Top {top_n} por '{dim}' · {order_by}",
-        )
-        fig_top.update_traces(
-            marker_color=bar_colors,
-            marker_line_color="rgba(0,0,0,0.15)",
-            marker_line_width=1.2,
-            text=topN["Etiqueta"],
-            texttemplate="%{text}",
-            textposition="inside",
-            insidetextanchor="middle",
-            customdata=customdata,
-            hovertemplate=hovertemplate,
-            cliponaxis=False,
-        )
+        fig_top = go.Figure()
 
-        # Línea vertical en 0 solo tiene sentido cuando graficamos CLP
-        if order_by == "Total CLP":
-            if (topN["Total CLP"] < 0).any() and (topN["Total CLP"] > 0).any():
-                fig_top.add_vline(
-                    x=0,
-                    line_width=1,
-                    line_dash="dash",
-                    line_color="#9CA3AF",
-                )
+        fig_top.add_trace(
+            go.Scatter(
+                x=base_dim[dim],
+                y=base_dim["Ingresos"],
+                mode="lines+markers",
+                name="Ingresos",
+                line=dict(color="#10B981", width=3),
+                marker=dict(size=6),
+                hovertemplate="<b>%{x}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
+            )
+        )
+        fig_top.add_trace(
+            go.Scatter(
+                x=base_dim[dim],
+                y=base_dim["Egresos_abs"],
+                mode="lines+markers",
+                name="Egresos",
+                line=dict(color="#EF4444", width=3),
+                marker=dict(size=6),
+                hovertemplate="<b>%{x}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
+            )
+        )
+        fig_top.add_trace(
+            go.Bar(
+                x=base_dim[dim],
+                y=base_dim["Neto"],
+                name="Neto",
+                marker_color="#2563EB",
+                opacity=0.25,
+                hovertemplate="<b>%{x}</b><br>Neto: $%{y:,.0f}<extra></extra>",
+            )
+        )
 
         fig_top.update_layout(
-            xaxis_title=xaxis_title,
-            yaxis_title=dim,
-            xaxis_tickformat=",.0f",
-            bargap=0.25,
-            margin=dict(l=20, r=20, t=60, b=20),
+            title=dict(text=f"Top {top_n} por '{dim}' · {order_by}", x=0.02, xanchor="left"),
+            xaxis_title=dim,
+            yaxis_title="Monto (CLP)",
             template="plotly_white",
+            margin=dict(l=20, r=20, t=60, b=20),
+            legend=dict(orientation="h", y=1.02, x=0.02),
+            hovermode="x unified",
         )
+        fig_top.update_xaxes(showgrid=False)
+        fig_top.update_yaxes(showgrid=True, gridcolor="rgba(0,0,0,0.06)", zeroline=False, tickformat=",.0f")
 
         st.plotly_chart(
             fig_top,
@@ -944,12 +966,7 @@ with tab_riesgos:
             config={
                 "displaylogo": False,
                 "displayModeBar": True,
-                "modeBarButtonsToAdd": [
-                    "drawline",
-                    "drawrect",
-                    "eraseshape",
-                    "toImage",
-                ],
+                "modeBarButtonsToAdd": ["toImage"],
             },
         )
     else:
@@ -1362,3 +1379,182 @@ with tab_canon_m2:
         file_name=f"canon_m2_{'mensual' if escala_m2=='Mensual' else 'diario'}_{moneda_m2}_por_anio_y_esp.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+
+# =========================================================
+# 📈 TAB 5: INGRESOS & EGRESOS (Mensual / Anual)
+# =========================================================
+with tab_ing_eg:
+    st.subheader("📈 Ingresos vs Egresos — Totales por período")
+
+    import plotly.graph_objects as go
+
+    c1, c2, c3 = st.columns([1, 1, 2])
+    with c1:
+        periodo = st.radio("Periodo", ["Mensual", "Anual"], horizontal=True, index=0, key="periodo_ing_eg")
+    with c2:
+        st.caption("Se usan montos desde la columna F (Monto). Ingresos y egresos según columna CC.")
+    with c3:
+        pass
+
+    _df = df_f.copy()
+    _df = _df.dropna(subset=["Monto", "CC"])
+    _df["CC"] = _df["CC"].astype(str).str.strip().str.upper()
+    _df = _df[_df["CC"].isin(["INGRESO", "EGRESO"])]
+
+    _df["Sit"] = _df["Sit"].astype(str).str.strip().str.upper()
+    _df = _df[_df["Sit"].isin(["PAGADO", "NO PAGADO"])]
+
+    # Usar columnas de la base: "Año" y "Mes"
+    _df["Año_sel"] = pd.to_numeric(_df.get("Año"), errors="coerce")
+    mes_raw = _df.get("Mes")
+    mes_num = (
+        mes_raw.astype(str)
+        .str.extract(r"(\d{1,2})", expand=False)
+    )
+    _df["Mes_sel"] = pd.to_numeric(mes_num, errors="coerce")
+
+    # Fallback si la columna Mes no trae datos
+    if _df["Mes_sel"].isna().all():
+        st.warning("La columna 'Mes' no tiene datos. Usando la columna 'Fecha' como respaldo.")
+        _df["Fecha"] = pd.to_datetime(_df.get("Fecha"), errors="coerce")
+        _df["Año_sel"] = _df["Fecha"].dt.year
+        _df["Mes_sel"] = _df["Fecha"].dt.month
+
+    _df = _df.dropna(subset=["Año_sel"])
+
+    years = sorted(_df["Año_sel"].dropna().astype(int).unique().tolist())
+    year_opts = ["Todos"] + years
+
+    c_year, c_month = st.columns([1, 1])
+    with c_year:
+        sel_year = st.selectbox("Año", year_opts, index=0, key="year_ing_eg")
+    with c_month:
+        month_opts = ["Todos"] + list(range(1, 13))
+        sel_month = st.selectbox("Mes", month_opts, index=0, key="month_ing_eg",
+                                 disabled=(periodo == "Anual"))
+
+    if sel_year != "Todos":
+        _df = _df[_df["Año_sel"] == sel_year]
+    if sel_month != "Todos" and periodo == "Mensual":
+        _df = _df[_df["Mes_sel"] == sel_month]
+
+    # Construir Periodo usando Año/Mes
+    if periodo == "Mensual":
+        _df = _df.dropna(subset=["Mes_sel"])
+        _df["Periodo"] = pd.to_datetime(
+            dict(year=_df["Año_sel"].astype(int), month=_df["Mes_sel"].astype(int), day=1),
+            errors="coerce"
+        )
+        label_x = "Mes"
+        x_hover = "%b %Y"
+    else:
+        _df["Periodo"] = pd.to_datetime(
+            dict(year=_df["Año_sel"].astype(int), month=1, day=1),
+            errors="coerce"
+        )
+        label_x = "Año"
+        x_hover = "%Y"
+
+    _df = _df.dropna(subset=["Periodo"])
+    _df["Periodo"] = pd.to_datetime(_df["Periodo"], errors="coerce")
+    _df = _df.dropna(subset=["Periodo"])
+
+    agg_ie = (
+        _df.groupby(["Periodo", "CC"], as_index=False)["Monto"]
+           .sum()
+           .sort_values("Periodo")
+    )
+
+    ingresos = agg_ie[agg_ie["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+    egresos = agg_ie[agg_ie["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+
+    base = pd.DataFrame({"Periodo": sorted(agg_ie["Periodo"].dropna().unique())})
+    base["Periodo"] = pd.to_datetime(base["Periodo"], errors="coerce")
+    base = base.merge(ingresos[["Periodo", "Ingresos"]], on="Periodo", how="left")
+    base = base.merge(egresos[["Periodo", "Egresos"]], on="Periodo", how="left")
+    base = base.fillna(0)
+
+    if base.empty:
+        st.info("No hay datos suficientes para calcular ingresos y egresos por período.")
+    else:
+        base["Egresos_abs"] = base["Egresos"].abs()
+        base["Neto"] = base["Ingresos"] - base["Egresos_abs"]
+
+        total_ing = float(base["Ingresos"].sum())
+        total_egr = float(base["Egresos_abs"].sum())
+        total_neto = float(base["Neto"].sum())
+
+        k1, k2, k3 = st.columns(3)
+        with k1:
+            st.markdown(
+                card_finanza("TOTAL INGRESO", fmt_clp_largo(total_ing), "#10B981"),
+                unsafe_allow_html=True,
+            )
+        with k2:
+            st.markdown(
+                card_finanza("TOTAL EGRESO", fmt_clp_largo(total_egr), "#EF4444"),
+                unsafe_allow_html=True,
+            )
+        with k3:
+            net_color = "#10B981" if total_neto >= 0 else "#EF4444"
+            st.markdown(
+                card_finanza("TOTAL NETO", fmt_clp_largo(total_neto), net_color),
+                unsafe_allow_html=True,
+            )
+
+        fig_ie = go.Figure()
+
+        fig_ie.add_trace(
+            go.Scatter(
+                x=base["Periodo"],
+                y=base["Ingresos"],
+                mode="lines+markers",
+                name="Ingresos",
+                line=dict(color="#10B981", width=3),
+                marker=dict(size=6),
+                hovertemplate=f"<b>{label_x} %{x_hover}</b><br>Ingresos: $%{{y:,.0f}}<extra></extra>",
+            )
+        )
+        fig_ie.add_trace(
+            go.Scatter(
+                x=base["Periodo"],
+                y=base["Egresos_abs"],
+                mode="lines+markers",
+                name="Egresos",
+                line=dict(color="#EF4444", width=3),
+                marker=dict(size=6),
+                hovertemplate=f"<b>{label_x} %{x_hover}</b><br>Egresos: $%{{y:,.0f}}<extra></extra>",
+            )
+        )
+
+        fig_ie.add_trace(
+            go.Bar(
+                x=base["Periodo"],
+                y=base["Neto"],
+                name="Neto",
+                marker_color="#2563EB",
+                opacity=0.25,
+                hovertemplate=f"<b>{label_x} %{x_hover}</b><br>Neto: $%{{y:,.0f}}<extra></extra>",
+            )
+        )
+
+        fig_ie.update_layout(
+            title=dict(text=f"Ingresos y Egresos — {periodo}", x=0.02, xanchor="left"),
+            xaxis_title=label_x,
+            yaxis_title="Monto (CLP)",
+            template="plotly_white",
+            height=520,
+            margin=dict(l=20, r=20, t=70, b=20),
+            legend=dict(orientation="h", y=1.02, x=0.02),
+            hovermode="x unified",
+        )
+        fig_ie.update_xaxes(showgrid=False)
+        fig_ie.update_yaxes(showgrid=True, gridcolor="rgba(0,0,0,0.06)", zeroline=False, tickformat=",.0f")
+
+        st.plotly_chart(
+            fig_ie,
+            use_container_width=True,
+            config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
+        )
+
+        st.caption("Egresos se muestran en valor absoluto para facilitar comparación visual.")

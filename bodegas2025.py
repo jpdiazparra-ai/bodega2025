@@ -124,6 +124,7 @@ df_f = df.copy()
 # Carga de Electricidad (Excel local)
 # =========================
 ELECTRICIDAD_XLSX = "Elctricidadbodegasv3.xlsx"
+ELECTRICIDAD_XLSX_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSm1GzFOATXqiYiGSKUZWZ5C2dE9nXv7bTtR3XmchtWhC9ZRMRK5OGDQfZhb624dA/pub?output=xlsx"
 
 @st.cache_data
 def load_electricidad(path: str) -> dict[str, pd.DataFrame]:
@@ -131,6 +132,18 @@ def load_electricidad(path: str) -> dict[str, pd.DataFrame]:
     if not p.exists():
         return {}
     sheets = pd.read_excel(p, sheet_name=None)
+    cleaned: dict[str, pd.DataFrame] = {}
+    for name, df_sheet in sheets.items():
+        if df_sheet is None:
+            continue
+        df_sheet = df_sheet.copy()
+        df_sheet.columns = [str(c).strip() for c in df_sheet.columns]
+        cleaned[name] = df_sheet
+    return cleaned
+
+@st.cache_data
+def load_electricidad_xlsx_url(url: str) -> dict[str, pd.DataFrame]:
+    sheets = pd.read_excel(url, sheet_name=None)
     cleaned: dict[str, pd.DataFrame] = {}
     for name, df_sheet in sheets.items():
         if df_sheet is None:
@@ -1915,32 +1928,41 @@ with tab_electricidad:
         # Placeholder for PDF button (se setea más abajo cuando tengamos los datos)
         pdf_btn_placeholder = st.empty()
 
+    use_url = bool(ELECTRICIDAD_XLSX_URL)
     try:
-        sheets = load_electricidad(ELECTRICIDAD_XLSX)
+        sheets = load_electricidad_xlsx_url(ELECTRICIDAD_XLSX_URL) if use_url else load_electricidad(ELECTRICIDAD_XLSX)
     except ImportError:
         sheets = {}
         st.error(
             "Falta la dependencia `openpyxl` para leer archivos .xlsx. "
             "Instálala en tu entorno con: `pip install openpyxl`"
         )
+    except Exception as e:
+        sheets = {}
+        st.error(f"No se pudo cargar el Excel de electricidad: {e}")
     if not sheets:
-        st.warning(f"No se encontró el archivo `{ELECTRICIDAD_XLSX}` en la carpeta del proyecto.")
-    else:
-        # Preferir hojas tipo MES-AÑO (ej. FEB-2026)
-        month_sheets = [s for s in sheets.keys() if "-" in s]
-        sel_months = st.multiselect(
-            "Meses",
-            month_sheets or list(sheets.keys()),
-            default=[month_sheets[0]] if month_sheets else list(sheets.keys())[:1],
-            key="elec_months",
+        st.warning(
+            f"No se encontró el archivo de electricidad. "
+            f"{'URL' if use_url else 'Archivo local'} no disponible."
         )
-        if not sel_months:
-            st.info("Selecciona al menos un mes.")
-            st.stop()
+        st.stop()
 
-        # Selector de bodega
-        first_raw = pd.read_excel(ELECTRICIDAD_XLSX, sheet_name=sel_months[0], header=None)
-        first_parsed = _parse_mes_sheet(first_raw)
+        # Preferir hojas tipo MES-AÑO (ej. FEB-2026)
+    # Preferir hojas tipo MES-AÑO (ej. FEB-2026)
+    month_sheets = [s for s in sheets.keys() if "-" in s]
+    sel_months = st.multiselect(
+        "Meses",
+        month_sheets or list(sheets.keys()),
+        default=[month_sheets[0]] if month_sheets else list(sheets.keys())[:1],
+        key="elec_months",
+    )
+    if not sel_months:
+        st.info("Selecciona al menos un mes.")
+        st.stop()
+
+    # Selector de bodega
+    first_raw = sheets[sel_months[0]]
+    first_parsed = _parse_mes_sheet(first_raw)
         bodega_col = first_parsed["inputs_bodega"].columns[0]
         bodegas = (
             first_parsed["inputs_bodega"][bodega_col]
@@ -1952,10 +1974,10 @@ with tab_electricidad:
         sel_bodega = st.selectbox("Bodega", ["Todas"] + bodegas, index=0, key="elec_bodega")
 
         # Parse selected months
-        parsed_by_month = {}
-        for m in sel_months:
-            df_raw = pd.read_excel(ELECTRICIDAD_XLSX, sheet_name=m, header=None)
-            parsed_by_month[m] = _parse_mes_sheet(df_raw)
+    parsed_by_month = {}
+    for m in sel_months:
+        df_raw = sheets[m]
+        parsed_by_month[m] = _parse_mes_sheet(df_raw)
 
         # Encabezado estilo Excel
         st.markdown(

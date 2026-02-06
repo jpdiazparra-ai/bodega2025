@@ -121,17 +121,19 @@ df = load_data(CSV_URL)
 df_f = df.copy()
 
 # =========================
-# Carga de Electricidad (Excel local)
+# Carga de Electricidad (Excel local o URL XLSX)
 # =========================
-ELECTRICIDAD_XLSX = "Elctricidadbodegasv3.xlsx"
-ELECTRICIDAD_XLSX_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSm1GzFOATXqiYiGSKUZWZ5C2dE9nXv7bTtR3XmchtWhC9ZRMRK5OGDQfZhb624dA/pub?output=xlsx"
+ELECTRICIDAD_XLSX = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSm1GzFOATXqiYiGSKUZWZ5C2dE9nXv7bTtR3XmchtWhC9ZRMRK5OGDQfZhb624dA/pub?output=xlsx"
 
 @st.cache_data
-def load_electricidad(path: str) -> dict[str, pd.DataFrame]:
-    p = Path(path)
-    if not p.exists():
-        return {}
-    sheets = pd.read_excel(p, sheet_name=None)
+def load_electricidad(path_or_url: str) -> dict[str, pd.DataFrame]:
+    if path_or_url.startswith(("http://", "https://")):
+        sheets = pd.read_excel(path_or_url, sheet_name=None)
+    else:
+        p = Path(path_or_url)
+        if not p.exists():
+            return {}
+        sheets = pd.read_excel(p, sheet_name=None)
     cleaned: dict[str, pd.DataFrame] = {}
     for name, df_sheet in sheets.items():
         if df_sheet is None:
@@ -141,17 +143,6 @@ def load_electricidad(path: str) -> dict[str, pd.DataFrame]:
         cleaned[name] = df_sheet
     return cleaned
 
-@st.cache_data
-def load_electricidad_xlsx_url(url: str) -> dict[str, pd.DataFrame]:
-    sheets = pd.read_excel(url, sheet_name=None)
-    cleaned: dict[str, pd.DataFrame] = {}
-    for name, df_sheet in sheets.items():
-        if df_sheet is None:
-            continue
-        df_sheet = df_sheet.copy()
-        df_sheet.columns = [str(c).strip() for c in df_sheet.columns]
-        cleaned[name] = df_sheet
-    return cleaned
 
 def _infer_date_column(df_in: pd.DataFrame) -> str | None:
     best_col = None
@@ -183,9 +174,25 @@ def _clean_header_list(row_vals: list) -> list[str]:
         out.append(str(v).strip())
     return out
 
+def _dedupe_cols(cols: list[str]) -> list[str]:
+    seen: dict[str, int] = {}
+    out: list[str] = []
+    for c in cols:
+        if c in seen:
+            seen[c] += 1
+            out.append(f"{c}.{seen[c]}")
+        else:
+            seen[c] = 0
+            out.append(c)
+    return out
+
 def _fmt_cell(v, is_pct=False, is_currency=False, is_int=False):
-    if pd.isna(v):
-        return ""
+    try:
+        if pd.isna(v):
+            return ""
+    except Exception:
+        if v is None:
+            return ""
     if isinstance(v, float) and v.is_integer():
         v = int(v)
     if is_int:
@@ -282,15 +289,56 @@ def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
     bc = df_raw.iloc[4:9, 5:7].copy()
     bc.columns = ["Concepto", "Monto $"]
 
+    def _find_row(label: str) -> int | None:
+        col0 = df_raw.iloc[:, 0].astype(str)
+        hits = col0.str.contains(label, case=False, na=False)
+        if hits.any():
+            return int(hits.idxmax())
+        return None
+
+    def _slice_section(start_row: int) -> pd.DataFrame:
+        end = len(df_raw)
+        col0 = df_raw.iloc[:, 0]
+        for i in range(start_row, len(df_raw)):
+            v = col0.iloc[i]
+            if pd.isna(v):
+                end = i
+                break
+            if isinstance(v, str) and ("LIQUIDACIÓN POR BODEGA" in v.upper() or "INPUTS POR BODEGA" in v.upper()):
+                if i != start_row:
+                    end = i
+                    break
+        return df_raw.iloc[start_row:end]
+
     # INPUTS POR BODEGA
-    hdr_in = _clean_header_list(df_raw.iloc[11, 0:9].tolist())
-    data_in = df_raw.iloc[12:20, 0:9].copy()
-    data_in.columns = hdr_in
+    row_inputs = _find_row("INPUTS POR BODEGA")
+    if row_inputs is not None:
+        hdr_row = row_inputs + 1
+        data_row = row_inputs + 2
+        hdr_in = _clean_header_list(df_raw.iloc[hdr_row, 0:15].tolist())
+        hdr_in = _dedupe_cols(hdr_in)
+        data_in = _slice_section(data_row).iloc[:, 0:len(hdr_in)].copy()
+        data_in.columns = hdr_in
+    else:
+        hdr_in = _clean_header_list(df_raw.iloc[11, 0:9].tolist())
+        hdr_in = _dedupe_cols(hdr_in)
+        data_in = df_raw.iloc[12:20, 0:len(hdr_in)].copy()
+        data_in.columns = hdr_in
 
     # LIQUIDACIÓN POR BODEGA
-    hdr_liq = _clean_header_list(df_raw.iloc[22, 0:15].tolist())
-    data_liq = df_raw.iloc[23:31, 0:15].copy()
-    data_liq.columns = hdr_liq
+    row_liq = _find_row("LIQUIDACIÓN POR BODEGA")
+    if row_liq is not None:
+        hdr_row = row_liq + 1
+        data_row = row_liq + 2
+        hdr_liq = _clean_header_list(df_raw.iloc[hdr_row, 0:20].tolist())
+        hdr_liq = _dedupe_cols(hdr_liq)
+        data_liq = _slice_section(data_row).iloc[:, 0:len(hdr_liq)].copy()
+        data_liq.columns = hdr_liq
+    else:
+        hdr_liq = _clean_header_list(df_raw.iloc[22, 0:15].tolist())
+        hdr_liq = _dedupe_cols(hdr_liq)
+        data_liq = df_raw.iloc[23:31, 0:len(hdr_liq)].copy()
+        data_liq.columns = hdr_liq
 
     return {
         "inputs_generales": ig,
@@ -1928,9 +1976,8 @@ with tab_electricidad:
         # Placeholder for PDF button (se setea más abajo cuando tengamos los datos)
         pdf_btn_placeholder = st.empty()
 
-    use_url = bool(ELECTRICIDAD_XLSX_URL)
     try:
-        sheets = load_electricidad_xlsx_url(ELECTRICIDAD_XLSX_URL) if use_url else load_electricidad(ELECTRICIDAD_XLSX)
+        sheets = load_electricidad(ELECTRICIDAD_XLSX)
     except ImportError:
         sheets = {}
         st.error(
@@ -1941,13 +1988,9 @@ with tab_electricidad:
         sheets = {}
         st.error(f"No se pudo cargar el Excel de electricidad: {e}")
     if not sheets:
-        st.warning(
-            f"No se encontró el archivo de electricidad. "
-            f"{'URL' if use_url else 'Archivo local'} no disponible."
-        )
+        st.warning(f"No se encontró el archivo `{ELECTRICIDAD_XLSX}` en la carpeta del proyecto.")
         st.stop()
 
-        # Preferir hojas tipo MES-AÑO (ej. FEB-2026)
     # Preferir hojas tipo MES-AÑO (ej. FEB-2026)
     month_sheets = [s for s in sheets.keys() if "-" in s]
     sel_months = st.multiselect(
@@ -1963,245 +2006,245 @@ with tab_electricidad:
     # Selector de bodega
     first_raw = sheets[sel_months[0]]
     first_parsed = _parse_mes_sheet(first_raw)
-        bodega_col = first_parsed["inputs_bodega"].columns[0]
-        bodegas = (
-            first_parsed["inputs_bodega"][bodega_col]
-            .dropna()
-            .astype(str)
-            .tolist()
-        )
-        bodegas = [b for b in bodegas if b and b.upper() != "TOTAL"]
-        sel_bodega = st.selectbox("Bodega", ["Todas"] + bodegas, index=0, key="elec_bodega")
+    bodega_col = first_parsed["inputs_bodega"].columns[0]
+    bodegas = (
+        first_parsed["inputs_bodega"][bodega_col]
+        .dropna()
+        .astype(str)
+        .tolist()
+    )
+    bodegas = [b for b in bodegas if b and b.upper() != "TOTAL"]
+    sel_bodega = st.selectbox("Bodega", ["Todas"] + bodegas, index=0, key="elec_bodega")
 
-        # Parse selected months
+    # Parse selected months
     parsed_by_month = {}
     for m in sel_months:
         df_raw = sheets[m]
         parsed_by_month[m] = _parse_mes_sheet(df_raw)
 
-        # Encabezado estilo Excel
-        st.markdown(
-            """
-            <div style="background:#1f4e78;color:white;padding:8px 12px;border-radius:6px;font-weight:700;">
-            Liquidación Eléctrica por Bodega — Metodología de Ingeniería
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.markdown("")
+    # Encabezado estilo Excel
+    st.markdown(
+        """
+        <div style="background:#1f4e78;color:white;padding:8px 12px;border-radius:6px;font-weight:700;">
+        Liquidación Eléctrica por Bodega — Metodología de Ingeniería
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown("")
 
-        col_left, col_right = st.columns([1, 1])
-        with col_left:
-            st.markdown("**INPUTS GENERALES**")
-            _render_table(first_parsed["inputs_generales"], header_bg="#1f4e78", header_fg="white", row_alt="#fbf3d6")
-        with col_right:
-            st.markdown("**BOLETA CGE (INPUTS DE FACTURACIÓN)**")
-            # Promedio por concepto según meses seleccionados
-            boletas = []
-            for m, p in parsed_by_month.items():
-                df_b = p["boleta_cge"].copy()
-                df_b["Monto $"] = pd.to_numeric(df_b["Monto $"], errors="coerce")
-                boletas.append(df_b)
-            if boletas:
-                boleta_all = pd.concat(boletas, ignore_index=True)
-                boleta_avg = (
-                    boleta_all
-                    .groupby("Concepto", as_index=False)["Monto $"]
-                    .mean()
-                )
-                # mantener orden original de la primera hoja
-                orden = first_parsed["boleta_cge"]["Concepto"].tolist()
-                boleta_avg["__ord"] = boleta_avg["Concepto"].apply(
-                    lambda x: orden.index(x) if x in orden else 999
-                )
-                boleta_avg = boleta_avg.sort_values("__ord").drop(columns="__ord")
-                _render_table(
-                    boleta_avg,
-                    header_bg="#1f4e78",
-                    header_fg="white",
-                    row_alt="#fbf3d6",
-                )
-            else:
-                boleta_avg = first_parsed["boleta_cge"].copy()
-                _render_table(boleta_avg, header_bg="#1f4e78", header_fg="white", row_alt="#fbf3d6")
-
-        st.markdown("")
-        st.markdown("**INPUTS POR BODEGA (REMARCADOR + HORARIO EFECTIVO)**")
-        inputs_bodega = []
+    col_left, col_right = st.columns([1, 1])
+    with col_left:
+        st.markdown("**INPUTS GENERALES**")
+        _render_table(first_parsed["inputs_generales"], header_bg="#1f4e78", header_fg="white", row_alt="#fbf3d6")
+    with col_right:
+        st.markdown("**BOLETA CGE (INPUTS DE FACTURACIÓN)**")
+        # Promedio por concepto según meses seleccionados
+        boletas = []
         for m, p in parsed_by_month.items():
-            df_in = p["inputs_bodega"].copy()
-            if sel_bodega != "Todas":
-                df_in = df_in[df_in[bodega_col].astype(str) == sel_bodega]
-            df_in.insert(0, "Mes", m)
-            inputs_bodega.append(df_in)
-        inputs_bodega = pd.concat(inputs_bodega, ignore_index=True) if inputs_bodega else pd.DataFrame()
-        _render_table(
-            inputs_bodega,
-            header_bg="#1f4e78",
-            header_fg="white",
-            row_alt="#fff7e6",
-            int_cols={"kWh post-18 (calc)", "kWh día (calc)"},
-        )
-
-        st.markdown("")
-        st.markdown("**LIQUIDACIÓN POR BODEGA (ASIGNACIÓN DE COSTOS DE BOLETA + CRITERIO HORARIO)**")
-        liquidacion = []
-        for m, p in parsed_by_month.items():
-            df_liq = p["liquidacion"].copy()
-            if sel_bodega != "Todas":
-                df_liq = df_liq[df_liq[df_liq.columns[0]].astype(str) == sel_bodega]
-            df_liq.insert(0, "Mes", m)
-            liquidacion.append(df_liq)
-        liquidacion = pd.concat(liquidacion, ignore_index=True) if liquidacion else pd.DataFrame()
-        _render_table(
-            liquidacion,
-            header_bg="#1f4e78",
-            header_fg="white",
-            row_alt="#eef8ee",
-            int_cols={"kWh post-18"},
-            cur_cols_extra={"IVA"},
-        )
-
-        # Gráfico profesional de Liquidación por Bodega
-        st.markdown("### 📈 Liquidación por Bodega — Distribución de costos")
-        liq_chart = liquidacion.copy()
-        if not liq_chart.empty:
-            liq_chart = liq_chart[liq_chart[liq_chart.columns[1]].astype(str).str.upper() != "TOTAL"]
-
-        if liq_chart.empty:
-            st.info("No hay datos suficientes para el gráfico.")
+            df_b = p["boleta_cge"].copy()
+            df_b["Monto $"] = pd.to_numeric(df_b["Monto $"], errors="coerce")
+            boletas.append(df_b)
+        if boletas:
+            boleta_all = pd.concat(boletas, ignore_index=True)
+            boleta_avg = (
+                boleta_all
+                .groupby("Concepto", as_index=False)["Monto $"]
+                .mean()
+            )
+            # mantener orden original de la primera hoja
+            orden = first_parsed["boleta_cge"]["Concepto"].tolist()
+            boleta_avg["__ord"] = boleta_avg["Concepto"].apply(
+                lambda x: orden.index(x) if x in orden else 999
+            )
+            boleta_avg = boleta_avg.sort_values("__ord").drop(columns="__ord")
+            _render_table(
+                boleta_avg,
+                header_bg="#1f4e78",
+                header_fg="white",
+                row_alt="#fbf3d6",
+            )
         else:
-            # Columnas esperadas
-            col_mes = "Mes"
-            col_bodega = liq_chart.columns[1]
-            cols_costos = ["$ Energía", "$ Punta", "$ Reactiva", "$ Cargos Fijos", "$ Interés"]
-            col_total = "TOTAL c/IVA $"
+            boleta_avg = first_parsed["boleta_cge"].copy()
+            _render_table(boleta_avg, header_bg="#1f4e78", header_fg="white", row_alt="#fbf3d6")
 
-            # Normalizar numéricos
-            for c in cols_costos + [col_total]:
-                if c in liq_chart.columns:
-                    liq_chart[c] = pd.to_numeric(liq_chart[c], errors="coerce")
-                else:
-                    liq_chart[c] = 0
+    st.markdown("")
+    st.markdown("**INPUTS POR BODEGA (REMARCADOR + HORARIO EFECTIVO)**")
+    inputs_bodega = []
+    for m, p in parsed_by_month.items():
+        df_in = p["inputs_bodega"].copy()
+        if sel_bodega != "Todas":
+            df_in = df_in[df_in[bodega_col].astype(str) == sel_bodega]
+        df_in.insert(0, "Mes", m)
+        inputs_bodega.append(df_in)
+    inputs_bodega = pd.concat(inputs_bodega, ignore_index=True) if inputs_bodega else pd.DataFrame()
+    _render_table(
+        inputs_bodega,
+        header_bg="#1f4e78",
+        header_fg="white",
+        row_alt="#fff7e6",
+        int_cols={"kWh post-18 (calc)", "kWh día (calc)"},
+    )
 
-            import plotly.graph_objects as go
+    st.markdown("")
+    st.markdown("**LIQUIDACIÓN POR BODEGA (ASIGNACIÓN DE COSTOS DE BOLETA + CRITERIO HORARIO)**")
+    liquidacion = []
+    for m, p in parsed_by_month.items():
+        df_liq = p["liquidacion"].copy()
+        if sel_bodega != "Todas":
+            df_liq = df_liq[df_liq[df_liq.columns[0]].astype(str) == sel_bodega]
+        df_liq.insert(0, "Mes", m)
+        liquidacion.append(df_liq)
+    liquidacion = pd.concat(liquidacion, ignore_index=True) if liquidacion else pd.DataFrame()
+    _render_table(
+        liquidacion,
+        header_bg="#1f4e78",
+        header_fg="white",
+        row_alt="#eef8ee",
+        int_cols={"kWh post-18"},
+        cur_cols_extra={"IVA"},
+    )
 
-            palette = {
-                "$ Energía": "#16a34a",    # verde mate
-                "$ Punta": "#2563eb",      # azul mate
-                "$ Reactiva": "#f59e0b",   # amarillo mate
-                "$ Cargos Fijos": "#ef4444",# rojo mate
-                "$ Interés": "#9ca3af",    # gris claro mate
-            }
+    # Gráfico profesional de Liquidación por Bodega
+    st.markdown("### 📈 Liquidación por Bodega — Distribución de costos")
+    liq_chart = liquidacion.copy()
+    if not liq_chart.empty:
+        liq_chart = liq_chart[liq_chart[liq_chart.columns[1]].astype(str).str.upper() != "TOTAL"]
 
-            def build_liq_fig(df_plot: pd.DataFrame, x_axis, x_title, height=520, show_legend=True):
-                fig = go.Figure()
-                for c in cols_costos:
-                    fig.add_trace(
-                        go.Bar(
-                            x=x_axis,
-                            y=df_plot[c],
-                            name=c,
-                            marker=dict(color=palette.get(c, "#94a3b8")),
-                            text=df_plot[c],
-                            texttemplate="%{text:,.0f}",
-                            textposition="inside",
-                            hovertemplate=f"<b>%{{x}}</b><br>{c}: $%{{y:,.0f}}<extra></extra>",
-                        )
-                    )
-                if col_total in df_plot.columns:
-                    fig.add_trace(
-                        go.Scatter(
-                            x=x_axis,
-                            y=df_plot[col_total],
-                            name="TOTAL c/IVA $",
-                            mode="lines+markers",
-                            line=dict(color="#111827", width=3),
-                            marker=dict(size=7, color="#111827"),
-                            hovertemplate="<b>%{x}</b><br>Total c/IVA: $%{y:,.0f}<extra></extra>",
-                            yaxis="y2",
-                        )
-                    )
-                fig.update_layout(
-                    template="plotly_white",
-                    barmode="stack",
-                    height=height,
-                    margin=dict(l=20, r=40, t=40, b=20),
-                    legend=dict(
-                        orientation="h",
-                        y=1.2,
-                        x=0.5,
-                        xanchor="center",
-                        yanchor="bottom",
-                        traceorder="normal",
-                        font=dict(size=11),
-                        entrywidth=120,
-                        entrywidthmode="pixels",
-                    ) if show_legend else None,
-                    xaxis=dict(title=x_title, showgrid=False),
-                    yaxis=dict(title="Costo (CLP)", tickformat=",.0f", gridcolor="rgba(148,163,184,0.25)"),
-                    yaxis2=dict(
-                        title="Total c/IVA (CLP)",
-                        overlaying="y",
-                        side="right",
-                        tickformat=",.0f",
-                        showgrid=False,
-                    ),
-                    hovermode="x unified",
-                )
-                return fig
+    if liq_chart.empty:
+        st.info("No hay datos suficientes para el gráfico.")
+    else:
+        # Columnas esperadas
+        col_mes = "Mes"
+        col_bodega = liq_chart.columns[1]
+        cols_costos = ["$ Energía", "$ Punta", "$ Reactiva", "$ Cargos Fijos", "$ Interés"]
+        col_total = "TOTAL c/IVA $"
 
-            single_period = len(sel_months) == 1
-            charts_for_pdf = []
-            if sel_bodega == "Todas" and len(sel_months) > 1:
-                bodegas_plot = liq_chart[col_bodega].dropna().astype(str).unique().tolist()
-                cols = st.columns(2)
-                for i, b in enumerate(bodegas_plot):
-                    df_b = liq_chart[liq_chart[col_bodega].astype(str) == b]
-                    fig = build_liq_fig(df_b, df_b[col_mes], "Mes", height=360, show_legend=True)
-                    with cols[i % 2]:
-                        st.markdown(f"**{b}**")
-                        st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False})
-                    charts_for_pdf.append({
-                        "df": df_b,
-                        "x_col": col_mes,
-                        "title": f"{b}",
-                        "cols_costos": cols_costos,
-                        "col_total": col_total,
-                        "palette": palette,
-                    })
+        # Normalizar numéricos
+        for c in cols_costos + [col_total]:
+            if c in liq_chart.columns:
+                liq_chart[c] = pd.to_numeric(liq_chart[c], errors="coerce")
             else:
-                x_axis = liq_chart[col_bodega] if single_period else liq_chart[col_mes]
-                x_title = "Bodega" if single_period else "Mes"
-                fig = build_liq_fig(liq_chart, x_axis, x_title, height=520, show_legend=True)
-                st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False})
+                liq_chart[c] = 0
+
+        import plotly.graph_objects as go
+
+        palette = {
+            "$ Energía": "#16a34a",    # verde mate
+            "$ Punta": "#2563eb",      # azul mate
+            "$ Reactiva": "#f59e0b",   # amarillo mate
+            "$ Cargos Fijos": "#ef4444",# rojo mate
+            "$ Interés": "#9ca3af",    # gris claro mate
+        }
+
+        def build_liq_fig(df_plot: pd.DataFrame, x_axis, x_title, height=520, show_legend=True):
+            fig = go.Figure()
+            for c in cols_costos:
+                fig.add_trace(
+                    go.Bar(
+                        x=x_axis,
+                        y=df_plot[c],
+                        name=c,
+                        marker=dict(color=palette.get(c, "#94a3b8")),
+                        text=df_plot[c],
+                        texttemplate="%{text:,.0f}",
+                        textposition="inside",
+                        hovertemplate=f"<b>%{{x}}</b><br>{c}: $%{{y:,.0f}}<extra></extra>",
+                    )
+                )
+            if col_total in df_plot.columns:
+                fig.add_trace(
+                    go.Scatter(
+                        x=x_axis,
+                        y=df_plot[col_total],
+                        name="TOTAL c/IVA $",
+                        mode="lines+markers",
+                        line=dict(color="#111827", width=3),
+                        marker=dict(size=7, color="#111827"),
+                        hovertemplate="<b>%{x}</b><br>Total c/IVA: $%{y:,.0f}<extra></extra>",
+                        yaxis="y2",
+                    )
+                )
+            fig.update_layout(
+                template="plotly_white",
+                barmode="stack",
+                height=height,
+                margin=dict(l=20, r=40, t=40, b=20),
+                legend=dict(
+                    orientation="h",
+                    y=1.2,
+                    x=0.5,
+                    xanchor="center",
+                    yanchor="bottom",
+                    traceorder="normal",
+                    font=dict(size=11),
+                    entrywidth=120,
+                    entrywidthmode="pixels",
+                ) if show_legend else None,
+                xaxis=dict(title=x_title, showgrid=False),
+                yaxis=dict(title="Costo (CLP)", tickformat=",.0f", gridcolor="rgba(148,163,184,0.25)"),
+                yaxis2=dict(
+                    title="Total c/IVA (CLP)",
+                    overlaying="y",
+                    side="right",
+                    tickformat=",.0f",
+                    showgrid=False,
+                ),
+                hovermode="x unified",
+            )
+            return fig
+
+        single_period = len(sel_months) == 1
+        charts_for_pdf = []
+        if sel_bodega == "Todas" and len(sel_months) > 1:
+            bodegas_plot = liq_chart[col_bodega].dropna().astype(str).unique().tolist()
+            cols = st.columns(2)
+            for i, b in enumerate(bodegas_plot):
+                df_b = liq_chart[liq_chart[col_bodega].astype(str) == b]
+                fig = build_liq_fig(df_b, df_b[col_mes], "Mes", height=360, show_legend=True)
+                with cols[i % 2]:
+                    st.markdown(f"**{b}**")
+                    st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False})
                 charts_for_pdf.append({
-                    "df": liq_chart,
-                    "x_col": col_bodega if single_period else col_mes,
-                    "title": "",
+                    "df": df_b,
+                    "x_col": col_mes,
+                    "title": f"{b}",
                     "cols_costos": cols_costos,
                     "col_total": col_total,
                     "palette": palette,
                 })
+        else:
+            x_axis = liq_chart[col_bodega] if single_period else liq_chart[col_mes]
+            x_title = "Bodega" if single_period else "Mes"
+            fig = build_liq_fig(liq_chart, x_axis, x_title, height=520, show_legend=True)
+            st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False})
+            charts_for_pdf.append({
+                "df": liq_chart,
+                "x_col": col_bodega if single_period else col_mes,
+                "title": "",
+                "cols_costos": cols_costos,
+                "col_total": col_total,
+                "palette": palette,
+            })
 
-            # PDF download button (ubicado en el header)
-            try:
-                pdf_bytes = build_electricidad_pdf(
-                    title="Informe Electricidad — Liquidación por Bodega",
-                    sel_months=sel_months,
-                    sel_bodega=sel_bodega,
-                    inputs_generales=first_parsed["inputs_generales"],
-                    boleta_avg=boleta_avg,
-                    inputs_bodega=inputs_bodega,
-                    liquidacion=liquidacion,
-                    charts=charts_for_pdf,
-                )
-                pdf_btn_placeholder.download_button(
-                    "⬇️ Descargar informe PDF",
-                    data=pdf_bytes,
-                    file_name="informe_electricidad.pdf",
-                    mime="application/pdf",
-                    use_container_width=True,
-                )
-            except Exception as e:
-                pdf_btn_placeholder.error(f"No se pudo generar el PDF: {e}")
+        # PDF download button (ubicado en el header)
+        try:
+            pdf_bytes = build_electricidad_pdf(
+                title="Informe Electricidad — Liquidación por Bodega",
+                sel_months=sel_months,
+                sel_bodega=sel_bodega,
+                inputs_generales=first_parsed["inputs_generales"],
+                boleta_avg=boleta_avg,
+                inputs_bodega=inputs_bodega,
+                liquidacion=liquidacion,
+                charts=charts_for_pdf,
+            )
+            pdf_btn_placeholder.download_button(
+                "⬇️ Descargar informe PDF",
+                data=pdf_bytes,
+                file_name="informe_electricidad.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+        except Exception as e:
+            pdf_btn_placeholder.error(f"No se pudo generar el PDF: {e}")

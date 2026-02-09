@@ -281,13 +281,44 @@ def _render_table(df_in: pd.DataFrame, header_bg="#1f4e78", header_fg="white",
     )
 
 def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    def _find_row_any(label: str) -> int | None:
+        txt = df_raw.astype(str).apply(lambda s: s.str.strip())
+        hits = txt.apply(lambda row: row.str.contains(label, case=False, na=False).any(), axis=1)
+        if hits.any():
+            return int(hits.idxmax())
+        return None
+
+    def _slice_until_blank(start_row: int, col_idx: int, col_slice: slice) -> pd.DataFrame:
+        end = len(df_raw)
+        for i in range(start_row, len(df_raw)):
+            v = df_raw.iloc[i, col_idx] if col_idx < df_raw.shape[1] else None
+            if pd.isna(v) or str(v).strip() == "":
+                end = i
+                break
+            txt = str(v).upper()
+            if "INPUTS POR BODEGA" in txt or "LIQUIDACIÓN POR BODEGA" in txt:
+                end = i
+                break
+        return df_raw.iloc[start_row:end, col_slice].copy()
+
     # INPUTS GENERALES
-    ig = df_raw.iloc[3:8, 0:3].copy()
+    row_ig = _find_row_any("INPUTS GENERALES")
+    if row_ig is not None:
+        ig = _slice_until_blank(row_ig + 1, 0, slice(0, 3))
+    else:
+        ig = df_raw.iloc[3:8, 0:3].copy()
     ig.columns = ["Parámetro", "Valor", "Unidad"]
+    ig = ig.dropna(how="all")
 
     # BOLETA CGE
-    bc = df_raw.iloc[4:9, 5:7].copy()
+    row_bc = _find_row_any("BOLETA CGE")
+    if row_bc is not None:
+        # +2 porque la fila inmediatamente inferior suele ser encabezado Concepto/Monto
+        bc = _slice_until_blank(row_bc + 2, 5, slice(5, 7))
+    else:
+        bc = df_raw.iloc[4:9, 5:7].copy()
     bc.columns = ["Concepto", "Monto $"]
+    bc = bc.dropna(how="all")
 
     def _find_row(label: str) -> int | None:
         col0 = df_raw.iloc[:, 0].astype(str)

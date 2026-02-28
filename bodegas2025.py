@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 import base64
 from pathlib import Path
 from io import BytesIO
@@ -649,8 +650,8 @@ st.markdown("---")
 # =========================
 # TABS PRINCIPALES
 # =========================
-tab_overview, tab_riesgos, tab_canon, tab_canon_m2, tab_ing_eg, tab_electricidad = st.tabs(
-    ["🏠 Visión general", "⚠️ Riesgos & cobranzas", "🏢 Canon anual / mensual", "🧩 Canon por m²", "📈 Ingresos & egresos", "⚡ Electricidad"]
+tab_overview, tab_riesgos, tab_canon, tab_ing_eg, tab_electricidad = st.tabs(
+    ["🏠 Visión general", "⚠️ Riesgos & cobranzas", "🏢 Canon anual / mensual", "📈 Ingresos & egresos", "⚡ Electricidad"]
 )
 
 # =========================================================
@@ -817,6 +818,21 @@ with tab_overview:
     # 🏢 Ingresos por canon de arriendo — por año (MA-3)
     # =========================
     st.markdown("### 📊 Ingresos por Canon de Arriendo ")
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 8px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Evolución anual de canon de arriendo · Indicador estratégico de ingresos
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Usa df_f si existen filtros aplicados; si no, usa df completo
     data_src = df_f if "df_f" in locals() else df
@@ -882,13 +898,15 @@ with tab_overview:
 
         st.markdown(
             f"""
-            <div style='padding:12px 18px; border-radius:12px; background:#F9FAFB;
-                 border:1px solid #E5E7EB; width: fit-content; margin-bottom:-8px;'>
-                <span style='font-size:13px; color:#555;'>Último año ({ultimo_anio}):</span>
-                <span style='font-size:20px; font-weight:700; color:#111;'>
+            <div style='padding:12px 18px; border-radius:12px;
+                 background:linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+                 border:1px solid #D0D5DD; width: fit-content; margin-bottom:-8px;
+                 box-shadow:0 6px 16px rgba(15,45,82,0.08);'>
+                <span style='font-size:13px; color:#344054; font-weight:600;'>Último año ({ultimo_anio}):</span>
+                <span style='font-size:20px; font-weight:800; color:#0F2D52;'>
                     ${ultimo_valor:,.0f}
                 </span>
-                <span style='font-size:13px; color:{color_yoy};'>
+                <span style='font-size:13px; font-weight:700; color:{color_yoy};'>
                     ({var_yoy:+.1%} YoY)
                 </span>
             </div>
@@ -957,30 +975,40 @@ with tab_overview:
 
         fig.update_layout(
             template="plotly_white",
-            height=480,
-            margin=dict(l=20, r=20, t=40, b=20),
+            height=500,
+            margin=dict(l=20, r=20, t=56, b=20),
+            title=dict(
+                text="📊 Ingresos por Canon de Arriendo (Anual)",
+                x=0.01,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
             legend=dict(
                 orientation="h",
                 y=1.12,
                 x=0.5,
                 xanchor="center",
                 font=dict(size=12),
+                bgcolor="rgba(255,255,255,0.85)",
+                bordercolor="rgba(15,45,82,0.15)",
+                borderwidth=1,
             ),
             xaxis=dict(
                 title="Año",
                 tickmode="linear",
                 showgrid=False,
-                linecolor="rgba(15,23,42,0.25)",
+                linecolor="rgba(15,45,82,0.25)",
                 tickfont=dict(size=12, color="#334155"),
             ),
             yaxis=dict(
                 title="Monto (CLP)",
                 tickformat=",.0f",
-                gridcolor="rgba(148,163,184,0.25)",
+                gridcolor="rgba(15,45,82,0.10)",
                 zeroline=False,
                 ticks="outside",
                 ticklen=6,
                 tickfont=dict(size=12, color="#334155"),
+                linecolor="rgba(15,45,82,0.20)",
             ),
             plot_bgcolor="#F8FAFC",
             paper_bgcolor="#F8FAFC",
@@ -1013,9 +1041,11 @@ with tab_riesgos:
               # ---------- Resumen por Responsable (NO PAGADO vs Abonos) ----------
     st.header("📋 Cuentas por Cobrar / Pagar")
 
+    df_cob = df_f.copy()
+
     # --- Cálculos base ---
-    df_np = df_f[df_f["Sit"] == "NO PAGADO"]
-    df_abonos = df_f[df_f["Obs"].astype(str).str.contains("abono", case=False, na=False)]
+    df_np = df_cob[df_cob["Sit"] == "NO PAGADO"]
+    df_abonos = df_cob[df_cob["Obs"].astype(str).str.contains("abono", case=False, na=False)]
 
     no_pagado_grouped = (
         df_np.groupby("Responsable")["Monto"]
@@ -1112,6 +1142,22 @@ with tab_riesgos:
             unsafe_allow_html=True,
         )
 
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 6px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Estado de cuentas por cobrar/pagar · Resumen por responsable
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     # ---- Estilo visual de la tabla ----
     styler = (
         tabla.style
@@ -1129,40 +1175,490 @@ with tab_riesgos:
             {
                 "selector": "thead th",
                 "props": [
-                    ("background-color", "#f5f6f8"),
-                    ("color", "#111827"),
-                    ("font-weight", "600"),
+                    ("background-color", "#163A5F"),
+                    ("color", "white"),
+                    ("font-weight", "700"),
                     ("font-size", "13px"),
-                    ("border-bottom", "1px solid #E5E7EB"),
+                    ("border-bottom", "1px solid #0F2740"),
+                    ("text-align", "center"),
+                    ("padding", "8px"),
                 ],
             },
             {
                 "selector": "tbody td",
-                "props": [("font-size", "12px"), ("padding", "6px 8px")],
+                "props": [
+                    ("font-size", "12px"),
+                    ("padding", "7px 8px"),
+                    ("border-bottom", "1px solid #E5E7EB"),
+                ],
             },
             {
                 "selector": "tbody tr:nth-child(even)",
-                "props": [("background-color", "#fbfbfc")],
+                "props": [("background-color", "#F8FAFC")],
             },
             {
                 "selector": "tbody tr:hover",
-                "props": [("background-color", "#eef4ff")],
+                "props": [("background-color", "#EEF2F7")],
             },
         ])
+        .set_properties(subset=["Responsable"], **{"text-align": "left", "font-weight": "600"})
+        .set_properties(subset=["Deuda"], **{"font-weight": "800", "color": "#B42318"})
+        .set_properties(subset=["Monto NO PAGADO"], **{"font-weight": "700", "color": "#7A271A"})
+        .set_properties(subset=["Monto Abonos"], **{"font-weight": "700", "color": "#027A48"})
         .background_gradient(subset=["Monto NO PAGADO"], cmap="Reds")
         .background_gradient(subset=["Monto Abonos"], cmap="Greens")
-        .background_gradient(subset=["Deuda"], cmap="Oranges")
+        .background_gradient(subset=["Deuda"], cmap="YlOrRd")
         .bar(subset=["Progreso"], color="#10B981")
     )
 
-    # Negrita en la mayor deuda
-    styler = styler.apply(
-        lambda s: ["color: white; font-weight:700;"] + [""] * (len(s) - 1),
-        axis=0,
-        subset=["Deuda"],
+    st.dataframe(styler, use_container_width=True)
+
+    st.markdown("### 🧾 Monto a cancelar por espacio (1 al 7)")
+    st.caption("Detalle por concepto según Año y Mes, para Esp 1..7.")
+
+    df_cancel = df_f.copy()
+    df_cancel = df_cancel.dropna(subset=["Monto"])
+
+    df_cancel["Año_sel"] = pd.to_numeric(df_cancel.get("Año"), errors="coerce")
+    mes_raw_cancel = df_cancel.get("Mes")
+    mes_num_cancel = mes_raw_cancel.astype(str).str.extract(r"(\d{1,2})", expand=False)
+    df_cancel["Mes_sel"] = pd.to_numeric(mes_num_cancel, errors="coerce")
+
+    # Respaldo con fecha cuando Año/Mes no vienen informados
+    if df_cancel["Año_sel"].isna().all() or df_cancel["Mes_sel"].isna().all():
+        df_cancel["Fecha"] = pd.to_datetime(df_cancel.get("Fecha"), errors="coerce")
+        if df_cancel["Año_sel"].isna().all():
+            df_cancel["Año_sel"] = df_cancel["Fecha"].dt.year
+        if df_cancel["Mes_sel"].isna().all():
+            df_cancel["Mes_sel"] = df_cancel["Fecha"].dt.month
+
+    years_cancel = sorted(df_cancel["Año_sel"].dropna().astype(int).unique().tolist())
+    year_opts_cancel = ["Todos"] + years_cancel
+
+    c_can1, c_can2, c_can4, c_can5 = st.columns([1, 1, 1, 1.3])
+    with c_can1:
+        sel_year_cancel = st.selectbox(
+            "Año (cancelación)",
+            year_opts_cancel,
+            index=0,
+            key="year_cancel_esp",
+        )
+    with c_can2:
+        sel_month_cancel = st.selectbox(
+            "Mes (cancelación)",
+            ["Todos"] + list(range(1, 13)),
+            index=0,
+            key="month_cancel_esp",
+        )
+    with c_can4:
+        sel_esp_cancel = st.selectbox(
+            "Espacio",
+            ["Todos"] + list(range(1, 8)),
+            index=0,
+            key="esp_cancel_esp",
+        )
+    df_resp_opts = df_f.copy()
+    df_resp_opts["Esp_num"] = pd.to_numeric(
+        df_resp_opts["Esp"].astype(str).str.extract(r"(\d+)", expand=False),
+        errors="coerce",
+    )
+    df_resp_opts = df_resp_opts[df_resp_opts["Esp_num"].between(1, 7, inclusive="both")]
+    if sel_esp_cancel != "Todos":
+        df_resp_opts = df_resp_opts[df_resp_opts["Esp_num"] == int(sel_esp_cancel)]
+    responsables_opts_cancel = ["Todos"] + sorted(
+        df_resp_opts["Responsable"]
+        .dropna()
+        .astype(str)
+        .str.strip()
+        .loc[lambda s: s != ""]
+        .unique()
+        .tolist()
+    )
+    with c_can5:
+        sel_resp_cancel = st.selectbox(
+            "Responsable",
+            responsables_opts_cancel,
+            index=0,
+            key="resp_cancel_esp",
+        )
+
+    if sel_year_cancel != "Todos":
+        df_cancel = df_cancel[df_cancel["Año_sel"] == sel_year_cancel]
+    if sel_month_cancel != "Todos":
+        df_cancel = df_cancel[df_cancel["Mes_sel"] == sel_month_cancel]
+
+    df_cancel["Sit"] = df_cancel["Sit"].astype(str).str.strip().str.upper()
+    df_cancel = df_cancel[df_cancel["Sit"].isin(["PAGADO", "NO PAGADO"])]
+
+    df_cancel["Esp_num"] = pd.to_numeric(
+        df_cancel["Esp"].astype(str).str.extract(r"(\d+)", expand=False),
+        errors="coerce",
+    )
+    df_cancel = df_cancel[df_cancel["Esp_num"].between(1, 7, inclusive="both")]
+    df_cancel["Esp_num"] = df_cancel["Esp_num"].astype(int)
+    if sel_esp_cancel != "Todos":
+        df_cancel = df_cancel[df_cancel["Esp_num"] == int(sel_esp_cancel)]
+    if sel_resp_cancel != "Todos":
+        df_cancel = df_cancel[df_cancel["Responsable"].astype(str).str.strip() == sel_resp_cancel]
+    df_cancel_scope = df_cancel.copy()
+
+    txt_cancel = (
+        df_cancel["CC1"].astype(str).fillna("")
+        + " "
+        + df_cancel["Obs"].astype(str).fillna("")
+    ).str.lower()
+
+    df_cancel["Concepto"] = np.select(
+        [
+            txt_cancel.str.contains(r"canon\s*mensual", regex=True, na=False),
+            txt_cancel.str.contains(r"gastos?\s*comunes?", regex=True, na=False),
+            txt_cancel.str.contains(r"\bcge\b|boleta\s*cge|electricidad", regex=True, na=False),
+            txt_cancel.str.contains(r"verisure", regex=True, na=False),
+            txt_cancel.str.contains(r"administrativ[oa]", regex=True, na=False),
+        ],
+        ["Canon mensual", "Gastos comunes", "CGE", "Verisure", "Administrativo"],
+        default="Otros",
     )
 
-    st.dataframe(styler, use_container_width=True)
+    conceptos_objetivo = ["Canon mensual", "Gastos comunes", "CGE", "Verisure", "Administrativo"]
+    df_cancel = df_cancel[df_cancel["Concepto"].isin(conceptos_objetivo)].copy()
+    df_cancel["Monto_abs"] = df_cancel["Monto"].abs()
+
+    # Deuda por responsable: NO PAGADO - ABONO, excluyendo el período seleccionado.
+    df_deuda = df_f.copy().dropna(subset=["Monto"])
+    df_deuda["Sit"] = df_deuda["Sit"].astype(str).str.strip().str.upper()
+    df_deuda["Obs"] = df_deuda["Obs"].astype(str)
+    df_deuda["Responsable_clean"] = df_deuda["Responsable"].astype(str).str.strip()
+    df_deuda = df_deuda[df_deuda["Responsable_clean"] != ""]
+
+    df_deuda["Año_sel"] = pd.to_numeric(df_deuda.get("Año"), errors="coerce")
+    mes_raw_deuda = df_deuda.get("Mes")
+    mes_num_deuda = mes_raw_deuda.astype(str).str.extract(r"(\d{1,2})", expand=False)
+    df_deuda["Mes_sel"] = pd.to_numeric(mes_num_deuda, errors="coerce")
+    df_deuda["Fecha"] = pd.to_datetime(df_deuda.get("Fecha"), errors="coerce")
+    df_deuda["Año_sel"] = df_deuda["Año_sel"].fillna(df_deuda["Fecha"].dt.year)
+    df_deuda["Mes_sel"] = df_deuda["Mes_sel"].fillna(df_deuda["Fecha"].dt.month)
+
+    df_deuda = df_deuda.dropna(subset=["Año_sel", "Mes_sel"])
+    df_deuda["Periodo_ref"] = pd.to_datetime(
+        dict(
+            year=df_deuda["Año_sel"].astype(int),
+            month=df_deuda["Mes_sel"].astype(int),
+            day=1,
+        ),
+        errors="coerce",
+    )
+    df_deuda = df_deuda.dropna(subset=["Periodo_ref"])
+
+    corte_periodo = None
+    if sel_year_cancel != "Todos":
+        if sel_month_cancel != "Todos":
+            corte_periodo = pd.Timestamp(int(sel_year_cancel), int(sel_month_cancel), 1)
+        else:
+            corte_periodo = pd.Timestamp(int(sel_year_cancel), 1, 1)
+    if corte_periodo is not None:
+        df_deuda = df_deuda[df_deuda["Periodo_ref"] < corte_periodo]
+
+    # Responsables válidos según el período seleccionado y filtros activos en la vista
+    responsables_periodo = (
+        df_cancel_scope["Responsable"]
+        .dropna()
+        .astype(str)
+        .str.strip()
+        .loc[lambda s: s != ""]
+        .unique()
+        .tolist()
+    )
+    if sel_resp_cancel != "Todos":
+        responsables_periodo = [sel_resp_cancel]
+    if responsables_periodo:
+        df_deuda = df_deuda[df_deuda["Responsable_clean"].isin(responsables_periodo)]
+    else:
+        df_deuda = df_deuda.iloc[0:0]
+
+    deuda_np_por_resp = (
+        df_deuda[df_deuda["Sit"] == "NO PAGADO"]
+        .groupby("Responsable_clean")["Monto"]
+        .sum()
+    )
+    abonos_por_resp = (
+        df_deuda[df_deuda["Obs"].str.contains("abono", case=False, na=False)]
+        .groupby("Responsable_clean")["Monto"]
+        .sum()
+    )
+    deuda_por_resp = deuda_np_por_resp - abonos_por_resp
+
+    if sel_esp_cancel != "Todos":
+        idx_esp = [int(sel_esp_cancel)]
+    elif sel_resp_cancel != "Todos":
+        idx_esp = sorted(
+            df_f.loc[
+                df_f["Responsable"].astype(str).str.strip() == sel_resp_cancel,
+                "Esp"
+            ]
+            .astype(str)
+            .str.extract(r"(\d+)", expand=False)
+            .dropna()
+            .astype(int)
+            .loc[lambda s: s.between(1, 7)]
+            .unique()
+            .tolist()
+        )
+        if not idx_esp:
+            idx_esp = list(range(1, 8))
+    else:
+        idx_esp = list(range(1, 8))
+
+    if df_cancel.empty:
+        tabla_cancel = pd.DataFrame(index=idx_esp)
+    else:
+        tabla_cancel = (
+            df_cancel.groupby(["Esp_num", "Concepto"], as_index=False)["Monto_abs"]
+            .sum()
+            .pivot(index="Esp_num", columns="Concepto", values="Monto_abs")
+            .fillna(0)
+        )
+
+    tabla_cancel = tabla_cancel.reindex(index=idx_esp, fill_value=0)
+    for c in conceptos_objetivo:
+        if c not in tabla_cancel.columns:
+            tabla_cancel[c] = 0
+
+    responsables_por_esp = (
+        df_cancel_scope.assign(
+            Responsable_clean=df_cancel_scope["Responsable"].astype(str).str.strip()
+        )
+        .loc[lambda d: d["Responsable_clean"] != ""]
+        .groupby("Esp_num")["Responsable_clean"]
+        .apply(lambda s: ", ".join(sorted(s.dropna().unique().tolist())))
+    )
+    responsables_lista_por_esp = (
+        df_cancel_scope.assign(
+            Responsable_clean=df_cancel_scope["Responsable"].astype(str).str.strip()
+        )
+        .loc[lambda d: d["Responsable_clean"] != ""]
+        .groupby("Esp_num")["Responsable_clean"]
+        .apply(lambda s: sorted(s.dropna().unique().tolist()))
+    )
+
+    tabla_cancel = tabla_cancel[conceptos_objetivo]
+    tabla_cancel.insert(
+        0,
+        "Responsable",
+        tabla_cancel.index.to_series().map(responsables_por_esp).fillna("-"),
+    )
+    tabla_cancel["Deuda"] = tabla_cancel.index.to_series().map(
+        lambda esp: sum(deuda_por_resp.get(r, 0) for r in responsables_lista_por_esp.get(esp, []))
+    ).fillna(0)
+    tabla_cancel["Total a cancelar"] = tabla_cancel[conceptos_objetivo + ["Deuda"]].sum(axis=1)
+    tabla_cancel.index = [f"Esp {i}" for i in tabla_cancel.index]
+
+    if df_cancel.empty:
+        st.info("En el período seleccionado no hay cargos de conceptos, se muestra deuda acumulada previa.")
+
+    periodo_lbl = (
+        f"{int(sel_year_cancel)}-{int(sel_month_cancel):02d}"
+        if sel_year_cancel != "Todos" and sel_month_cancel != "Todos"
+        else (f"Año {int(sel_year_cancel)}" if sel_year_cancel != "Todos" else "Todos los períodos")
+    )
+    st.markdown(
+        f"""
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 6px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Estado de cobro arrendatarios · Periodo: {periodo_lbl}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cols_monto_cancel = [c for c in tabla_cancel.columns if c != "Responsable"]
+    styler_cancel = (
+        tabla_cancel.style
+        .format("${:,.0f}", subset=cols_monto_cancel)
+        .set_table_styles([
+            {
+                "selector": "thead th",
+                "props": [
+                    ("background-color", "#163A5F"),
+                    ("color", "white"),
+                    ("font-weight", "700"),
+                    ("font-size", "13px"),
+                    ("border-bottom", "1px solid #0F2740"),
+                    ("text-align", "center"),
+                    ("padding", "8px"),
+                ],
+            },
+            {
+                "selector": "tbody td",
+                "props": [
+                    ("font-size", "12px"),
+                    ("padding", "7px 8px"),
+                    ("border-bottom", "1px solid #E5E7EB"),
+                ],
+            },
+            {
+                "selector": "tbody tr:nth-child(even)",
+                "props": [("background-color", "#F8FAFC")],
+            },
+            {
+                "selector": "tbody tr:hover",
+                "props": [("background-color", "#EEF2F7")],
+            },
+        ])
+        .set_properties(subset=["Responsable"], **{"text-align": "left", "font-weight": "600"})
+        .set_properties(subset=["Deuda"], **{"font-weight": "700", "color": "#B42318"})
+        .set_properties(subset=["Total a cancelar"], **{"font-weight": "800", "color": "#0F2D52"})
+        .background_gradient(subset=["Total a cancelar"], cmap="Blues")
+    )
+    st.dataframe(
+        styler_cancel,
+        use_container_width=True,
+    )
+
+    esp_lbl_chart = str(sel_esp_cancel)
+    resp_lbl_chart = str(sel_resp_cancel)
+    st.markdown(
+        f"""
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 10px 0 8px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Composición de cobro por espacio · Espacio: {esp_lbl_chart} · Responsable: {resp_lbl_chart}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.caption("Barras apiladas por concepto + deuda, con línea de total a cancelar.")
+
+    import plotly.graph_objects as go
+
+    chart_cols = conceptos_objetivo + ["Deuda"]
+    chart_df = tabla_cancel.reset_index().rename(columns={"index": "Espacio"}).copy()
+    single_space_view = len(chart_df) == 1
+
+    fig_cancel = go.Figure()
+    color_map = {
+        "Canon mensual": "#1D4ED8",
+        "Gastos comunes": "#15803D",
+        "CGE": "#B45309",
+        "Verisure": "#475467",
+        "Administrativo": "#0E7490",
+        "Deuda": "#B42318",
+    }
+
+    if single_space_view:
+        for c in chart_cols:
+            fig_cancel.add_trace(
+                go.Bar(
+                    y=chart_df["Espacio"],
+                    x=chart_df[c],
+                    orientation="h",
+                    name=c,
+                    marker_color=color_map.get(c, "#64748B"),
+                    hovertemplate="<b>%{y}</b><br>" + c + ": $%{x:,.0f}<extra></extra>",
+                )
+            )
+        total_single = float(chart_df["Total a cancelar"].iloc[0])
+        fig_cancel.add_annotation(
+            x=total_single,
+            y=chart_df["Espacio"].iloc[0],
+            text=f"Total: ${total_single:,.0f}",
+            showarrow=False,
+            xshift=14,
+            font=dict(size=12, color="#0F172A"),
+            bgcolor="rgba(255,255,255,0.92)",
+            bordercolor="rgba(15,45,82,0.20)",
+            borderwidth=1,
+        )
+    else:
+        for c in chart_cols:
+            fig_cancel.add_trace(
+                go.Bar(
+                    x=chart_df["Espacio"],
+                    y=chart_df[c],
+                    name=c,
+                    marker_color=color_map.get(c, "#64748B"),
+                    hovertemplate="<b>%{x}</b><br>" + c + ": $%{y:,.0f}<extra></extra>",
+                )
+            )
+        fig_cancel.add_trace(
+            go.Scatter(
+                x=chart_df["Espacio"],
+                y=chart_df["Total a cancelar"],
+                mode="lines+markers+text",
+                name="Total a cancelar",
+                line=dict(color="#0F172A", width=3),
+                marker=dict(size=8, color="#0F172A"),
+                text=[f"${v:,.0f}" for v in chart_df["Total a cancelar"]],
+                textposition="top center",
+                hovertemplate="<b>%{x}</b><br>Total: $%{y:,.0f}<extra></extra>",
+            )
+        )
+
+    fig_cancel.update_layout(
+        barmode="stack",
+        template="plotly_white",
+        height=340 if single_space_view else 500,
+        margin=dict(l=20, r=20, t=140, b=20),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.12,
+            x=0.01,
+            xanchor="left",
+            bgcolor="rgba(255,255,255,0.85)",
+            bordercolor="rgba(15,45,82,0.15)",
+            borderwidth=1,
+        ),
+        title=dict(
+            text="📊 Composición de Cobro por Espacio",
+            x=0.01,
+            xanchor="left",
+            font=dict(size=18, color="#0F2D52"),
+            pad=dict(b=14),
+        ),
+        xaxis_title="Monto (CLP)" if single_space_view else "Espacio",
+        yaxis_title="" if single_space_view else "Monto (CLP)",
+        hovermode="y unified" if single_space_view else "x unified",
+        paper_bgcolor="#F8FAFC",
+        plot_bgcolor="#FFFFFF",
+    )
+    if single_space_view:
+        fig_cancel.update_xaxes(
+            tickformat=",.0f",
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            linecolor="rgba(15,45,82,0.20)",
+        )
+        fig_cancel.update_yaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+    else:
+        fig_cancel.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+        fig_cancel.update_yaxes(
+            tickformat=",.0f",
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            linecolor="rgba(15,45,82,0.20)",
+        )
+
+    st.plotly_chart(
+        fig_cancel,
+        use_container_width=True,
+        config={
+            "displaylogo": False,
+            "displayModeBar": True,
+            "modeBarButtonsToAdd": ["toImage"],
+        },
+    )
 
     # ---- Exportar PDF / CSV ----
     from reportlab.lib.pagesizes import A4, A3, landscape
@@ -1256,6 +1752,21 @@ with tab_riesgos:
         story.append(tbl)
         doc.build(story)
     st.subheader("⚠️ Riesgos de cobro y concentración de montos")
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 8px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
         # ---------- Top 10 dinámico PRO ----------
     st.markdown("### 📈 Filtro por centro de costo / situación")
@@ -1371,16 +1882,36 @@ with tab_riesgos:
         )
 
         fig_top.update_layout(
-            title=dict(text=f"Top {top_n} por '{dim}' · {order_by}", x=0.02, xanchor="left"),
+            title=dict(
+                text=f"📈 Top {top_n} por '{dim}' · {order_by}",
+                x=0.02,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
             xaxis_title=dim,
             yaxis_title="Monto (CLP)",
             template="plotly_white",
-            margin=dict(l=20, r=20, t=60, b=20),
-            legend=dict(orientation="h", y=1.02, x=0.02),
+            margin=dict(l=20, r=20, t=72, b=20),
+            legend=dict(
+                orientation="h",
+                y=1.04,
+                x=0.02,
+                bgcolor="rgba(255,255,255,0.85)",
+                bordercolor="rgba(15,45,82,0.15)",
+                borderwidth=1,
+            ),
             hovermode="x unified",
+            paper_bgcolor="#F8FAFC",
+            plot_bgcolor="#FFFFFF",
         )
-        fig_top.update_xaxes(showgrid=False)
-        fig_top.update_yaxes(showgrid=True, gridcolor="rgba(0,0,0,0.06)", zeroline=False, tickformat=",.0f")
+        fig_top.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+        fig_top.update_yaxes(
+            showgrid=True,
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            tickformat=",.0f",
+            linecolor="rgba(15,45,82,0.20)",
+        )
 
         st.plotly_chart(
             fig_top,
@@ -1406,7 +1937,7 @@ with tab_riesgos:
             values=sort_col if sort_col in treemap_df.columns else "Total CLP",
             color=color_col,
             color_continuous_scale=color_scale,
-            title=f"Distribución Top {top_n} por '{dim}' · {order_by}",
+            title=f"🧭 Distribución Top {top_n} por '{dim}' · {order_by}",
         )
         if dim == "CC":
             fig_tree.update_traces(
@@ -1420,7 +1951,15 @@ with tab_riesgos:
             textfont=dict(size=12),
         )
         fig_tree.update_layout(
-            margin=dict(l=0, r=0, t=60, b=0), template="plotly_white"
+            margin=dict(l=0, r=0, t=72, b=0),
+            template="plotly_white",
+            paper_bgcolor="#F8FAFC",
+            plot_bgcolor="#FFFFFF",
+            title=dict(
+                x=0.01,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
         )
         st.plotly_chart(
             fig_tree,
@@ -1465,9 +2004,22 @@ with tab_canon:
     st.subheader("🏢 Canon mensual por Año y por Esp")
 
     import plotly.graph_objects as go
-    import numpy as np
 
     _data_src = df_f
+    esps_tab_canon = sorted(
+        pd.to_numeric(_data_src.get("Esp"), errors="coerce")
+        .dropna()
+        .astype(int)
+        .unique()
+        .tolist()
+    )
+    sel_esps_tab_canon = st.multiselect(
+        "Espacios (aplica a todos los gráficos de esta pestaña)",
+        options=esps_tab_canon,
+        default=esps_tab_canon,
+        key="sel_esps_tab_canon",
+        placeholder="Selecciona uno o más espacios",
+    )
 
     mask_canon_mensual = (
         (_data_src["CC"] == "INGRESO") &
@@ -1479,65 +2031,149 @@ with tab_canon:
     dm = _data_src.loc[mask_canon_mensual].copy()
 
     dm["Año"] = pd.to_numeric(dm["Año"], errors="coerce")
+    dm["Esp"] = pd.to_numeric(dm["Esp"], errors="coerce")
     dm["Monto"] = pd.to_numeric(
         dm["Monto"].astype(str).str.replace(r"[^\d\.-]", "", regex=True),
         errors="coerce"
     )
+    mes_raw_canon = dm.get("Mes")
+    mes_num_canon = mes_raw_canon.astype(str).str.extract(r"(\d{1,2})", expand=False)
+    dm["Mes_num"] = pd.to_numeric(mes_num_canon, errors="coerce")
+    dm["Fecha"] = pd.to_datetime(dm.get("Fecha"), errors="coerce")
+    dm["Año_eff"] = dm["Año"].fillna(dm["Fecha"].dt.year)
+    dm["Mes_eff"] = dm["Mes_num"].fillna(dm["Fecha"].dt.month)
+    dm = dm.dropna(subset=["Esp"])
+    dm["Esp"] = dm["Esp"].astype(int)
+    dm = dm.dropna(subset=["Año_eff", "Mes_eff"])
+    dm["Periodo"] = pd.to_datetime(
+        dict(
+            year=dm["Año_eff"].astype(int),
+            month=dm["Mes_eff"].astype(int),
+            day=1,
+        ),
+        errors="coerce",
+    )
+    dm = dm.dropna(subset=["Periodo"])
 
     agg = (
-        dm.groupby(["Año","Esp"], as_index=False)["Monto"]
+        dm.groupby(["Periodo","Esp"], as_index=False)["Monto"]
           .sum()
-          .dropna(subset=["Año"])
-          .sort_values(["Año","Esp"])
+          .sort_values(["Periodo","Esp"])
     )
 
-    all_years = np.arange(int(agg["Año"].min()), int(agg["Año"].max())+1) if not agg.empty else []
+    all_periods = (
+        pd.date_range(agg["Periodo"].min(), agg["Periodo"].max(), freq="MS")
+        if not agg.empty else []
+    )
     all_esps  = sorted(agg["Esp"].dropna().unique())
-    grid = pd.MultiIndex.from_product([all_years, all_esps], names=["Año","Esp"])
+    grid = pd.MultiIndex.from_product([all_periods, all_esps], names=["Periodo","Esp"])
     agg_full = (
-        agg.set_index(["Año","Esp"])
+        agg.set_index(["Periodo","Esp"])
            .reindex(grid, fill_value=0)
            .reset_index()
     )
 
-    st.caption("El gráfico muestra el canon mensual total por año y por espacio (Esp).")
+    st.caption("El gráfico muestra el canon mensual total por mes y por espacio (Esp).")
 
     if len(all_esps) == 0:
         st.info("No hay datos de 'canon mensual' para mostrar.")
     else:
-        default_esps = all_esps[:7]
-        sel_esps = st.multiselect("Selecciona Espacios a mostrar",
-                                  all_esps, default=default_esps, key="sel_esps_canon")
-        if sel_esps:
-            agg_full = agg_full[agg_full["Esp"].isin(sel_esps)]
+        esps_validos = [e for e in sel_esps_tab_canon if e in all_esps]
+        if esps_validos:
+            agg_full = agg_full[agg_full["Esp"].isin(esps_validos)]
+            esp_sel_lbl = ", ".join([str(e) for e in esps_validos])
+        else:
+            agg_full = agg_full.iloc[0:0]
+            esp_sel_lbl = "Ninguno"
+        st.markdown(
+            f"""
+            <div style="
+                background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+                border-radius: 10px;
+                padding: 10px 14px;
+                margin: 8px 0 10px 0;
+                color: #FFFFFF;
+                font-size: 13px;
+                font-weight: 600;">
+                Evolución de canon mensual · Espacios seleccionados: {esp_sel_lbl}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         palette = [
-            "#2563EB","#10B981","#F59E0B","#EF4444","#8B5CF6",
-            "#14B8A6","#F97316","#DC2626","#3B82F6","#22C55E",
-            "#EAB308","#EC4899"
+            "#1D4ED8","#15803D","#B45309","#B42318","#475467",
+            "#0E7490","#334155","#0369A1","#854D0E","#166534",
+            "#9333EA","#BE123C"
         ]
 
         fig_line = go.Figure()
+        end_labels = []
+
+        def _fmt_label_clp_short(v: float) -> str:
+            v = float(v)
+            a = abs(v)
+            if a >= 1_000_000:
+                s = f"${v/1_000_000:,.1f}M"
+                return s.replace(".0M", "M")
+            if a >= 1_000:
+                return f"${v/1_000:,.0f}k"
+            return f"${v:,.0f}"
 
         for i, esp in enumerate(sorted(agg_full["Esp"].unique())):
             df_e = agg_full[agg_full["Esp"] == esp]
+            color_esp = palette[i % len(palette)]
             fig_line.add_trace(go.Scatter(
-                x=df_e["Año"], y=df_e["Monto"],
+                x=df_e["Periodo"], y=df_e["Monto"],
                 mode="lines+markers",
                 name=f"Esp {esp}",
-                line=dict(width=3, color=palette[i % len(palette)]),
-                marker=dict(size=7),
-                hovertemplate="<b>Año %{x}</b><br>Esp: "+str(esp)+"<br>Monto: $%{y:,.0f}<extra></extra>",
+                line=dict(width=2.4, color=color_esp),
+                marker=dict(
+                    size=4,
+                    opacity=0.75,
+                    color=color_esp,
+                    line=dict(width=0),
+                ),
+                hovertemplate="<b>%{x|%b %Y}</b><br>Esp: "+str(esp)+"<br>Monto: $%{y:,.0f}<extra></extra>",
             ))
 
             if not df_e.empty:
                 last_row = df_e.iloc[-1]
+                end_labels.append(
+                    {
+                        "x": last_row["Periodo"],
+                        "y": float(last_row["Monto"]),
+                        "text": f"Esp {esp}  {_fmt_label_clp_short(last_row['Monto'])}",
+                        "color": color_esp,
+                    }
+                )
+
+        # Etiquetas de cierre en columna derecha (fuera del plot), para evitar solapes.
+        if end_labels:
+            labels_sorted = sorted(end_labels, key=lambda d: d["y"])
+            n = len(labels_sorted)
+            # Reparto vertical homogéneo en coordenadas del "paper" para lectura estable.
+            y_top = 0.88
+            y_bot = 0.22
+            if n == 1:
+                y_slots = [0.55]
+            else:
+                y_slots = list(np.linspace(y_bot, y_top, n))
+
+            for lbl, y_slot in zip(labels_sorted, y_slots):
                 fig_line.add_annotation(
-                    x=last_row["Año"], y=last_row["Monto"],
-                    text=f"Esp {esp}<br><b>{fmt_short(last_row['Monto'])}</b>",
-                    showarrow=True, arrowhead=2, ax=30, ay=-30,
-                    bgcolor="rgba(0,0,0,0.72)", bordercolor="rgba(0,0,0,0.72)",
-                    font=dict(color="white", size=11)
+                    x=1.01,
+                    xref="paper",
+                    y=y_slot,
+                    yref="paper",
+                    text=lbl["text"],
+                    showarrow=False,
+                    xanchor="left",
+                    align="left",
+                    bgcolor="rgba(255,255,255,0.92)",
+                    bordercolor=lbl["color"],
+                    borderwidth=1,
+                    font=dict(color="#0F172A", size=11),
                 )
 
         visibility_all = [True] * len(fig_line.data)
@@ -1557,16 +2193,46 @@ with tab_canon:
         )
 
         fig_line.update_layout(
-            title=dict(text="Canon mensual por Año y Esp", x=0.02, xanchor="left"),
-            xaxis_title="Año",
+            title=dict(
+                text="🏢 Canon mensual por Mes y Esp",
+                x=0.02,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
+            xaxis_title="Período (Mes)",
             yaxis_title="Monto (CLP)",
             hovermode="x unified",
             template="plotly_white",
-            margin=dict(l=20, r=20, t=70, b=20),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.02),
+            margin=dict(l=20, r=180, t=78, b=20),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="left",
+                x=0.02,
+                bgcolor="rgba(255,255,255,0.85)",
+                bordercolor="rgba(15,45,82,0.15)",
+                borderwidth=1,
+            ),
+            paper_bgcolor="#F8FAFC",
+            plot_bgcolor="#FFFFFF",
         )
-        fig_line.update_xaxes(showgrid=False)
-        fig_line.update_yaxes(showgrid=True, gridcolor="rgba(0,0,0,0.06)", zeroline=False, tickformat=",.0f")
+        fig_line.update_xaxes(
+            showgrid=False,
+            linecolor="rgba(15,45,82,0.25)",
+            tickformat="%Y",
+            tickformatstops=[
+                dict(dtickrange=[None, "M12"], value="%b %Y"),
+                dict(dtickrange=["M12", None], value="%Y"),
+            ],
+        )
+        fig_line.update_yaxes(
+            showgrid=True,
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            tickformat=",.0f",
+            linecolor="rgba(15,45,82,0.20)",
+        )
         fig_line.update_layout(xaxis=dict(rangeslider=dict(visible=True)))
 
         st.plotly_chart(fig_line, use_container_width=True, config={
@@ -1576,10 +2242,25 @@ with tab_canon:
         })
 
 # =========================================================
-# 🧩 TAB 4: CANON POR M²
+# 🧩 CANON POR M² (integrado en TAB CANON)
 # =========================================================
-with tab_canon_m2:
+with tab_canon:
     st.subheader("🧩 Canon por m² — Canon Mensual (por Año y Esp)")
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 8px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Control de valor por m² · Canon mensual por espacio y año
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     import numpy as np
     import plotly.graph_objects as go
@@ -1587,8 +2268,12 @@ with tab_canon_m2:
 
     c1, c2 = st.columns([1,1])
     with c1:
-        escala_m2 = st.radio("Escala", ["Mensual", "Diario"], horizontal=True,
-                             index=0, key="escala_m2_final")
+        escala_m2 = st.selectbox(
+            "Escala",
+            ["Mensual", "Diario"],
+            index=0,
+            key="escala_m2_final",
+        )
     with c2:
         uf_url = st.text_input("URL CSV UF (opcional: Año,UF_promedio)", value="", key="uf_url_m2_final",
                                placeholder="https://.../uf_promedio_anual.csv")
@@ -1657,7 +2342,12 @@ with tab_canon_m2:
             st.warning(f"No se pudo leer UF desde la URL: {e}")
 
     monedas = ["CLP"] + (["UF"] if agg["UF_promedio"].notna().any() else [])
-    moneda_m2 = st.radio("Moneda", monedas, horizontal=True, index=0, key="moneda_m2_final")
+    moneda_m2 = st.selectbox(
+        "Moneda",
+        monedas,
+        index=0,
+        key="moneda_m2_final",
+    )
 
     if moneda_m2 == "UF":
         agg["valor_m2"] = agg["valor_m2_clp"] / agg["UF_promedio"]
@@ -1665,8 +2355,8 @@ with tab_canon_m2:
         agg["valor_m2"] = agg["valor_m2_clp"]
 
     todos_esps = sorted(agg["Esp"].unique().tolist())
-    sel_esps = st.multiselect("Selecciona Espacios", todos_esps, default=todos_esps, key="sel_esps_m2_final")
-    agg = agg[agg["Esp"].isin(sel_esps)]
+    sel_esps = [e for e in sel_esps_tab_canon if e in todos_esps]
+    agg = agg[agg["Esp"].isin(sel_esps)] if sel_esps else agg.iloc[0:0]
 
     plot_df = (
         agg.pivot_table(index="Año", columns="Esp", values="valor_m2", aggfunc="mean")
@@ -1679,43 +2369,83 @@ with tab_canon_m2:
     else:
         fig = go.Figure()
         x_years = plot_df.index.astype(int).values
+        end_labels_m2 = []
 
         palette = [
-            "#2563EB","#10B981","#F59E0B","#EF4444","#8B5CF6",
-            "#14B8A6","#F97316","#DC2626","#3B82F6","#22C55E",
-            "#EAB308","#EC4899","#0EA5E9","#A3E635"
+            "#1D4ED8","#15803D","#B45309","#B42318","#475467",
+            "#0E7490","#334155","#0369A1","#854D0E","#166534",
+            "#9333EA","#BE123C","#0F766E","#7C3AED"
         ]
 
         for i, esp in enumerate(plot_df.columns):
             y_series = plot_df[esp].values
+            color_esp = palette[i % len(palette)]
             custom = np.where(y_series == 0, "⚠️ Sin registros de ‘canon mensual’", " ")
             fig.add_trace(go.Scatter(
                 x=x_years, y=y_series, customdata=custom,
                 mode="lines+markers",
                 name=f"Esp {esp}",
-                line=dict(width=3, color=palette[i % len(palette)]),
-                marker=dict(size=7),
+                line=dict(width=2.4, color=color_esp),
+                marker=dict(size=4, opacity=0.75, color=color_esp, line=dict(width=0)),
                 hovertemplate="<b>Año %{x}</b><br>Esp: "+str(esp)+
                               "<br>Valor: %{y:,.2f}"+(" UF/m²" if moneda_m2=="UF" else " CLP/m²")+
                               "<br>%{customdata}<extra></extra>"
             ))
 
             if len(y_series) and pd.notna(y_series[-1]):
+                end_labels_m2.append(
+                    {
+                        "text": f"Esp {esp}  {y_series[-1]:,.2f}{' UF/m²' if moneda_m2=='UF' else ' CLP/m²'}",
+                        "color": color_esp,
+                    }
+                )
+
+        if end_labels_m2:
+            labels_sorted = sorted(end_labels_m2, key=lambda d: d["text"])
+            n = len(labels_sorted)
+            y_top = 0.88
+            y_bot = 0.22
+            y_slots = [0.55] if n == 1 else list(np.linspace(y_bot, y_top, n))
+            for lbl, y_slot in zip(labels_sorted, y_slots):
                 fig.add_annotation(
-                    x=int(x_years[-1]), y=y_series[-1],
-                    text=f"Esp {esp}<br><b>{y_series[-1]:,.2f}{' UF/m²' if moneda_m2=='UF' else ' CLP/m²'}</b>",
-                    showarrow=True, arrowhead=2, ax=30, ay=-30,
-                    bgcolor="rgba(0,0,0,0.72)", bordercolor="rgba(0,0,0,0.72)",
-                    font=dict(color="white", size=11)
+                    x=1.01,
+                    xref="paper",
+                    y=y_slot,
+                    yref="paper",
+                    text=lbl["text"],
+                    showarrow=False,
+                    xanchor="left",
+                    align="left",
+                    bgcolor="rgba(255,255,255,0.92)",
+                    bordercolor=lbl["color"],
+                    borderwidth=1,
+                    font=dict(color="#0F172A", size=11),
                 )
 
         titulo_y = "UF/m²" if moneda_m2 == "UF" else "CLP/m²"
         titulo_esc = "mensual" if escala_m2 == "Mensual" else "diario"
         fig.update_layout(
-            title=dict(text=f"Canon por m² ({titulo_esc}) — {moneda_m2} · por Año y Esp", x=0.02, xanchor="left"),
-            xaxis_title="Año", yaxis_title=titulo_y, template="plotly_white", hovermode="x",
-            margin=dict(l=20, r=20, t=70, b=20),
-            legend=dict(orientation="h", y=1.02, x=0.02),
+            title=dict(
+                text=f"🧩 Canon por m² ({titulo_esc}) — {moneda_m2} · por Año y Esp",
+                x=0.02,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
+            xaxis_title="Año",
+            yaxis_title=titulo_y,
+            template="plotly_white",
+            hovermode="x",
+            margin=dict(l=20, r=220, t=78, b=20),
+            legend=dict(
+                orientation="h",
+                y=1.02,
+                x=0.02,
+                bgcolor="rgba(255,255,255,0.85)",
+                bordercolor="rgba(15,45,82,0.15)",
+                borderwidth=1,
+            ),
+            paper_bgcolor="#F8FAFC",
+            plot_bgcolor="#FFFFFF",
             updatemenus=[dict(type="buttons", direction="right", x=1, xanchor="right", y=1.15, yanchor="top",
                               buttons=[dict(label="Mostrar todo", method="update", args=[{"visible":[True]*len(plot_df.columns)}]),
                                        dict(label="Ocultar todo", method="update", args=[{"visible":[False]*len(plot_df.columns)}])])]
@@ -1728,13 +2458,20 @@ with tab_canon_m2:
                 tick0=int(x_years.min()),
                 dtick=1,
                 range=[int(x_years.min()) - 0.5, int(x_years.max()) + 0.5],
-                showgrid=False
+                showgrid=False,
+                linecolor="rgba(15,45,82,0.25)"
             )
 
         y_min = 0
         y_max = plot_df.replace(0, np.nan).max().max()
         y_max = float(y_max) * 1.1 if pd.notna(y_max) else 1.0
-        fig.update_yaxes(range=[y_min, y_max], showgrid=True, gridcolor="rgba(0,0,0,0.06)", zeroline=False)
+        fig.update_yaxes(
+            range=[y_min, y_max],
+            showgrid=True,
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            linecolor="rgba(15,45,82,0.20)",
+        )
 
         st.plotly_chart(
             fig, use_container_width=True,
@@ -1819,6 +2556,21 @@ with tab_canon_m2:
 # =========================================================
 with tab_ing_eg:
     st.subheader("📈 Ingresos vs Egresos — Totales por período")
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 8px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Desempeño financiero por período · Control de ingresos, egresos y resultado neto
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     import plotly.graph_objects as go
 
@@ -1973,17 +2725,37 @@ with tab_ing_eg:
         )
 
         fig_ie.update_layout(
-            title=dict(text=f"Ingresos y Egresos — {periodo}", x=0.02, xanchor="left"),
+            title=dict(
+                text=f"📈 Ingresos y Egresos — {periodo}",
+                x=0.02,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
             xaxis_title=label_x,
             yaxis_title="Monto (CLP)",
             template="plotly_white",
             height=520,
-            margin=dict(l=20, r=20, t=70, b=20),
-            legend=dict(orientation="h", y=1.02, x=0.02),
+            margin=dict(l=20, r=20, t=78, b=20),
+            legend=dict(
+                orientation="h",
+                y=1.02,
+                x=0.02,
+                bgcolor="rgba(255,255,255,0.85)",
+                bordercolor="rgba(15,45,82,0.15)",
+                borderwidth=1,
+            ),
             hovermode="x unified",
+            paper_bgcolor="#F8FAFC",
+            plot_bgcolor="#FFFFFF",
         )
-        fig_ie.update_xaxes(showgrid=False)
-        fig_ie.update_yaxes(showgrid=True, gridcolor="rgba(0,0,0,0.06)", zeroline=False, tickformat=",.0f")
+        fig_ie.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+        fig_ie.update_yaxes(
+            showgrid=True,
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            tickformat=",.0f",
+            linecolor="rgba(15,45,82,0.20)",
+        )
 
         st.plotly_chart(
             fig_ie,

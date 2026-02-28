@@ -1751,229 +1751,6 @@ with tab_riesgos:
 
         story.append(tbl)
         doc.build(story)
-    st.subheader("⚠️ Riesgos de cobro y concentración de montos")
-    st.markdown(
-        """
-        <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin: 8px 0 10px 0;
-            color: #FFFFFF;
-            font-size: 13px;
-            font-weight: 600;">
-            Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-        # ---------- Top 10 dinámico PRO ----------
-    st.markdown("### 📈 Filtro por centro de costo / situación")
-
-    c_top1, c_top2, c_top3, c_top4 = st.columns([2, 1, 1, 1])
-    with c_top1:
-        dim = st.selectbox("Dimensión", ["Obs", "CC1", "Sit", "CC"], index=1, key="dim_pro")
-    with c_top2:
-        order_by = st.radio(
-            "Ordenar por",
-            ["Total CLP", "N° Transacciones"],
-            horizontal=True,
-            index=0,
-            key="order_by_pro",
-        )
-    with c_top3:
-        chart_type = st.selectbox(
-            "Visualización",
-            ["Barras", "Treemap"],
-            index=0,
-            key="chart_type_pro",
-        )
-    with c_top4:
-        top_n = st.slider(
-            "Top N",
-            min_value=5,
-            max_value=30,
-            value=16,
-            step=1,
-            key="topn_pro",
-        )
-
-    topN_raw = (
-        df_f.groupby(dim)["Monto"]
-        .agg(["sum", "count"])
-        .rename(columns={"sum": "Total CLP", "count": "N° Transacciones"})
-        .reset_index()
-    )
-
-    sort_col = "Total CLP" if order_by == "Total CLP" else "N° Transacciones"
-    topN = topN_raw.sort_values(sort_col, ascending=False).head(top_n).copy()
-
-    def color_by_sign_or_cc(series_values, series_dim=None):
-        if series_dim == "CC":
-            return series_values.map(
-                {"INGRESO": "#10B981", "EGRESO": "#EF4444"}
-            ).fillna("#2563EB")
-        return series_values.apply(lambda v: "#10B981" if v >= 0 else "#EF4444")
-
-    if chart_type == "Barras":
-        # Recalcular por dimensión con split Ingreso/Egreso
-        top_keys = topN[dim].tolist()
-        df_dim = df_f[df_f[dim].isin(top_keys)].copy()
-        df_dim["CC"] = df_dim["CC"].astype(str).str.strip().str.upper()
-
-        agg_cc = (
-            df_dim.groupby([dim, "CC"], as_index=False)["Monto"]
-            .sum()
-        )
-
-        ingresos = agg_cc[agg_cc["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
-        egresos = agg_cc[agg_cc["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
-
-        base_dim = pd.DataFrame({dim: top_keys})
-        base_dim = base_dim.merge(ingresos[[dim, "Ingresos"]], on=dim, how="left")
-        base_dim = base_dim.merge(egresos[[dim, "Egresos"]], on=dim, how="left")
-        base_dim = base_dim.fillna(0)
-
-        base_dim["Egresos_abs"] = base_dim["Egresos"].abs()
-        base_dim["Neto"] = base_dim["Ingresos"] - base_dim["Egresos_abs"]
-
-        # Orden según el criterio elegido
-        if order_by == "Total CLP":
-            base_dim = base_dim.merge(topN[[dim, "Total CLP"]], on=dim, how="left")
-            base_dim = base_dim.sort_values("Total CLP", ascending=True)
-        else:
-            base_dim = base_dim.merge(topN[[dim, "N° Transacciones"]], on=dim, how="left")
-            base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
-
-        fig_top = go.Figure()
-
-        fig_top.add_trace(
-            go.Scatter(
-                x=base_dim[dim],
-                y=base_dim["Ingresos"],
-                mode="lines+markers",
-                name="Ingresos",
-                line=dict(color="#10B981", width=3),
-                marker=dict(size=6),
-                hovertemplate="<b>%{x}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
-            )
-        )
-        fig_top.add_trace(
-            go.Scatter(
-                x=base_dim[dim],
-                y=base_dim["Egresos_abs"],
-                mode="lines+markers",
-                name="Egresos",
-                line=dict(color="#EF4444", width=3),
-                marker=dict(size=6),
-                hovertemplate="<b>%{x}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
-            )
-        )
-        fig_top.add_trace(
-            go.Bar(
-                x=base_dim[dim],
-                y=base_dim["Neto"],
-                name="Neto",
-                marker_color="#2563EB",
-                opacity=0.25,
-                hovertemplate="<b>%{x}</b><br>Neto: $%{y:,.0f}<extra></extra>",
-            )
-        )
-
-        fig_top.update_layout(
-            title=dict(
-                text=f"📈 Top {top_n} por '{dim}' · {order_by}",
-                x=0.02,
-                xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
-            ),
-            xaxis_title=dim,
-            yaxis_title="Monto (CLP)",
-            template="plotly_white",
-            margin=dict(l=20, r=20, t=72, b=20),
-            legend=dict(
-                orientation="h",
-                y=1.04,
-                x=0.02,
-                bgcolor="rgba(255,255,255,0.85)",
-                bordercolor="rgba(15,45,82,0.15)",
-                borderwidth=1,
-            ),
-            hovermode="x unified",
-            paper_bgcolor="#F8FAFC",
-            plot_bgcolor="#FFFFFF",
-        )
-        fig_top.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
-        fig_top.update_yaxes(
-            showgrid=True,
-            gridcolor="rgba(15,45,82,0.10)",
-            zeroline=False,
-            tickformat=",.0f",
-            linecolor="rgba(15,45,82,0.20)",
-        )
-
-        st.plotly_chart(
-            fig_top,
-            use_container_width=True,
-            config={
-                "displaylogo": False,
-                "displayModeBar": True,
-                "modeBarButtonsToAdd": ["toImage"],
-            },
-        )
-    else:
-        treemap_df = topN.sort_values("Total CLP", ascending=False).copy()
-        if dim == "CC":
-            color_col = dim
-            color_scale = None
-        else:
-            color_col = "Total CLP"
-            color_scale = ["#EF4444", "#F59E0B", "#10B981"]
-
-        fig_tree = px.treemap(
-            treemap_df,
-            path=[dim],
-            values=sort_col if sort_col in treemap_df.columns else "Total CLP",
-            color=color_col,
-            color_continuous_scale=color_scale,
-            title=f"🧭 Distribución Top {top_n} por '{dim}' · {order_by}",
-        )
-        if dim == "CC":
-            fig_tree.update_traces(
-                marker_colors=color_by_sign_or_cc(
-                    treemap_df[dim], series_dim="CC"
-                )
-            )
-        fig_tree.update_traces(
-            hovertemplate="<b>%{label}</b><br>Valor: %{value:,.0f}<extra></extra>",
-            textinfo="label+value",
-            textfont=dict(size=12),
-        )
-        fig_tree.update_layout(
-            margin=dict(l=0, r=0, t=72, b=0),
-            template="plotly_white",
-            paper_bgcolor="#F8FAFC",
-            plot_bgcolor="#FFFFFF",
-            title=dict(
-                x=0.01,
-                xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
-            ),
-        )
-        st.plotly_chart(
-            fig_tree,
-            use_container_width=True,
-            config={
-                "displaylogo": False,
-                "displayModeBar": True,
-                "modeBarButtonsToAdd": ["toImage"],
-            },
-        )
-
-
-    st.caption("Nota: los montos son la suma de 'Monto' (ingresos positivos, egresos negativos) por categoría.")
-
     st.markdown("---")
 
 
@@ -2110,15 +1887,10 @@ with tab_canon:
         fig_line = go.Figure()
         end_labels = []
 
-        def _fmt_label_clp_short(v: float) -> str:
+        def _fmt_label_clp(v: float) -> str:
             v = float(v)
-            a = abs(v)
-            if a >= 1_000_000:
-                s = f"${v/1_000_000:,.1f}M"
-                return s.replace(".0M", "M")
-            if a >= 1_000:
-                return f"${v/1_000:,.0f}k"
-            return f"${v:,.0f}"
+            s = f"{v:,.0f}".replace(",", ".")
+            return f"${s} CLP"
 
         for i, esp in enumerate(sorted(agg_full["Esp"].unique())):
             df_e = agg_full[agg_full["Esp"] == esp]
@@ -2143,14 +1915,14 @@ with tab_canon:
                     {
                         "x": last_row["Periodo"],
                         "y": float(last_row["Monto"]),
-                        "text": f"Esp {esp}  {_fmt_label_clp_short(last_row['Monto'])}",
+                        "text": f"Esp {esp}  {_fmt_label_clp(last_row['Monto'])}",
                         "color": color_esp,
                     }
                 )
 
-        # Etiquetas de cierre en columna derecha (fuera del plot), para evitar solapes.
+        # Etiquetas de cierre en columna derecha (fuera del plot), ordenadas mayor -> menor.
         if end_labels:
-            labels_sorted = sorted(end_labels, key=lambda d: d["y"])
+            labels_sorted = sorted(end_labels, key=lambda d: d["y"], reverse=True)
             n = len(labels_sorted)
             # Reparto vertical homogéneo en coordenadas del "paper" para lectura estable.
             y_top = 0.88
@@ -2158,7 +1930,7 @@ with tab_canon:
             if n == 1:
                 y_slots = [0.55]
             else:
-                y_slots = list(np.linspace(y_bot, y_top, n))
+                y_slots = list(np.linspace(y_top, y_bot, n))
 
             for lbl, y_slot in zip(labels_sorted, y_slots):
                 fig_line.add_annotation(
@@ -2395,17 +2167,18 @@ with tab_canon:
             if len(y_series) and pd.notna(y_series[-1]):
                 end_labels_m2.append(
                     {
+                        "y": float(y_series[-1]),
                         "text": f"Esp {esp}  {y_series[-1]:,.2f}{' UF/m²' if moneda_m2=='UF' else ' CLP/m²'}",
                         "color": color_esp,
                     }
                 )
 
         if end_labels_m2:
-            labels_sorted = sorted(end_labels_m2, key=lambda d: d["text"])
+            labels_sorted = sorted(end_labels_m2, key=lambda d: d["y"], reverse=True)
             n = len(labels_sorted)
             y_top = 0.88
             y_bot = 0.22
-            y_slots = [0.55] if n == 1 else list(np.linspace(y_bot, y_top, n))
+            y_slots = [0.55] if n == 1 else list(np.linspace(y_top, y_bot, n))
             for lbl, y_slot in zip(labels_sorted, y_slots):
                 fig.add_annotation(
                     x=1.01,
@@ -2484,6 +2257,7 @@ with tab_canon:
     st.markdown(f"#### 📄 Dataset agregado (Canon/m² — Año x Esp · {escala_lbl})")
 
     df_x = plot_df.reset_index().rename(columns={"index": "Año"}).copy()
+    esp_cols_x = [c for c in df_x.columns if c != "Año"]
     df_display = df_x.copy()
 
     def miles_punto(n):
@@ -2498,20 +2272,46 @@ with tab_canon:
         return s
 
     if moneda_m2 == "CLP":
-        for c in df_display.columns[1:]:
+        for c in esp_cols_x:
             df_display[c] = df_display[c].round(0).apply(lambda v: f"${miles_punto(v)}")
     else:
-        for c in df_display.columns[1:]:
+        for c in esp_cols_x:
             df_display[c] = df_display[c].round(2).apply(uf_chileno)
 
     if moneda_m2 == "CLP":
         df_display = df_display.rename(
-            columns={c: f"Esp {c} (CLP/m² · {escala_lbl})" for c in df_display.columns if c != "Año"}
+            columns={c: f"Esp {c} (CLP/m² · {escala_lbl})" for c in esp_cols_x}
         )
     else:
         df_display = df_display.rename(
-            columns={c: f"Esp {c} (UF/m² · {escala_lbl})" for c in df_display.columns if c != "Año"}
+            columns={c: f"Esp {c} (UF/m² · {escala_lbl})" for c in esp_cols_x}
         )
+
+    # Quitar años sin datos (todo 0) antes de insertar la fila m²
+    if not df_x.empty and esp_cols_x:
+        mask_has_data = (df_x[esp_cols_x].fillna(0).abs().sum(axis=1) > 0)
+        df_x = df_x.loc[mask_has_data].copy()
+        df_display = df_display.loc[mask_has_data.values].copy()
+
+    # Fila m² justo debajo de la primera fila del dataset
+    cols_esp_display = [c for c in df_display.columns if c != "Año"]
+    fila_m2 = {"Año": "m²"}
+    for col_name in cols_esp_display:
+        esp_txt = str(col_name)
+        esp_num = pd.to_numeric(esp_txt.replace("Esp ", "").split(" ")[0], errors="coerce")
+        if pd.notna(esp_num):
+            m2_val = M2_MAP.get(int(esp_num))
+            fila_m2[col_name] = f"{int(m2_val):,} m²".replace(",", ".") if m2_val is not None else "-"
+        else:
+            fila_m2[col_name] = "-"
+
+    if not df_display.empty:
+        df_display = pd.concat(
+            [pd.DataFrame([fila_m2]), df_display],
+            ignore_index=True,
+        )
+    else:
+        df_display = pd.DataFrame([fila_m2], columns=df_display.columns)
 
     # Tabla estilo Electricidad
     _render_table(
@@ -2523,8 +2323,24 @@ with tab_canon:
     )
 
     excel_buffer = BytesIO()
+    df_x_export = df_x.copy()
+    fila_m2_export = {"Año": "m²"}
+    for c in esp_cols_x:
+        esp_num = pd.to_numeric(str(c), errors="coerce")
+        if pd.notna(esp_num):
+            m2_val = M2_MAP.get(int(esp_num))
+            fila_m2_export[c] = m2_val if m2_val is not None else ""
+        else:
+            fila_m2_export[c] = ""
+    if not df_x_export.empty:
+        df_x_export = pd.concat(
+            [pd.DataFrame([fila_m2_export]), df_x_export],
+            ignore_index=True,
+        )
+    else:
+        df_x_export = pd.DataFrame([fila_m2_export], columns=df_x_export.columns)
     with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
-        df_x.to_excel(writer, index=False, sheet_name="canon_m2")
+        df_x_export.to_excel(writer, index=False, sheet_name="canon_m2")
         wb = writer.book
         ws = writer.sheets["canon_m2"]
 
@@ -2532,16 +2348,17 @@ with tab_canon:
         ws.set_row(0, None, head_fmt)
 
         ws.set_column(0, 0, 10)
+        ws.set_column(1, 1, 14)
         if moneda_m2 == "CLP":
             numfmt = wb.add_format({"num_format": "$#,##0"})
-            for j, c in enumerate(df_x.columns[1:], start=1):
+            for j, c in enumerate(esp_cols_x, start=1):
                 ws.write(0, j, f"Esp {c} (CLP/m²)", head_fmt)
         else:
             numfmt = wb.add_format({"num_format": '#,##0.00'})
-            for j, c in enumerate(df_x.columns[1:], start=1):
+            for j, c in enumerate(esp_cols_x, start=1):
                 ws.write(0, j, f"Esp {c} (UF/m²)", head_fmt)
 
-        ws.set_column(1, len(df_x.columns)-1, 14, numfmt)
+        ws.set_column(1, len(df_x_export.columns)-1, 14, numfmt)
 
     excel_buffer.seek(0)
     st.download_button(
@@ -2764,6 +2581,425 @@ with tab_ing_eg:
         )
 
         st.caption("Egresos se muestran en valor absoluto para facilitar comparación visual.")
+
+    st.markdown("---")
+    st.subheader("⚠️ Riesgos de cobro y concentración de montos")
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 8px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown("### 📈 Filtro por centro de costo / situación")
+
+    c_top1, c_top2, c_top3, c_top4 = st.columns([2, 1, 1, 1])
+    with c_top1:
+        dim = st.selectbox("Dimensión", ["Obs", "CC1", "Sit", "CC"], index=1, key="dim_pro")
+    with c_top2:
+        order_by = st.radio(
+            "Ordenar por",
+            ["Total CLP", "N° Transacciones"],
+            horizontal=True,
+            index=0,
+            key="order_by_pro",
+        )
+    with c_top3:
+        chart_type = st.selectbox(
+            "Visualización",
+            ["Barras", "Treemap"],
+            index=0,
+            key="chart_type_pro",
+        )
+    with c_top4:
+        top_n = st.slider(
+            "Top N",
+            min_value=5,
+            max_value=30,
+            value=16,
+            step=1,
+            key="topn_pro",
+        )
+
+    topN_raw = (
+        df_f.groupby(dim)["Monto"]
+        .agg(["sum", "count"])
+        .rename(columns={"sum": "Total CLP", "count": "N° Transacciones"})
+        .reset_index()
+    )
+
+    sort_col = "Total CLP" if order_by == "Total CLP" else "N° Transacciones"
+    topN = topN_raw.sort_values(sort_col, ascending=False).head(top_n).copy()
+
+    def color_by_sign_or_cc(series_values, series_dim=None):
+        if series_dim == "CC":
+            return series_values.map(
+                {"INGRESO": "#10B981", "EGRESO": "#EF4444"}
+            ).fillna("#2563EB")
+        return series_values.apply(lambda v: "#10B981" if v >= 0 else "#EF4444")
+
+    if chart_type == "Barras":
+        top_keys = topN[dim].tolist()
+        df_dim = df_f[df_f[dim].isin(top_keys)].copy()
+        df_dim["CC"] = df_dim["CC"].astype(str).str.strip().str.upper()
+
+        agg_cc = (
+            df_dim.groupby([dim, "CC"], as_index=False)["Monto"]
+            .sum()
+        )
+
+        ingresos = agg_cc[agg_cc["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+        egresos = agg_cc[agg_cc["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+
+        base_dim = pd.DataFrame({dim: top_keys})
+        base_dim = base_dim.merge(ingresos[[dim, "Ingresos"]], on=dim, how="left")
+        base_dim = base_dim.merge(egresos[[dim, "Egresos"]], on=dim, how="left")
+        base_dim = base_dim.fillna(0)
+
+        base_dim["Egresos_abs"] = base_dim["Egresos"].abs()
+        base_dim["Neto"] = base_dim["Ingresos"] - base_dim["Egresos_abs"]
+
+        if order_by == "Total CLP":
+            base_dim = base_dim.merge(topN[[dim, "Total CLP"]], on=dim, how="left")
+            base_dim = base_dim.sort_values("Total CLP", ascending=True)
+        else:
+            base_dim = base_dim.merge(topN[[dim, "N° Transacciones"]], on=dim, how="left")
+            base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
+
+        fig_top = go.Figure()
+
+        fig_top.add_trace(
+            go.Scatter(
+                x=base_dim[dim],
+                y=base_dim["Ingresos"],
+                mode="lines+markers",
+                name="Ingresos",
+                line=dict(color="#10B981", width=3),
+                marker=dict(size=6),
+                hovertemplate="<b>%{x}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
+            )
+        )
+        fig_top.add_trace(
+            go.Scatter(
+                x=base_dim[dim],
+                y=base_dim["Egresos_abs"],
+                mode="lines+markers",
+                name="Egresos",
+                line=dict(color="#EF4444", width=3),
+                marker=dict(size=6),
+                hovertemplate="<b>%{x}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
+            )
+        )
+        fig_top.add_trace(
+            go.Bar(
+                x=base_dim[dim],
+                y=base_dim["Neto"],
+                name="Neto",
+                marker_color="#2563EB",
+                opacity=0.25,
+                hovertemplate="<b>%{x}</b><br>Neto: $%{y:,.0f}<extra></extra>",
+            )
+        )
+
+        fig_top.update_layout(
+            title=dict(
+                text=f"📈 Top {top_n} por '{dim}' · {order_by}",
+                x=0.02,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
+            xaxis_title=dim,
+            yaxis_title="Monto (CLP)",
+            template="plotly_white",
+            margin=dict(l=20, r=20, t=72, b=20),
+            legend=dict(
+                orientation="h",
+                y=1.04,
+                x=0.02,
+                bgcolor="rgba(255,255,255,0.85)",
+                bordercolor="rgba(15,45,82,0.15)",
+                borderwidth=1,
+            ),
+            hovermode="x unified",
+            paper_bgcolor="#F8FAFC",
+            plot_bgcolor="#FFFFFF",
+        )
+        fig_top.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+        fig_top.update_yaxes(
+            showgrid=True,
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            tickformat=",.0f",
+            linecolor="rgba(15,45,82,0.20)",
+        )
+
+        st.plotly_chart(
+            fig_top,
+            use_container_width=True,
+            config={
+                "displaylogo": False,
+                "displayModeBar": True,
+                "modeBarButtonsToAdd": ["toImage"],
+            },
+        )
+    else:
+        treemap_df = topN.sort_values("Total CLP", ascending=False).copy()
+        if dim == "CC":
+            color_col = dim
+            color_scale = None
+        else:
+            color_col = "Total CLP"
+            color_scale = ["#EF4444", "#F59E0B", "#10B981"]
+
+        fig_tree = px.treemap(
+            treemap_df,
+            path=[dim],
+            values=sort_col if sort_col in treemap_df.columns else "Total CLP",
+            color=color_col,
+            color_continuous_scale=color_scale,
+            title=f"🧭 Distribución Top {top_n} por '{dim}' · {order_by}",
+        )
+        if dim == "CC":
+            fig_tree.update_traces(
+                marker_colors=color_by_sign_or_cc(
+                    treemap_df[dim], series_dim="CC"
+                )
+            )
+        fig_tree.update_traces(
+            hovertemplate="<b>%{label}</b><br>Valor: %{value:,.0f}<extra></extra>",
+            textinfo="label+value",
+            textfont=dict(size=12),
+        )
+        fig_tree.update_layout(
+            margin=dict(l=0, r=0, t=72, b=0),
+            template="plotly_white",
+            paper_bgcolor="#F8FAFC",
+            plot_bgcolor="#FFFFFF",
+            title=dict(
+                x=0.01,
+                xanchor="left",
+                font=dict(size=18, color="#0F2D52"),
+            ),
+        )
+        st.plotly_chart(
+            fig_tree,
+            use_container_width=True,
+            config={
+                "displaylogo": False,
+                "displayModeBar": True,
+                "modeBarButtonsToAdd": ["toImage"],
+            },
+        )
+
+    st.caption("Nota: los montos son la suma de 'Monto' (ingresos positivos, egresos negativos) por categoría.")
+
+    st.markdown("---")
+    st.subheader("⚠️ Detalle filtrable de movimientos")
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 8px 0 10px 0;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;">
+            Monitoreo detallado por filtros · CC1, OBS y Responsable
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.caption("Filtra por CC1, OBS y Responsable para revisar el detalle al final de esta pestaña.")
+
+    df_det = df_f.copy().dropna(subset=["Monto"]).copy()
+    for c in ["CC1", "Obs", "Responsable"]:
+        df_det[c] = df_det[c].astype(str).str.strip()
+
+    d1, d2, d3 = st.columns([1, 1, 1])
+    with d1:
+        cc1_opts = ["Todos"] + sorted([v for v in df_det["CC1"].dropna().unique().tolist() if v != ""])
+        sel_cc1_det = st.selectbox("CC1", cc1_opts, index=0, key="det_cc1")
+
+    df_det_f = df_det.copy()
+    if sel_cc1_det != "Todos":
+        df_det_f = df_det_f[df_det_f["CC1"] == sel_cc1_det]
+
+    with d2:
+        obs_opts = ["Todos"] + sorted([v for v in df_det_f["Obs"].dropna().unique().tolist() if v != ""])
+        sel_obs_det = st.selectbox("OBS", obs_opts, index=0, key="det_obs")
+    if sel_obs_det != "Todos":
+        df_det_f = df_det_f[df_det_f["Obs"] == sel_obs_det]
+
+    with d3:
+        resp_opts = ["Todos"] + sorted([v for v in df_det_f["Responsable"].dropna().unique().tolist() if v != ""])
+        sel_resp_det = st.selectbox("Responsable", resp_opts, index=0, key="det_resp")
+    if sel_resp_det != "Todos":
+        df_det_f = df_det_f[df_det_f["Responsable"] == sel_resp_det]
+
+    # KPIs de detalle (debajo de selectores)
+    sit_det = df_det_f["Sit"].astype(str).str.strip().str.upper() if "Sit" in df_det_f.columns else pd.Series([], dtype=str)
+    monto_total_det = float(df_det_f["Monto"].sum()) if not df_det_f.empty else 0.0
+    monto_por_pagar_det = float(df_det_f.loc[sit_det == "NO PAGADO", "Monto"].abs().sum()) if not df_det_f.empty else 0.0
+    monto_pagado_det = float(df_det_f.loc[sit_det == "PAGADO", "Monto"].abs().sum()) if not df_det_f.empty else 0.0
+    monto_abonos_det = float(
+        df_det_f.loc[df_det_f["Obs"].astype(str).str.contains("abono", case=False, na=False), "Monto"].abs().sum()
+    ) if not df_det_f.empty else 0.0
+
+    k_det1, k_det2, k_det3, k_det4 = st.columns(4)
+    with k_det1:
+        st.markdown(
+            card_finanza(
+                "MONTO TOTAL (FILTRO)",
+                fmt_clp_largo(monto_total_det),
+                "#1D4ED8",
+            ),
+            unsafe_allow_html=True,
+        )
+    with k_det2:
+        st.markdown(
+            card_finanza(
+                "MONTO POR PAGAR",
+                fmt_clp_largo(monto_por_pagar_det),
+                "#EF4444",
+            ),
+            unsafe_allow_html=True,
+        )
+    with k_det3:
+        st.markdown(
+            card_finanza(
+                "MONTO PAGADO",
+                fmt_clp_largo(monto_pagado_det),
+                "#10B981",
+            ),
+            unsafe_allow_html=True,
+        )
+    with k_det4:
+        st.markdown(
+            card_finanza(
+                "ABONOS",
+                fmt_clp_largo(monto_abonos_det),
+                "#0E7490",
+            ),
+            unsafe_allow_html=True,
+        )
+
+    if "Fecha" in df_det_f.columns:
+        df_det_f["Fecha"] = pd.to_datetime(df_det_f["Fecha"], errors="coerce")
+        df_det_f = df_det_f.sort_values(["Fecha", "Año", "Mes"], ascending=[False, False, False], na_position="last")
+    else:
+        df_det_f = df_det_f.sort_values(["Año", "Mes"], ascending=[False, False], na_position="last")
+
+    cols_det = [c for c in ["Fecha", "Año", "Mes", "Esp", "Responsable", "CC", "CC1", "Obs", "Sit", "Monto"] if c in df_det_f.columns]
+    df_det_view = df_det_f[cols_det].copy()
+
+    st.caption(f"Registros encontrados: {len(df_det_view):,}".replace(",", "."))
+    if df_det_view.empty:
+        st.info("No hay movimientos para los filtros seleccionados.")
+    else:
+        df_det_show = df_det_view.copy()
+        if "Fecha" in df_det_show.columns:
+            df_det_show["Fecha"] = pd.to_datetime(df_det_show["Fecha"], errors="coerce").dt.strftime("%Y-%m-%d")
+        st.caption("Vista acotada a 20 filas visibles. Usa el scroll interno de la tabla para recorrer todo.")
+        visible_rows = 20
+        row_height_px = 35
+        header_px = 38
+        table_height = header_px + (visible_rows * row_height_px)
+        left_cols_det = [c for c in ["Responsable", "CC1", "Obs"] if c in df_det_show.columns]
+        sit_cols_det = [c for c in ["Sit"] if c in df_det_show.columns]
+        cc_cols_det = [c for c in ["CC"] if c in df_det_show.columns]
+        monto_cols_det = [c for c in ["Monto"] if c in df_det_show.columns]
+
+        def _highlight_first_row(row):
+            if row.name == 0:
+                return ["background-color:#E8F1FF; font-weight:700;"] * len(row)
+            return [""] * len(row)
+
+        def _style_sit(v):
+            s = str(v).strip().upper()
+            if s == "NO PAGADO":
+                return "background-color:#FEE4E2; color:#B42318; font-weight:700;"
+            if s == "PAGADO":
+                return "background-color:#ECFDF3; color:#027A48; font-weight:700;"
+            return ""
+
+        def _style_cc(v):
+            s = str(v).strip().upper()
+            if s == "EGRESO":
+                return "color:#B42318; font-weight:700;"
+            if s == "INGRESO":
+                return "color:#027A48; font-weight:700;"
+            return ""
+
+        def _style_monto(v):
+            try:
+                n = float(v)
+                if n < 0:
+                    return "color:#B42318; font-weight:800;"
+                if n > 0:
+                    return "color:#0F2D52; font-weight:800;"
+            except Exception:
+                pass
+            return ""
+
+        styler_det = (
+            df_det_show.style
+            .format({"Monto": "${:,.0f}"})
+            .set_table_styles([
+                {
+                    "selector": "thead th",
+                    "props": [
+                        ("background-color", "#163A5F"),
+                        ("color", "white"),
+                        ("font-weight", "700"),
+                        ("font-size", "13px"),
+                        ("border-bottom", "1px solid #0F2740"),
+                        ("text-align", "center"),
+                        ("padding", "8px"),
+                    ],
+                },
+                {
+                    "selector": "tbody td",
+                    "props": [
+                        ("font-size", "12px"),
+                        ("padding", "7px 8px"),
+                        ("border-bottom", "1px solid #E5E7EB"),
+                    ],
+                },
+                {
+                    "selector": "tbody tr:nth-child(even)",
+                    "props": [("background-color", "#F8FAFC")],
+                },
+                {
+                    "selector": "tbody tr:hover",
+                    "props": [("background-color", "#EEF2F7")],
+                },
+            ])
+            .set_properties(subset=left_cols_det, **{"text-align": "left"})
+            .set_properties(subset=monto_cols_det, **{"font-weight": "800", "color": "#0F2D52"})
+            .background_gradient(subset=["Monto"], cmap="Blues")
+            .apply(_highlight_first_row, axis=1)
+        )
+        if sit_cols_det:
+            styler_det = styler_det.applymap(_style_sit, subset=sit_cols_det)
+        if cc_cols_det:
+            styler_det = styler_det.applymap(_style_cc, subset=cc_cols_det)
+        if monto_cols_det:
+            styler_det = styler_det.applymap(_style_monto, subset=monto_cols_det)
+        st.caption("Colores guía: fila principal azul suave · PAGADO verde · NO PAGADO rojo · EGRESO rojo / INGRESO verde.")
+        st.dataframe(
+            styler_det,
+            use_container_width=True,
+            height=table_height,
+        )
 
 # =========================================================
 # ⚡ TAB 6: ELECTRICIDAD (Excel por pestaña)

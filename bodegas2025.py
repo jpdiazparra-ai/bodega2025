@@ -7,7 +7,8 @@ from pathlib import Path
 from io import BytesIO
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
 
 # =========================
@@ -379,31 +380,128 @@ def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
         "liquidacion": data_liq,
     }
 
-def _df_to_rl_table(df_in: pd.DataFrame, header_bg=colors.HexColor("#1f4e78"),
-                    max_width=760, font_size=7) -> Table:
-    styles = getSampleStyleSheet()
-    data = [[Paragraph(str(c), styles["BodyText"]) for c in df_in.columns]]
+def _df_to_rl_table(
+    df_in: pd.DataFrame,
+    header_bg=colors.HexColor("#0F2942"),
+    header_fg=colors.white,
+    row_alt: colors.Color | None = None,
+    grid_color=colors.HexColor("#D9E1EA"),
+    max_width=520,
+    font_size=7,
+    min_col_width=42,
+    max_col_width=165,
+    cell_padding=4,
+) -> Table:
+    data = [[str(c) for c in df_in.columns]]
     for _, row in df_in.fillna("").astype(str).iterrows():
-        data.append([Paragraph(str(v), styles["BodyText"]) for v in row.tolist()])
+        data.append([str(v) for v in row.tolist()])
 
     ncols = len(df_in.columns)
-    col_w = max_width / max(1, ncols)
-    col_widths = [col_w] * ncols
+    # Ajuste de ancho por contenido para evitar celdas sobredimensionadas.
+    sample_rows = df_in.fillna("").astype(str).head(80)
+    char_counts = []
+    for c in df_in.columns:
+        header_len = len(str(c))
+        content_len = sample_rows[c].map(len).quantile(0.85) if not sample_rows.empty else 0
+        est = max(header_len, int(content_len))
+        char_counts.append(max(5, min(30, est)))
+    raw_widths = [min(max_col_width, max(min_col_width, 5.2 * cc)) for cc in char_counts]
+    total_raw = sum(raw_widths) or 1
+    if total_raw > max_width:
+        scale = max_width / total_raw
+        col_widths = [max(min_col_width, w * scale) for w in raw_widths]
+        # Si al aplicar mínimos se excede, se distribuye uniforme como fallback.
+        if sum(col_widths) > max_width:
+            col_widths = [max_width / max(1, ncols)] * ncols
+    else:
+        col_widths = raw_widths
 
     tbl = Table(data, hAlign="LEFT", colWidths=col_widths, repeatRows=1)
-    tbl.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), header_bg),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.lightgrey),
-            ("FONTSIZE", (0, 0), (-1, -1), font_size),
-            ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
-            ("TOPPADDING", (0, 0), (-1, 0), 6),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ])
-    )
+    style_cmds = [
+        ("BACKGROUND", (0, 0), (-1, 0), header_bg),
+        ("TEXTCOLOR", (0, 0), (-1, 0), header_fg),
+        ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+        ("GRID", (0, 0), (-1, -1), 0.35, grid_color),
+        ("FONTSIZE", (0, 0), (-1, -1), font_size),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), cell_padding),
+        ("TOPPADDING", (0, 0), (-1, -1), cell_padding),
+        ("LEFTPADDING", (0, 0), (-1, -1), cell_padding),
+        ("RIGHTPADDING", (0, 0), (-1, -1), cell_padding),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]
+    # Alineación por tipo de columna para una lectura más ejecutiva.
+    for idx, c in enumerate(df_in.columns):
+        cu = str(c).upper()
+        if any(k in cu for k in ["$", "TOTAL", "IVA", "NETO", "KWH", "%"]):
+            style_cmds.append(("ALIGN", (idx, 1), (idx, -1), "RIGHT"))
+        else:
+            style_cmds.append(("ALIGN", (idx, 1), (idx, -1), "LEFT"))
+    if row_alt is not None:
+        for r in range(1, len(data)):
+            if (r - 1) % 2 == 0:
+                style_cmds.append(("BACKGROUND", (0, r), (-1, r), row_alt))
+    tbl.setStyle(TableStyle(style_cmds))
     return tbl
+
+
+def _compact_pdf_columns(df_in: pd.DataFrame) -> pd.DataFrame:
+    df = df_in.copy()
+    alias = {
+        "Bodega": "Bod.",
+        "Remarcador": "Rem.",
+        "Hora inicio jornada (Input)": "Hora ini. jor.",
+        "Hora inicio horario especial": "Hora ini. esp.",
+        "Factor horario especial (>18:00)": "Factor esp. >18",
+        "Hora salida (Input)": "Hora salida",
+        "Carga inductiva (SI/NO)": "Carga ind.",
+        "Pago con atraso SI/NO": "Pago atraso",
+        "% post-18 (calc)": "% post-18",
+        "kWh post-18 (calc)": "kWh post-18",
+        "kWh día (calc)": "kWh día",
+        "$ Cargos Fijos": "$ C. Fijos",
+        "% Cargos Fijos": "% C. Fijos",
+        "TOTAL NETO $": "Total neto",
+        "TOTAL c/IVA $": "Total c/IVA",
+        "Intereses/Mora $": "Interés/Mora $",
+    }
+    renamed = {}
+    for c in df.columns:
+        c_txt = str(c)
+        if c_txt in alias:
+            renamed[c] = alias[c_txt]
+            continue
+        c_txt = (
+            c_txt.replace(" (calc)", "")
+            .replace(" (Input)", "")
+            .replace(" (SI/NO)", "")
+            .replace("REMARCADOR", "Rem.")
+            .replace("REMARCADOR", "Rem.")
+            .replace("  ", " ")
+            .strip()
+        )
+        renamed[c] = c_txt
+    return df.rename(columns=renamed)
+
+
+def _pdf_section_banner(text: str, width: float, bg_hex="#0F2942", fg=colors.white) -> Table:
+    banner = Table([[text]], colWidths=[width])
+    banner.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(bg_hex)),
+                ("TEXTCOLOR", (0, 0), (-1, -1), fg),
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9.5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    return banner
 
 def _format_pdf_df(df_in: pd.DataFrame) -> pd.DataFrame:
     df = df_in.copy()
@@ -459,39 +557,143 @@ def build_electricidad_pdf(
     buf = BytesIO()
     doc = SimpleDocTemplate(
         buf,
-        pagesize=landscape(A4),
+        pagesize=A4,
         title=title,
-        leftMargin=24,
-        rightMargin=24,
-        topMargin=24,
-        bottomMargin=24,
+        leftMargin=20,
+        rightMargin=20,
+        topMargin=20,
+        bottomMargin=20,
     )
     styles = getSampleStyleSheet()
     story = []
+    content_w = doc.width
+    generated_at = pd.Timestamp.now().strftime("%d-%m-%Y %H:%M")
 
-    story.append(Paragraph(title, styles["Title"]))
-    story.append(Paragraph(f"Meses: {', '.join(sel_months)} · Bodega: {sel_bodega}", styles["Normal"]))
-    story.append(Spacer(1, 12))
+    title_style = ParagraphStyle(
+        "ElecPdfTitle",
+        parent=styles["Title"],
+        fontName="Helvetica-Bold",
+        fontSize=21,
+        leading=24,
+        textColor=colors.HexColor("#0B1F33"),
+        alignment=TA_LEFT,
+        spaceAfter=4,
+    )
+    meta_style = ParagraphStyle(
+        "ElecPdfMeta",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=9.5,
+        leading=12,
+        textColor=colors.HexColor("#334155"),
+        alignment=TA_LEFT,
+    )
+    section_title_style = ParagraphStyle(
+        "ElecPdfSection",
+        parent=styles["Heading3"],
+        fontName="Helvetica-Bold",
+        fontSize=10,
+        leading=12,
+        textColor=colors.HexColor("#0B1F33"),
+        alignment=TA_LEFT,
+        spaceAfter=4,
+    )
 
-    story.append(Paragraph("INPUTS GENERALES", styles["Heading3"]))
-    story.append(_df_to_rl_table(_format_pdf_df(inputs_generales), max_width=760, font_size=8))
-    story.append(Spacer(1, 10))
+    def _draw_footer(canv, d):
+        canv.saveState()
+        y = 12
+        canv.setStrokeColor(colors.HexColor("#D9E1EA"))
+        canv.line(d.leftMargin, y + 8, A4[0] - d.rightMargin, y + 8)
+        canv.setFont("Helvetica", 8)
+        canv.setFillColor(colors.HexColor("#64748B"))
+        canv.drawString(d.leftMargin, y, f"Generado: {generated_at}")
+        canv.drawRightString(A4[0] - d.rightMargin, y, f"Página {canv.getPageNumber()}")
+        canv.restoreState()
 
-    story.append(Paragraph("BOLETA CGE (PROMEDIO SEGÚN MESES)", styles["Heading3"]))
-    story.append(_df_to_rl_table(_format_pdf_df(boleta_avg), max_width=760, font_size=8))
-    story.append(Spacer(1, 10))
+    main_title = title or "Liquidación Eléctrica por Bodega"
+    story.append(Paragraph(main_title, title_style))
+    story.append(Paragraph(f"Meses: {', '.join(sel_months)} &nbsp;&nbsp;|&nbsp;&nbsp; Bodega: {sel_bodega}", meta_style))
+    story.append(Spacer(1, 8))
 
-    story.append(Paragraph("INPUTS POR BODEGA (REMARCADOR + HORARIO EFECTIVO)", styles["Heading3"]))
-    story.append(_df_to_rl_table(_format_pdf_df(inputs_bodega), max_width=760, font_size=7))
-    story.append(Spacer(1, 10))
+    # Primer bloque en dos columnas: Inputs Generales (izq) + Boleta CGE (der)
+    split_w = (content_w - 8) / 2
+    left_block = [
+        _pdf_section_banner("INPUTS GENERALES", split_w),
+        Spacer(1, 3),
+        Paragraph("Parámetros base para liquidación eléctrica.", section_title_style),
+        _df_to_rl_table(
+            _format_pdf_df(_compact_pdf_columns(inputs_generales)),
+            header_bg=colors.HexColor("#123A5A"),
+            row_alt=colors.HexColor("#F8FBFF"),
+            max_width=split_w,
+            font_size=7.2,
+            cell_padding=3,
+        ),
+    ]
+    right_block = [
+        _pdf_section_banner("BOLETA CGE (PROMEDIO SEGÚN MESES)", split_w),
+        Spacer(1, 3),
+        Paragraph("Resumen consolidado por concepto de facturación.", section_title_style),
+        _df_to_rl_table(
+            _format_pdf_df(_compact_pdf_columns(boleta_avg)),
+            header_bg=colors.HexColor("#123A5A"),
+            row_alt=colors.HexColor("#F8FBFF"),
+            max_width=split_w,
+            font_size=7.2,
+            cell_padding=3,
+        ),
+    ]
+    intro_grid = Table([[left_block, right_block]], colWidths=[split_w, split_w], hAlign="LEFT")
+    intro_grid.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
+    story.append(intro_grid)
+    story.append(Spacer(1, 8))
 
-    story.append(Paragraph("LIQUIDACIÓN POR BODEGA (ASIGNACIÓN DE COSTOS + CRITERIO HORARIO)", styles["Heading3"]))
-    story.append(_df_to_rl_table(_format_pdf_df(liquidacion), max_width=760, font_size=7))
-    story.append(Spacer(1, 12))
+    story.append(_pdf_section_banner("INPUTS POR BODEGA (REMARCADOR + HORARIO EFECTIVO)", content_w))
+    story.append(Spacer(1, 3))
+    story.append(
+        _df_to_rl_table(
+            _format_pdf_df(_compact_pdf_columns(inputs_bodega)),
+            header_bg=colors.HexColor("#123A5A"),
+            row_alt=colors.HexColor("#FFFDF7"),
+            max_width=content_w,
+            font_size=6.8,
+            min_col_width=36,
+            max_col_width=120,
+            cell_padding=2.5,
+        )
+    )
+    story.append(Spacer(1, 6))
+
+    story.append(_pdf_section_banner("LIQUIDACIÓN POR BODEGA (ASIGNACIÓN DE COSTOS + CRITERIO HORARIO)", content_w))
+    story.append(Spacer(1, 3))
+    story.append(
+        _df_to_rl_table(
+            _format_pdf_df(_compact_pdf_columns(liquidacion)),
+            header_bg=colors.HexColor("#123A5A"),
+            row_alt=colors.HexColor("#F6FCF8"),
+            max_width=content_w,
+            font_size=6.8,
+            min_col_width=36,
+            max_col_width=120,
+            cell_padding=2.5,
+        )
+    )
+    story.append(Spacer(1, 8))
 
     if charts:
         import matplotlib.pyplot as plt
-        story.append(Paragraph("GRÁFICO — LIQUIDACIÓN POR BODEGA", styles["Heading3"]))
+        story.append(_pdf_section_banner("GRÁFICO — LIQUIDACIÓN POR BODEGA (DISTRIBUCIÓN DE COSTOS)", content_w))
+        story.append(Spacer(1, 4))
         for ch in charts:
             try:
                 df_plot = ch["df"].copy()
@@ -501,39 +703,82 @@ def build_electricidad_pdf(
                 col_total = ch["col_total"]
                 palette = ch["palette"]
 
-                fig, ax1 = plt.subplots(figsize=(10, 4.6), dpi=150)
-                bottom = None
-                for c in cols_costos:
-                    vals = pd.to_numeric(df_plot[c], errors="coerce").fillna(0)
-                    ax1.bar(df_plot[x_col], vals, label=c, bottom=bottom, color=palette.get(c, "#94a3b8"))
-                    bottom = vals if bottom is None else bottom + vals
+                chart_type = ch.get("chart_type", "stacked")
+                if chart_type == "donut":
+                    fig, ax = plt.subplots(figsize=(7.2, 4.2), dpi=150)
+                    vals = pd.to_numeric(df_plot[cols_costos].sum(numeric_only=True), errors="coerce").fillna(0)
+                    raw_values = [float(v) for v in vals.tolist()]
+                    # Matplotlib pie no admite negativos; se recortan para evitar fallas.
+                    values = [max(0.0, v) for v in raw_values]
+                    labels = cols_costos
+                    pie_colors = [palette.get(c, "#94a3b8") for c in labels]
+                    total_vals = pd.to_numeric(df_plot[col_total], errors="coerce").fillna(0)
+                    total_num = float(total_vals.sum())
+                    bodega_label = str(df_plot.iloc[0, 1]) if not df_plot.empty else ""
+                    mes_label = str(df_plot["Mes"].iloc[0]) if ("Mes" in df_plot.columns and not df_plot.empty) else ""
+                    if sum(values) > 0:
+                        ax.pie(
+                            values,
+                            labels=None,
+                            colors=pie_colors,
+                            startangle=90,
+                            counterclock=False,
+                            wedgeprops=dict(width=0.44, edgecolor="white"),
+                            autopct=lambda p: f"{p:.1f}%" if p >= 3 else "",
+                            pctdistance=0.8,
+                        )
+                        center_txt = f"{bodega_label}\n{mes_label}\nTotal c/IVA\n${total_num:,.0f}"
+                        ax.text(0, 0, center_txt, ha="center", va="center", fontsize=11, weight="bold", color="#111827")
+                        ax.axis("equal")
+                        ax.legend(labels, loc="upper center", bbox_to_anchor=(0.5, 1.06), ncol=5, fontsize=7, frameon=False)
+                        if title:
+                            ax.set_title(title)
+                        plt.tight_layout()
+                    else:
+                        # Sin base positiva para dona: fallback robusto a barras.
+                        y_pos = np.arange(len(labels))
+                        ax.barh(y_pos, raw_values, color=pie_colors)
+                        ax.set_yticks(y_pos)
+                        ax.set_yticklabels(labels, fontsize=8)
+                        ax.axvline(0, color="#94a3b8", linewidth=1)
+                        ax.grid(axis="x", color="#E2E8F0", linewidth=0.8)
+                        center_txt = f"{bodega_label} · {mes_label} · Total c/IVA: ${total_num:,.0f}"
+                        ax.set_title(center_txt, fontsize=10, color="#111827")
+                        plt.tight_layout()
+                else:
+                    fig, ax1 = plt.subplots(figsize=(7.2, 4.2), dpi=150)
+                    bottom = None
+                    for c in cols_costos:
+                        vals = pd.to_numeric(df_plot[c], errors="coerce").fillna(0)
+                        ax1.bar(df_plot[x_col], vals, label=c, bottom=bottom, color=palette.get(c, "#94a3b8"))
+                        bottom = vals if bottom is None else bottom + vals
 
-                ax1.set_ylabel("Costo (CLP)")
-                ax1.tick_params(axis="x", rotation=0)
+                    ax1.set_ylabel("Costo (CLP)")
+                    ax1.tick_params(axis="x", rotation=0)
 
-                ax2 = ax1.twinx()
-                total_vals = pd.to_numeric(df_plot[col_total], errors="coerce").fillna(0)
-                ax2.plot(df_plot[x_col], total_vals, color="#111827", marker="o", linewidth=2, label="TOTAL c/IVA $")
-                ax2.set_ylabel("Total c/IVA (CLP)")
+                    ax2 = ax1.twinx()
+                    total_vals = pd.to_numeric(df_plot[col_total], errors="coerce").fillna(0)
+                    ax2.plot(df_plot[x_col], total_vals, color="#111827", marker="o", linewidth=2, label="TOTAL c/IVA $")
+                    ax2.set_ylabel("Total c/IVA (CLP)")
 
-                handles1, labels1 = ax1.get_legend_handles_labels()
-                handles2, labels2 = ax2.get_legend_handles_labels()
-                ax1.legend(handles1 + handles2, labels1 + labels2, loc="upper center",
-                           bbox_to_anchor=(0.5, 1.15), ncol=3, fontsize=7, frameon=False)
-                if title:
-                    ax1.set_title(title)
+                    handles1, labels1 = ax1.get_legend_handles_labels()
+                    handles2, labels2 = ax2.get_legend_handles_labels()
+                    ax1.legend(handles1 + handles2, labels1 + labels2, loc="upper center",
+                               bbox_to_anchor=(0.5, 1.15), ncol=3, fontsize=7, frameon=False)
+                    if title:
+                        ax1.set_title(title)
+                    plt.tight_layout()
 
-                plt.tight_layout()
                 img_buf = BytesIO()
-                fig.savefig(img_buf, format="png")
+                fig.savefig(img_buf, format="png", dpi=220, bbox_inches="tight", facecolor="white")
                 plt.close(fig)
                 img_buf.seek(0)
-                story.append(RLImage(img_buf, width=740, height=340))
-                story.append(Spacer(1, 12))
+                story.append(RLImage(img_buf, width=content_w, height=270))
+                story.append(Spacer(1, 8))
             except Exception as e:
                 raise RuntimeError(f"No fue posible renderizar el gráfico en el PDF: {e}")
 
-    doc.build(story)
+    doc.build(story, onFirstPage=_draw_footer, onLaterPages=_draw_footer)
     pdf = buf.getvalue()
     buf.close()
     return pdf
@@ -1477,9 +1722,10 @@ with tab_riesgos:
         unsafe_allow_html=True,
     )
 
-    cols_monto_cancel = [c for c in tabla_cancel.columns if c != "Responsable"]
+    tabla_cancel_view = tabla_cancel.rename(columns={"Administrativo": "Interes/ otros"})
+    cols_monto_cancel = [c for c in tabla_cancel_view.columns if c != "Responsable"]
     styler_cancel = (
-        tabla_cancel.style
+        tabla_cancel_view.style
         .format("${:,.0f}", subset=cols_monto_cancel)
         .set_table_styles([
             {
@@ -1545,6 +1791,12 @@ with tab_riesgos:
     chart_cols = conceptos_objetivo + ["Deuda"]
     chart_df = tabla_cancel.reset_index().rename(columns={"index": "Espacio"}).copy()
     single_space_view = len(chart_df) == 1
+    single_month_one_space = (
+        single_space_view
+        and sel_year_cancel != "Todos"
+        and sel_month_cancel != "Todos"
+        and str(sel_esp_cancel).strip().lower() not in {"todos", "todas"}
+    )
 
     fig_cancel = go.Figure()
     color_map = {
@@ -1556,7 +1808,69 @@ with tab_riesgos:
         "Deuda": "#B42318",
     }
 
-    if single_space_view:
+    if single_month_one_space:
+        row = chart_df.iloc[0]
+        raw_vals = pd.Series({c: float(pd.to_numeric(row[c], errors="coerce") or 0) for c in chart_cols})
+        pos_vals = raw_vals[raw_vals > 0].sort_values(ascending=False)
+        neg_total = float(raw_vals[raw_vals < 0].sum())
+        total_single = float(pd.to_numeric(row["Total a cancelar"], errors="coerce") or 0)
+
+        if not pos_vals.empty:
+            fig_cancel.add_trace(
+                go.Pie(
+                    labels=pos_vals.index.tolist(),
+                    values=pos_vals.values.tolist(),
+                    hole=0.62,
+                    sort=False,
+                    marker=dict(
+                        colors=[color_map.get(c, "#64748B") for c in pos_vals.index.tolist()],
+                        line=dict(color="white", width=1),
+                    ),
+                    textinfo="percent",
+                    textfont=dict(size=13, color="#FFFFFF"),
+                    hovertemplate="<b>%{label}</b><br>Monto: $%{value:,.0f}<br>Participación: %{percent}<extra></extra>",
+                )
+            )
+        else:
+            # Sin componentes positivos: fallback simple para evitar gráfico vacío.
+            fig_cancel.add_trace(
+                go.Bar(
+                    y=[chart_df["Espacio"].iloc[0]],
+                    x=[total_single],
+                    orientation="h",
+                    name="Total a cancelar",
+                    marker_color="#1D4ED8",
+                    hovertemplate="<b>%{y}</b><br>Total: $%{x:,.0f}<extra></extra>",
+                )
+            )
+
+        center_text = (
+            f"<b>{chart_df['Espacio'].iloc[0]}</b><br>"
+            f"{periodo_lbl}<br>"
+            f"<span style='font-size:13px'>Total a cancelar</span><br>"
+            f"<b>${total_single:,.0f}</b>"
+        )
+        fig_cancel.add_annotation(
+            x=0.5,
+            y=0.5,
+            xref="paper",
+            yref="paper",
+            text=center_text,
+            showarrow=False,
+            align="center",
+            font=dict(size=16, color="#0F172A"),
+        )
+        if neg_total < 0:
+            fig_cancel.add_annotation(
+                x=0.5,
+                y=0.06,
+                xref="paper",
+                yref="paper",
+                text=f"Ajustes negativos considerados: ${neg_total:,.0f}",
+                showarrow=False,
+                font=dict(size=11, color="#B42318"),
+            )
+    elif single_space_view:
         for c in chart_cols:
             fig_cancel.add_trace(
                 go.Bar(
@@ -1608,14 +1922,14 @@ with tab_riesgos:
     fig_cancel.update_layout(
         barmode="stack",
         template="plotly_white",
-        height=340 if single_space_view else 500,
+        height=430 if single_month_one_space else (340 if single_space_view else 500),
         margin=dict(l=20, r=20, t=140, b=20),
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=1.12,
-            x=0.01,
-            xanchor="left",
+            y=1.10,
+            x=0.5 if single_month_one_space else 0.01,
+            xanchor="center" if single_month_one_space else "left",
             bgcolor="rgba(255,255,255,0.85)",
             bordercolor="rgba(15,45,82,0.15)",
             borderwidth=1,
@@ -1627,13 +1941,16 @@ with tab_riesgos:
             font=dict(size=18, color="#0F2D52"),
             pad=dict(b=14),
         ),
-        xaxis_title="Monto (CLP)" if single_space_view else "Espacio",
-        yaxis_title="" if single_space_view else "Monto (CLP)",
-        hovermode="y unified" if single_space_view else "x unified",
+        xaxis_title=("Monto (CLP)" if single_space_view else "Espacio"),
+        yaxis_title=("" if single_space_view else "Monto (CLP)"),
+        hovermode="closest" if single_month_one_space else ("y unified" if single_space_view else "x unified"),
         paper_bgcolor="#F8FAFC",
         plot_bgcolor="#FFFFFF",
     )
-    if single_space_view:
+    if single_month_one_space:
+        fig_cancel.update_xaxes(visible=False, showgrid=False, zeroline=False)
+        fig_cancel.update_yaxes(visible=False, showgrid=False, zeroline=False)
+    elif single_space_view:
         fig_cancel.update_xaxes(
             tickformat=",.0f",
             gridcolor="rgba(15,45,82,0.10)",
@@ -3065,7 +3382,7 @@ with tab_electricidad:
     st.markdown(
         """
         <div style="background:#1f4e78;color:white;padding:8px 12px;border-radius:6px;font-weight:700;">
-        Liquidación Eléctrica por Bodega — Metodología de Ingeniería
+        Liquidación Eléctrica por Bodega
         </div>
         """,
         unsafe_allow_html=True,
@@ -3233,8 +3550,61 @@ with tab_electricidad:
             )
             return fig
 
+        def build_liq_single_fig(df_plot: pd.DataFrame, height=420):
+            agg_vals = df_plot[cols_costos].sum(numeric_only=True)
+            vals = [float(agg_vals.get(c, 0) or 0) for c in cols_costos]
+            labels = cols_costos
+            total_val = float(pd.to_numeric(df_plot[col_total], errors="coerce").sum())
+
+            fig = go.Figure(
+                data=[
+                    go.Pie(
+                        labels=labels,
+                        values=vals,
+                        hole=0.58,
+                        sort=False,
+                        marker=dict(colors=[palette.get(c, "#94a3b8") for c in labels]),
+                        texttemplate="%{percent}",
+                        textposition="inside",
+                        hovertemplate="%{label}<br>$%{value:,.0f} (%{percent})<extra></extra>",
+                    )
+                ]
+            )
+
+            bodega_label = str(df_plot[col_bodega].iloc[0]) if not df_plot.empty else ""
+            mes_label = str(df_plot[col_mes].iloc[0]) if not df_plot.empty else ""
+            center_text = f"<b>{bodega_label}</b><br>{mes_label}<br><span style='font-size:14px'>Total c/IVA</span><br><b>${total_val:,.0f}</b>"
+
+            fig.update_layout(
+                template="plotly_white",
+                height=height,
+                margin=dict(l=20, r=20, t=20, b=20),
+                legend=dict(
+                    orientation="h",
+                    y=1.08,
+                    x=0.5,
+                    xanchor="center",
+                    yanchor="bottom",
+                    font=dict(size=11),
+                ),
+                annotations=[
+                    dict(
+                        text=center_text,
+                        x=0.5,
+                        y=0.5,
+                        xref="paper",
+                        yref="paper",
+                        showarrow=False,
+                        align="center",
+                        font=dict(size=15, color="#111827"),
+                    )
+                ],
+            )
+            return fig
+
         single_period = len(sel_months) == 1
         charts_for_pdf = []
+        single_month_single_bodega = len(sel_months) == 1 and sel_bodega != "Todas"
         if sel_bodega == "Todas" and len(sel_months) > 1:
             bodegas_plot = liq_chart[col_bodega].dropna().astype(str).unique().tolist()
             cols = st.columns(2)
@@ -3251,7 +3621,20 @@ with tab_electricidad:
                     "cols_costos": cols_costos,
                     "col_total": col_total,
                     "palette": palette,
+                    "chart_type": "stacked",
                 })
+        elif single_month_single_bodega:
+            fig = build_liq_single_fig(liq_chart, height=430)
+            st.plotly_chart(fig, use_container_width=True, config={"displaylogo": False})
+            charts_for_pdf.append({
+                "df": liq_chart,
+                "x_col": col_bodega if single_period else col_mes,
+                "title": "",
+                "cols_costos": cols_costos,
+                "col_total": col_total,
+                "palette": palette,
+                "chart_type": "donut",
+            })
         else:
             x_axis = liq_chart[col_bodega] if single_period else liq_chart[col_mes]
             x_title = "Bodega" if single_period else "Mes"
@@ -3264,12 +3647,13 @@ with tab_electricidad:
                 "cols_costos": cols_costos,
                 "col_total": col_total,
                 "palette": palette,
+                "chart_type": "stacked",
             })
 
         # PDF download button (ubicado en el header)
         try:
             pdf_bytes = build_electricidad_pdf(
-                title="Informe Electricidad — Liquidación por Bodega",
+                title="Liquidación Eléctrica por Bodega",
                 sel_months=sel_months,
                 sel_bodega=sel_bodega,
                 inputs_generales=first_parsed["inputs_generales"],
@@ -3279,9 +3663,9 @@ with tab_electricidad:
                 charts=charts_for_pdf,
             )
             pdf_btn_placeholder.download_button(
-                "⬇️ Descargar informe PDF",
+                "⬇️ Descargar PDF de Liquidación Eléctrica",
                 data=pdf_bytes,
-                file_name="informe_electricidad.pdf",
+                file_name="liquidacion_electrica_bodega.pdf",
                 mime="application/pdf",
                 use_container_width=True,
             )

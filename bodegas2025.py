@@ -1336,22 +1336,31 @@ with tab_riesgos:
     ]
     tabla = tabla[cols_order]
 
-    # ---------- KPI en formato “card” + explicación ----------
+    # ---------- KPIs en formato “card” ----------
     total_deuda_neta = tabla["Deuda"].sum() if not tabla.empty else 0
-    col_kpi, col_txt = st.columns([1, 2])
+    col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
 
-    deuda_color = "#EF4444" if total_deuda_neta > 0 else "#10B981"
+    kpi_titulo_deuda = (
+        "DEUDA AL FIN DEL EJERCICIO"
+        if total_deuda_neta < 0
+        else "MONTO A FAVOR FIN DE EJERCICIO"
+    )
+    deuda_color = "#EF4444" if total_deuda_neta < 0 else "#10B981"
+    bci_color = "#10B981" if balance_kpi >= 0 else "#EF4444"
+    pos_neta_color = "#10B981" if posicion_neta >= 0 else "#EF4444"
 
-    with col_kpi:
+    card_style = """
+        background-color:#ffffff;
+        border-radius:14px;
+        padding:14px 18px;
+        border:1px solid #E5E7EB;
+        box-shadow:0 8px 20px rgba(15,23,42,.06);
+    """
+
+    with col_kpi1:
         st.markdown(
             f"""
-            <div style="
-                background-color:#ffffff;
-                border-radius:14px;
-                padding:14px 18px;
-                border:1px solid #E5E7EB;
-                box-shadow:0 8px 20px rgba(15,23,42,.06);
-            ">
+            <div style="{card_style}">
                 <div style="
                     font-size:12px;
                     text-transform:uppercase;
@@ -1359,7 +1368,7 @@ with tab_riesgos:
                     color:#6B7280;
                     font-weight:600;
                 ">
-                    Deuda neta total
+                    {kpi_titulo_deuda}
                 </div>
                 <div style="
                     font-size:26px;
@@ -1375,14 +1384,56 @@ with tab_riesgos:
             unsafe_allow_html=True,
         )
 
-    with col_txt:
+    with col_kpi2:
         st.markdown(
-            """
-            <p style="margin-top:6px; color:#4B5563; font-size:13px;">
-            La deuda neta corresponde al <b>monto NO PAGADO menos los abonos</b>,
-            considerando solo los movimientos marcados como <code>NO PAGADO</code> o <code>ABONO</code>.
-            El color de la tarjeta indica si la posición es deudora (rojo) o a favor (verde).
-            </p>
+            f"""
+            <div style="{card_style}">
+                <div style="
+                    font-size:12px;
+                    text-transform:uppercase;
+                    letter-spacing:.08em;
+                    color:#6B7280;
+                    font-weight:600;
+                ">
+                    CAJA BANCO BCI
+                </div>
+                <div style="
+                    font-size:26px;
+                    font-weight:800;
+                    margin-top:4px;
+                    color:{bci_color};
+                    font-variant-numeric:tabular-nums;
+                ">
+                    ${balance_kpi:,.0f}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col_kpi3:
+        st.markdown(
+            f"""
+            <div style="{card_style}">
+                <div style="
+                    font-size:12px;
+                    text-transform:uppercase;
+                    letter-spacing:.08em;
+                    color:#6B7280;
+                    font-weight:600;
+                ">
+                    POSICIÓN NETA (CXC + EPP + BN)
+                </div>
+                <div style="
+                    font-size:26px;
+                    font-weight:800;
+                    margin-top:4px;
+                    color:{pos_neta_color};
+                    font-variant-numeric:tabular-nums;
+                ">
+                    ${posicion_neta:,.0f}
+                </div>
+            </div>
             """,
             unsafe_allow_html=True,
         )
@@ -3260,9 +3311,10 @@ with tab_ing_eg:
             try:
                 n = float(v)
                 if n < 0:
-                    return "color:#B42318; font-weight:800;"
+                    return "background-color:#FEE4E2; color:#B42318; font-weight:800;"
                 if n > 0:
-                    return "color:#0F2D52; font-weight:800;"
+                    return "background-color:#ECFDF3; color:#027A48; font-weight:800;"
+                return "background-color:#F2F4F7; color:#344054; font-weight:700;"
             except Exception:
                 pass
             return ""
@@ -3301,8 +3353,7 @@ with tab_ing_eg:
                 },
             ])
             .set_properties(subset=left_cols_det, **{"text-align": "left"})
-            .set_properties(subset=monto_cols_det, **{"font-weight": "800", "color": "#0F2D52"})
-            .background_gradient(subset=["Monto"], cmap="Blues")
+            .set_properties(subset=monto_cols_det, **{"font-weight": "800"})
             .apply(_highlight_first_row, axis=1)
         )
         if sit_cols_det:

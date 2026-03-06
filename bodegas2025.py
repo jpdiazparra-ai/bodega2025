@@ -3192,7 +3192,7 @@ with tab_ing_eg:
     for c in ["CC1", "Obs", "Responsable"]:
         df_det[c] = df_det[c].astype(str).str.strip()
 
-    d1, d2, d3 = st.columns([1, 1, 1])
+    d1, d2, d3, d4 = st.columns([1, 1, 1, 1])
     with d1:
         cc1_opts = ["Todos"] + sorted([v for v in df_det["CC1"].dropna().unique().tolist() if v != ""])
         sel_cc1_det = st.selectbox("CC1", cc1_opts, index=0, key="det_cc1")
@@ -3212,6 +3212,16 @@ with tab_ing_eg:
         sel_resp_det = st.selectbox("Responsable", resp_opts, index=0, key="det_resp")
     if sel_resp_det != "Todos":
         df_det_f = df_det_f[df_det_f["Responsable"] == sel_resp_det]
+
+    with d4:
+        if "Año" in df_det_f.columns:
+            anio_vals = pd.to_numeric(df_det_f["Año"], errors="coerce").dropna().astype(int).unique().tolist()
+            anio_opts = ["Todos"] + [str(y) for y in sorted(anio_vals)]
+        else:
+            anio_opts = ["Todos"]
+        sel_anio_det = st.selectbox("Año", anio_opts, index=0, key="det_anio")
+    if sel_anio_det != "Todos" and "Año" in df_det_f.columns:
+        df_det_f = df_det_f[pd.to_numeric(df_det_f["Año"], errors="coerce").astype("Int64") == int(sel_anio_det)]
 
     # KPIs de detalle (debajo de selectores)
     sit_det = df_det_f["Sit"].astype(str).str.strip().str.upper() if "Sit" in df_det_f.columns else pd.Series([], dtype=str)

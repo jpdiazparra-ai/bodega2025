@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: bodegas2025
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 -m streamlit run bodegas2025.py --server.port $PORT --server.address 0.0.0.0

@@ -67,9 +67,12 @@ main {
     position: relative;
     z-index: 1;
     max-width: 1280px;
-    padding: 40px 46px 34px 46px;
+    padding: 58px 46px 34px 46px;
 }
 .dashboard-hero-badge {
+    position: absolute;
+    top: 56px;
+    right: 46px;
     width: 78px;
     height: 78px;
     border-radius: 24px;
@@ -87,7 +90,7 @@ main {
     object-fit: contain;
 }
 .dashboard-hero-title {
-    max-width: 1400px;
+    max-width: calc(100% - 140px);
     margin: 18px 0 10px 0;
     font-size: clamp(2.5rem, 4vw, 4.45rem);
     line-height: 0.98;
@@ -114,9 +117,11 @@ main {
         border-radius: 26px;
     }
     .dashboard-hero-inner {
-        padding: 28px 24px 24px 24px;
+        padding: 42px 24px 24px 24px;
     }
     .dashboard-hero-badge {
+        top: 42px;
+        right: 24px;
         width: 66px;
         height: 66px;
         border-radius: 20px;
@@ -132,6 +137,7 @@ main {
     }
     .dashboard-hero-title {
         line-height: 1.02;
+        max-width: calc(100% - 96px);
     }
 }
 </style>
@@ -931,6 +937,7 @@ def card_finanza(titulo, valor, color_hex, subtitulo="Indicador financiero clave
         "sm": ("28px", "kpi-card kpi-card-sm"),
         "stack": ("32px", "kpi-card kpi-card-stack"),
         "top": ("30px", "kpi-card kpi-card-top"),
+        "risk": ("26px", "kpi-card kpi-card-risk"),
     }
     value_size, card_class = size_map.get(size, size_map["md"])
     subtitle_html = f'<div class="kpi-sub">{subtitulo}</div>' if subtitulo else ""
@@ -1129,17 +1136,30 @@ st.markdown("""
         padding: 16px 18px 18px 20px;
     }
     .kpi-card-top {
-        min-height: 250px;
-        padding: 16px 18px 18px 20px;
+        min-height: 238px;
+        padding: 15px 18px 16px 20px;
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
     }
     .kpi-card-top .kpi-title {
-        min-height: 78px;
+        min-height: 74px;
     }
     .kpi-card-top .kpi-sub {
-        min-height: 84px;
+        min-height: 80px;
+    }
+    .kpi-card-risk {
+        min-height: 182px;
+        padding: 16px 18px 16px 20px;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+    .kpi-card-risk .kpi-title {
+        min-height: 56px;
+    }
+    .kpi-card-risk .kpi-sub {
+        min-height: 48px;
     }
     .kpi-eyebrow {
         font-size: 12px;
@@ -2073,7 +2093,7 @@ if active_section == "⚠️ Riesgos & cobranzas":
 
     # ---------- KPIs en formato “card” ----------
     total_deuda_neta = tabla["Deuda"].sum() if not tabla.empty else 0
-    col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
+    col_kpi1, col_kpi2, col_kpi3, col_kpi4, col_kpi5 = st.columns([1, 1, 1, 1, 0.001])
 
     kpi_titulo_deuda = (
         "DEUDA AL FIN DEL EJERCICIO"
@@ -2092,6 +2112,7 @@ if active_section == "⚠️ Riesgos & cobranzas":
                 deuda_color,
                 subtitulo="Resultado neto de cobros menos abonos",
                 etiqueta="Cobranzas",
+                size="risk",
             ),
             unsafe_allow_html=True,
         )
@@ -2104,6 +2125,7 @@ if active_section == "⚠️ Riesgos & cobranzas":
                 bci_color,
                 subtitulo="Saldo operacional consolidado",
                 etiqueta="Liquidez",
+                size="risk",
             ),
             unsafe_allow_html=True,
         )
@@ -2116,6 +2138,7 @@ if active_section == "⚠️ Riesgos & cobranzas":
                 pos_neta_color,
                 subtitulo="Lectura global de exposición financiera",
                 etiqueta="Resumen",
+                size="risk",
             ),
             unsafe_allow_html=True,
         )
@@ -2128,8 +2151,14 @@ if active_section == "⚠️ Riesgos & cobranzas":
                 "#A8A8A8",
                 subtitulo="Abonos registrados sobre cartera vencida acumulada",
                 etiqueta="Resumen",
-                size="md",
+                size="risk",
             ),
+            unsafe_allow_html=True,
+        )
+
+    with col_kpi5:
+        st.markdown(
+            '<div class="kpi-card kpi-card-md" style="visibility:hidden;" aria-hidden="true"></div>',
             unsafe_allow_html=True,
         )
 
@@ -4184,10 +4213,16 @@ if active_section == "⚡ Electricidad":
 
     col_left, col_right = st.columns([1, 1])
     with col_left:
-        st.markdown("**INPUTS GENERALES**")
+        st.markdown(
+            section_heading("📥", "Inputs generales", weight_class="section-heading-title-soft"),
+            unsafe_allow_html=True,
+        )
         _render_table(first_parsed["inputs_generales"], header_bg="#1f4e78", header_fg="white", row_alt="#fbf3d6")
     with col_right:
-        st.markdown("**BOLETA CGE (INPUTS DE FACTURACIÓN)**")
+        st.markdown(
+            section_heading("🧾", "Boleta CGE (Inputs de facturación)", weight_class="section-heading-title-soft"),
+            unsafe_allow_html=True,
+        )
         # Promedio por concepto según meses seleccionados
         boletas = []
         for m, p in parsed_by_month.items():
@@ -4218,7 +4253,10 @@ if active_section == "⚡ Electricidad":
             _render_table(boleta_avg, header_bg="#1f4e78", header_fg="white", row_alt="#fbf3d6")
 
     st.markdown("")
-    st.markdown("**INPUTS POR BODEGA (REMARCADOR + HORARIO EFECTIVO)**")
+    st.markdown(
+        section_heading("🏢", "Inputs por bodega (Remarcador + horario efectivo)", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     inputs_bodega = []
     for m, p in parsed_by_month.items():
         df_in = p["inputs_bodega"].copy()
@@ -4236,7 +4274,10 @@ if active_section == "⚡ Electricidad":
     )
 
     st.markdown("")
-    st.markdown("**LIQUIDACIÓN POR BODEGA (ASIGNACIÓN DE COSTOS DE BOLETA + CRITERIO HORARIO)**")
+    st.markdown(
+        section_heading("⚙️", "Liquidación por bodega (Asignación de costos de boleta + criterio horario)", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     liquidacion = []
     for m, p in parsed_by_month.items():
         df_liq = p["liquidacion"].copy()
@@ -4255,7 +4296,10 @@ if active_section == "⚡ Electricidad":
     )
 
     # Gráfico profesional de Liquidación por Bodega
-    st.markdown("### 📈 Liquidación por Bodega — Distribución de costos")
+    st.markdown(
+        section_heading("📈", "Liquidación por Bodega — Distribución de costos", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     liq_chart = liquidacion.copy()
     if not liq_chart.empty:
         liq_chart = liq_chart[liq_chart[liq_chart.columns[1]].astype(str).str.upper() != "TOTAL"]
@@ -4279,11 +4323,11 @@ if active_section == "⚡ Electricidad":
         import plotly.graph_objects as go
 
         palette = {
-            "$ Energía": "#16a34a",    # verde mate
-            "$ Punta": "#2563eb",      # azul mate
-            "$ Reactiva": "#f59e0b",   # amarillo mate
-            "$ Cargos Fijos": "#ef4444",# rojo mate
-            "$ Interés": "#9ca3af",    # gris claro mate
+            "$ Energía": "#7FA6A2",       # verde agua
+            "$ Punta": "#4B5563",         # gris pizarra
+            "$ Reactiva": "#DCAA67",      # mostaza
+            "$ Cargos Fijos": "#D85E5D",  # coral
+            "$ Interés": "#A8A8A8",       # gris neutro
         }
 
         def build_liq_fig(df_plot: pd.DataFrame, x_axis, x_title, height=520, show_legend=True):
@@ -4308,8 +4352,8 @@ if active_section == "⚡ Electricidad":
                         y=df_plot[col_total],
                         name="TOTAL c/IVA $",
                         mode="lines+markers",
-                        line=dict(color="#111827", width=3),
-                        marker=dict(size=7, color="#111827"),
+                        line=dict(color="#4B5563", width=3),
+                        marker=dict(size=7, color="#4B5563"),
                         hovertemplate="<b>%{x}</b><br>Total c/IVA: $%{y:,.0f}<extra></extra>",
                         yaxis="y2",
                     )

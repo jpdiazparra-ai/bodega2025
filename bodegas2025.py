@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import base64
+from matplotlib.colors import LinearSegmentedColormap
 from pathlib import Path
 from io import BytesIO
 from reportlab.lib import colors
@@ -26,10 +27,10 @@ def data_uri(path: str) -> str:
     return f"data:image/{ext};base64,{b64}"
 
 LOGO_URI = data_uri("Logo_balmaceda.png")  # el archivo está en la misma carpeta del .py
-LOGO_SIZE = 210  # px
+HERO_URI = data_uri("IMG_7331.jpeg")
 
 # =======================
-# HEADER COMPACTO
+# HERO HEADER
 # =======================
 st.markdown("""
 <style>
@@ -38,50 +39,116 @@ main {
     padding-top: 0rem !important;
 }
 .block-container {
-    padding-top: 1rem !important;   /* 🔥 Subido aún más */
+    padding-top: 0.8rem !important;
 }
-
-/* Header súper compacto */
-.header-title {
+.dashboard-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 305px;
+    margin: 0 0 12px 0;
+    border-radius: 34px;
+    border: 1px solid #d8e1ed;
+    background:
+        linear-gradient(180deg, rgba(248,250,252,0.30) 0%, rgba(248,250,252,0.58) 100%),
+        linear-gradient(90deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.70) 34%, rgba(255,255,255,0.18) 100%),
+        url('""" + HERO_URI + """');
+    background-size: cover;
+    background-position: center 58%;
+    box-shadow: 0 22px 44px rgba(15, 23, 42, 0.10);
+}
+.dashboard-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 45%, rgba(15,23,42,0.10) 100%);
+    pointer-events: none;
+}
+.dashboard-hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    padding: 40px 46px 34px 46px;
+}
+.dashboard-hero-badge {
+    width: 78px;
+    height: 78px;
+    border-radius: 24px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: -7px;    /* 🔥 antes -20px → lo subimos más */
-    margin-bottom: -1px;  /* reduce espacio bajo el título */
+    justify-content: center;
+    background: rgba(255,255,255,0.52);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(203,213,225,0.95);
+    box-shadow: 0 10px 20px rgba(148,163,184,0.18);
 }
-
-/* Título más cercano a la lupa */
-.header-title h1 {
-    margin: 0;
-    padding: 0;
-    font-size: 2.35rem;
-    font-weight: 700;
-}
-
-/* Logo más pequeño y mejor alineado */
-.header-title img {
-    width: 160px;         /* 🔥 antes 160px */
-    height: 140px;
+.dashboard-hero-badge img {
+    width: 54px;
+    height: 54px;
     object-fit: contain;
-    border-radius: 12px;
 }
-
-/* Responsivo */
-@media (max-width: 1200px) {
-    .header-title img { width: 100px; height: 100px; }
+.dashboard-hero-title {
+    max-width: 1400px;
+    margin: 18px 0 10px 0;
+    font-size: clamp(2.5rem, 4vw, 4.45rem);
+    line-height: 0.98;
+    letter-spacing: -0.06em;
+    font-weight: 900;
+    color: #0f172a;
+}
+.dashboard-hero-subtitle {
+    max-width: 1500px;
+    font-size: clamp(1rem, 1.5vw, 1.18rem);
+    line-height: 1.55;
+    color: rgba(51,65,85,0.86);
+    font-weight: 500;
+}
+.dashboard-hero-meta {
+    margin-top: 14px;
+    font-size: 0.92rem;
+    color: rgba(71,85,105,0.88);
+    font-weight: 600;
+}
+@media (max-width: 960px) {
+    .dashboard-hero {
+        min-height: 260px;
+        border-radius: 26px;
+    }
+    .dashboard-hero-inner {
+        padding: 28px 24px 24px 24px;
+    }
+    .dashboard-hero-badge {
+        width: 66px;
+        height: 66px;
+        border-radius: 20px;
+    }
+    .dashboard-hero-badge img {
+        width: 46px;
+        height: 46px;
+    }
 }
 @media (max-width: 640px) {
-    .header-title img { width: 65px; height: 65px; }
+    .dashboard-hero {
+        min-height: 230px;
+    }
+    .dashboard-hero-title {
+        line-height: 1.02;
+    }
 }
 </style>
-
-<div class="header-title">
-    <h1>🔎 Análisis Financiero de Bodegas</h1>
-    <img src='""" + LOGO_URI + """' alt='Logo'>
+<div class="dashboard-hero">
+    <div class="dashboard-hero-inner">
+        <div class="dashboard-hero-badge">
+            <img src='""" + LOGO_URI + """' alt='Logo'>
+        </div>
+        <div class="dashboard-hero-title">Arquitectura Financiera de Bodegas</div>
+        <div class="dashboard-hero-subtitle">
+            Panel interactivo para analizar caja, cobranzas, canon, egresos y liquidación eléctrica del proyecto,
+            con foco en lectura ejecutiva y seguimiento financiero consolidado.
+        </div>
+        <div class="dashboard-hero-meta">Fuente: Google Sheets (CSV) · Agrupaciones dinámicas y visualizaciones interactivas</div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
-
-st.caption("Fuente: Google Sheets (CSV) · Agrupaciones dinámicas y visualizaciones interactivas")
 
 
 
@@ -141,9 +208,26 @@ def load_electricidad(path_or_url: str) -> dict[str, pd.DataFrame]:
         if df_sheet is None:
             continue
         df_sheet = df_sheet.copy()
+        if df_sheet.shape[1] == 0:
+            continue
         df_sheet.columns = [str(c).strip() for c in df_sheet.columns]
         cleaned[name] = df_sheet
     return cleaned
+
+
+@st.cache_data(show_spinner=False)
+def load_electricidad_parsed(path_or_url: str) -> dict[str, dict[str, pd.DataFrame]]:
+    sheets = load_electricidad(path_or_url)
+    parsed: dict[str, dict[str, pd.DataFrame]] = {}
+    for name, df_sheet in sheets.items():
+        try:
+            parsed_sheet = _parse_mes_sheet(df_sheet)
+        except Exception:
+            continue
+        if parsed_sheet["inputs_bodega"].empty and parsed_sheet["liquidacion"].empty:
+            continue
+        parsed[name] = parsed_sheet
+    return parsed
 
 
 def _infer_date_column(df_in: pd.DataFrame) -> str | None:
@@ -221,17 +305,18 @@ def _fmt_cell(v, is_pct=False, is_currency=False, is_int=False):
 
 def _render_table(df_in: pd.DataFrame, header_bg="#1f4e78", header_fg="white",
                   row_alt="#f8f4e8", compact=True, int_cols=None, cur_cols_extra=None) -> None:
-    pct_cols = [c for c in df_in.columns if "%" in str(c)]
-    cur_cols = [c for c in df_in.columns if "$" in str(c) or "TOTAL" in str(c).upper()]
+    columns = list(df_in.columns)
+    pct_cols = {c for c in columns if "%" in str(c)}
+    cur_cols = {c for c in columns if "$" in str(c) or "TOTAL" in str(c).upper()}
     int_cols = set(int_cols or [])
-    cur_cols = set(cur_cols) | set(cur_cols_extra or [])
+    cur_cols |= set(cur_cols_extra or [])
 
     rows_html = []
-    for i, row in df_in.iterrows():
+    for i, row in enumerate(df_in.itertuples(index=False, name=None)):
         tds = []
-        for c in df_in.columns:
+        for c, value in zip(columns, row):
             v = _fmt_cell(
-                row[c],
+                value,
                 is_pct=(c in pct_cols),
                 is_currency=(c in cur_cols),
                 is_int=(c in int_cols),
@@ -240,7 +325,7 @@ def _render_table(df_in: pd.DataFrame, header_bg="#1f4e78", header_fg="white",
         cls = "alt" if i % 2 == 0 else ""
         rows_html.append(f"<tr class='{cls}'>" + "".join(tds) + "</tr>")
 
-    ths = "".join([f"<th>{c}</th>" for c in df_in.columns])
+    ths = "".join([f"<th>{c}</th>" for c in columns])
     table_html = f"""
     <div class="elec-table-wrap">
       <table class="elec-table">
@@ -283,6 +368,33 @@ def _render_table(df_in: pd.DataFrame, header_bg="#1f4e78", header_fg="white",
     )
 
 def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    if df_raw is None or df_raw.empty or df_raw.shape[1] == 0:
+        empty_ig = pd.DataFrame(columns=["Parámetro", "Valor", "Unidad"])
+        empty_bc = pd.DataFrame(columns=["Concepto", "Monto $"])
+        return {
+            "inputs_generales": empty_ig,
+            "boleta_cge": empty_bc,
+            "inputs_bodega": pd.DataFrame(),
+            "liquidacion": pd.DataFrame(),
+        }
+
+    def _slice_cols(start: int, stop: int) -> pd.DataFrame:
+        start = max(0, start)
+        stop = min(df_raw.shape[1], stop)
+        if start >= stop:
+            return pd.DataFrame()
+        return df_raw.iloc[:, start:stop].copy()
+
+    def _pad_or_trim_columns(df_in: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
+        df_out = df_in.copy()
+        target = len(cols)
+        if df_out.shape[1] < target:
+            for i in range(target - df_out.shape[1]):
+                df_out[f"__pad_{i}"] = pd.NA
+        df_out = df_out.iloc[:, :target]
+        df_out.columns = cols
+        return df_out
+
     def _find_row_any(label: str) -> int | None:
         txt = df_raw.astype(str).apply(lambda s: s.str.strip())
         hits = txt.apply(lambda row: row.str.contains(label, case=False, na=False).any(), axis=1)
@@ -308,8 +420,8 @@ def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
     if row_ig is not None:
         ig = _slice_until_blank(row_ig + 1, 0, slice(0, 3))
     else:
-        ig = df_raw.iloc[3:8, 0:3].copy()
-    ig.columns = ["Parámetro", "Valor", "Unidad"]
+        ig = _slice_cols(0, 3).iloc[3:8].copy()
+    ig = _pad_or_trim_columns(ig, ["Parámetro", "Valor", "Unidad"])
     ig = ig.dropna(how="all")
 
     # BOLETA CGE
@@ -318,8 +430,8 @@ def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
         # +2 porque la fila inmediatamente inferior suele ser encabezado Concepto/Monto
         bc = _slice_until_blank(row_bc + 2, 5, slice(5, 7))
     else:
-        bc = df_raw.iloc[4:9, 5:7].copy()
-    bc.columns = ["Concepto", "Monto $"]
+        bc = _slice_cols(5, 7).iloc[4:9].copy()
+    bc = _pad_or_trim_columns(bc, ["Concepto", "Monto $"])
     bc = bc.dropna(how="all")
 
     def _find_row(label: str) -> int | None:
@@ -350,13 +462,19 @@ def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
         data_row = row_inputs + 2
         hdr_in = _clean_header_list(df_raw.iloc[hdr_row, 0:15].tolist())
         hdr_in = _dedupe_cols(hdr_in)
-        data_in = _slice_section(data_row).iloc[:, 0:len(hdr_in)].copy()
-        data_in.columns = hdr_in
+        if hdr_in:
+            data_in = _slice_section(data_row).iloc[:, 0:len(hdr_in)].copy()
+            data_in.columns = hdr_in
+        else:
+            data_in = pd.DataFrame()
     else:
-        hdr_in = _clean_header_list(df_raw.iloc[11, 0:9].tolist())
+        hdr_in = _clean_header_list(df_raw.iloc[11, 0:9].tolist()) if len(df_raw) > 11 else []
         hdr_in = _dedupe_cols(hdr_in)
-        data_in = df_raw.iloc[12:20, 0:len(hdr_in)].copy()
-        data_in.columns = hdr_in
+        if hdr_in:
+            data_in = df_raw.iloc[12:20, 0:len(hdr_in)].copy()
+            data_in.columns = hdr_in
+        else:
+            data_in = pd.DataFrame()
 
     # LIQUIDACIÓN POR BODEGA
     row_liq = _find_row("LIQUIDACIÓN POR BODEGA")
@@ -365,13 +483,19 @@ def _parse_mes_sheet(df_raw: pd.DataFrame) -> dict[str, pd.DataFrame]:
         data_row = row_liq + 2
         hdr_liq = _clean_header_list(df_raw.iloc[hdr_row, 0:20].tolist())
         hdr_liq = _dedupe_cols(hdr_liq)
-        data_liq = _slice_section(data_row).iloc[:, 0:len(hdr_liq)].copy()
-        data_liq.columns = hdr_liq
+        if hdr_liq:
+            data_liq = _slice_section(data_row).iloc[:, 0:len(hdr_liq)].copy()
+            data_liq.columns = hdr_liq
+        else:
+            data_liq = pd.DataFrame()
     else:
-        hdr_liq = _clean_header_list(df_raw.iloc[22, 0:15].tolist())
+        hdr_liq = _clean_header_list(df_raw.iloc[22, 0:15].tolist()) if len(df_raw) > 22 else []
         hdr_liq = _dedupe_cols(hdr_liq)
-        data_liq = df_raw.iloc[23:31, 0:len(hdr_liq)].copy()
-        data_liq.columns = hdr_liq
+        if hdr_liq:
+            data_liq = df_raw.iloc[23:31, 0:len(hdr_liq)].copy()
+            data_liq.columns = hdr_liq
+        else:
+            data_liq = pd.DataFrame()
 
     return {
         "inputs_generales": ig,
@@ -544,6 +668,7 @@ def _format_pdf_df(df_in: pd.DataFrame) -> pd.DataFrame:
             df[c] = df[c].apply(lambda v: str(v))
     return df
 
+@st.cache_data(show_spinner=False)
 def build_electricidad_pdf(
     title: str,
     sel_months: list[str],
@@ -798,6 +923,63 @@ def fmt_short(v: float) -> str:
         return f"${v/1_000:.0f}k"
     return f"${v:,.0f}"
 
+
+def card_finanza(titulo, valor, color_hex, subtitulo="Indicador financiero clave", etiqueta="Indicador", size="md"):
+    size_map = {
+        "lg": ("42px", "kpi-card kpi-card-lg"),
+        "md": ("34px", "kpi-card kpi-card-md"),
+        "sm": ("28px", "kpi-card kpi-card-sm"),
+        "stack": ("32px", "kpi-card kpi-card-stack"),
+        "top": ("30px", "kpi-card kpi-card-top"),
+    }
+    value_size, card_class = size_map.get(size, size_map["md"])
+    subtitle_html = f'<div class="kpi-sub">{subtitulo}</div>' if subtitulo else ""
+    eyebrow_html = f'<div class="kpi-eyebrow">{etiqueta}</div>' if etiqueta else ""
+    return f"""
+    <div class="{card_class}" style="--accent:{color_hex};">
+        {eyebrow_html}
+        <div class="kpi-title">{titulo}</div>
+        <div class="kpi-value" style="font-size:{value_size};">{valor}</div>
+        {subtitle_html}
+    </div>
+    """
+
+
+def kpi_resumen_panel(titulo, subtitulo, items):
+    rows = []
+    for item in items:
+        rows.append(
+            (
+                f'<div class="kpi-summary-row">'
+                f'<div class="kpi-summary-label">{item["label"]}</div>'
+                f'<div class="kpi-summary-meta">{item["meta"]}</div>'
+                f'<div class="kpi-summary-value">{item["value"]}</div>'
+                f'</div>'
+            )
+        )
+    return (
+        f'<div class="kpi-summary-card">'
+        f'<div class="kpi-summary-eyebrow">{titulo}</div>'
+        f'<div class="kpi-summary-title">{subtitulo}</div>'
+        f'<div class="kpi-summary-head">'
+        f'<div>Indicador</div>'
+        f'<div>Descripción</div>'
+        f'<div>Valor</div>'
+        f'</div>'
+        f'<div class="kpi-summary-list">{"".join(rows)}</div>'
+        f'</div>'
+    )
+
+
+def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: str = "section-heading-title") -> str:
+    subtitle_html = f'<div class="section-heading-sub">{subtitulo}</div>' if subtitulo else ""
+    return (
+        f'<div class="section-heading-wrap">'
+        f'<div class="{weight_class}">{icono} {titulo}</div>'
+        f'{subtitle_html}'
+        f'</div>'
+    )
+
 # =========================
 # KPI base (cálculos comunes)
 # =========================
@@ -827,11 +1009,51 @@ sit_up = df_f["Sit"]  # ya normalizado
 
 mask_sit_pagado = sit_up.eq("PAGADO")
 mask_sit_abono  = sit_up.str.startswith("ABONO")
+mask_sueldo_accionista = df_f["Obs"].str.contains(
+    r"sueldos?\s+accion(?:ista|ita)s?",
+    case=False,
+    na=False,
+    regex=True,
+)
 
 ingresos_kpi = df_f.loc[mask_ingreso & (mask_sit_pagado | mask_sit_abono), "Monto"].sum()
 egresos_kpi  = df_f.loc[mask_egreso  &  mask_sit_pagado, "Monto"].sum()
-
+utilidad_operativa = ingresos_kpi + egresos_kpi
+margen_neto = (utilidad_operativa / ingresos_kpi) if ingresos_kpi else 0.0
+total_sueldos_accionistas = df_f.loc[mask_sueldo_accionista, "Monto"].sum()
+utilidad_sobre_capex = (abs(total_sueldos_accionistas) / CAPEX) if CAPEX else 0.0
 balance_kpi = saldo_cuenta  # interpretación: saldo en cuenta BCI
+
+df_egresos_mes = df_f.loc[mask_egreso & mask_sit_pagado, ["Monto", "Año", "Mes", "Fecha"]].copy()
+df_egresos_mes["Año_calc"] = pd.to_numeric(df_egresos_mes.get("Año"), errors="coerce")
+mes_raw_kpi = df_egresos_mes.get("Mes")
+mes_num_kpi = mes_raw_kpi.astype(str).str.extract(r"(\d{1,2})", expand=False) if mes_raw_kpi is not None else None
+df_egresos_mes["Mes_calc"] = pd.to_numeric(mes_num_kpi, errors="coerce")
+df_egresos_mes["Fecha"] = pd.to_datetime(df_egresos_mes.get("Fecha"), errors="coerce")
+df_egresos_mes["Año_calc"] = df_egresos_mes["Año_calc"].fillna(df_egresos_mes["Fecha"].dt.year)
+df_egresos_mes["Mes_calc"] = df_egresos_mes["Mes_calc"].fillna(df_egresos_mes["Fecha"].dt.month)
+df_egresos_mes = df_egresos_mes.dropna(subset=["Año_calc", "Mes_calc"])
+
+if not df_egresos_mes.empty:
+    df_egresos_mes["Periodo"] = pd.to_datetime(
+        dict(
+            year=df_egresos_mes["Año_calc"].astype(int),
+            month=df_egresos_mes["Mes_calc"].astype(int),
+            day=1,
+        ),
+        errors="coerce",
+    )
+    egreso_mensual_promedio = (
+        df_egresos_mes.dropna(subset=["Periodo"])
+        .groupby("Periodo", as_index=False)["Monto"]
+        .sum()["Monto"]
+        .abs()
+        .mean()
+    )
+else:
+    egreso_mensual_promedio = 0.0
+
+cobertura_egresos = (balance_kpi / egreso_mensual_promedio) if egreso_mensual_promedio else 0.0
 
 # Cuentas por cobrar & egresos por pagar
 sit_norm = df_f["Sit"]
@@ -846,6 +1068,7 @@ if abonos_total == 0:
         "Monto"
     ].sum()
 
+pct_cobranza = (abonos_total / no_pagado_total) if no_pagado_total else 0.0
 cuentas_por_cobrar_neto = no_pagado_total - abonos_total
 
 total_egresos_por_pagar = df_f.loc[
@@ -860,209 +1083,498 @@ posicion_neta = cuentas_por_cobrar_neto + total_egresos_por_pagar + balance_kpi
 st.markdown("""
     <style>
     .kpi-card {
-        background-color: #000000;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        color: white;
-        font-family: Arial, sans-serif;
-        box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+        position: relative;
+        min-height: 162px;
+        padding: 18px 20px 18px 22px;
+        border-radius: 28px;
+        border: 1px solid color-mix(in srgb, var(--accent, #d7dfeb) 28%, #d7dfeb);
+        background:
+            radial-gradient(circle at top right, color-mix(in srgb, var(--accent, #f8fafc) 12%, transparent) 0%, transparent 34%),
+            linear-gradient(135deg, color-mix(in srgb, var(--accent, #f7f9fc) 14%, #f7f9fc) 0%, #ffffff 55%, color-mix(in srgb, var(--accent, #f4f7fb) 10%, #f4f7fb) 100%);
+        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+    .kpi-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 8px;
+        background: linear-gradient(180deg, var(--accent, #d5ddeb) 0%, color-mix(in srgb, var(--accent, #d5ddeb) 28%, #eef3f9) 100%);
+        border-radius: 28px 0 0 28px;
+    }
+    .kpi-card::after {
+        content: "";
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent, #cbd5e1) 60%, white);
+        opacity: 0.55;
+    }
+    .kpi-card-lg {
+        min-height: 176px;
+    }
+    .kpi-card-md {
+        min-height: 138px;
+        padding: 16px 18px 16px 20px;
+    }
+    .kpi-card-sm {
+        min-height: 112px;
+        padding: 14px 16px 14px 18px;
+    }
+    .kpi-card-stack {
+        min-height: 170px;
+        padding: 16px 18px 18px 20px;
+    }
+    .kpi-card-top {
+        min-height: 250px;
+        padding: 16px 18px 18px 20px;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+    .kpi-card-top .kpi-title {
+        min-height: 78px;
+    }
+    .kpi-card-top .kpi-sub {
+        min-height: 84px;
+    }
+    .kpi-eyebrow {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        margin-bottom: 12px;
+        opacity: 0.95;
+        color: color-mix(in srgb, var(--accent, #64748b) 74%, #475569);
     }
     .kpi-title {
-        font-size: 16px;
-        color: #bbbbbb;
-        margin-bottom: 8px;
+        font-size: 17px;
+        line-height: 1.2;
+        color: #1f2937;
+        font-weight: 800;
+        margin-bottom: 12px;
+        max-width: 82%;
     }
     .kpi-value {
-        font-size: 28px;
-        font-weight: bold;
-        margin-bottom: 5px;
+        display: inline-block;
+        font-weight: 900;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 10px;
+        color: color-mix(in srgb, var(--accent, #0f172a) 60%, #0f172a);
+        padding: 6px 0 2px 0;
     }
     .kpi-sub {
         font-size: 14px;
-        color: #888888;
+        color: #667085;
+        font-weight: 500;
+        max-width: 88%;
     }
-    .kpi3-card{background:#ffffff;border-radius:14px;padding:18px 20px;border:1px solid #E5E7EB;
-               box-shadow:0 8px 20px rgba(2,6,23,.06);border-left:6px solid var(--accent);}
-    .kpi3-title{font-size:13px;color:#111827;font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-bottom:6px;}
-    .kpi3-value{font-variant-numeric:tabular-nums;font-size:42px;line-height:1.1;font-weight:800;margin:0;}
-    .kpi3-sub{display:none !important;}
+    .kpi-card-md .kpi-title, .kpi-card-sm .kpi-title, .kpi-card-stack .kpi-title {
+        margin-bottom: 8px;
+    }
+    .kpi-card-sm .kpi-eyebrow, .kpi-card-stack .kpi-eyebrow {
+        margin-bottom: 8px;
+    }
+    .kpi-card-sm .kpi-sub, .kpi-card-stack .kpi-sub {
+        font-size: 12.5px;
+        line-height: 1.25;
+    }
+    .kpi-summary-card {
+        min-height: 100%;
+        padding: 20px 24px;
+        border-radius: 28px;
+        border: 1px solid #d7dfeb;
+        background:
+            radial-gradient(circle at top right, rgba(127,166,162,0.08) 0%, transparent 28%),
+            linear-gradient(135deg, #f7f9fc 0%, #ffffff 55%, #f4f7fb 100%);
+        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+    }
+    .kpi-summary-eyebrow {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+    .kpi-summary-title {
+        font-size: 14px;
+        line-height: 1.2;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 18px;
+    }
+    .kpi-summary-head {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr auto;
+        gap: 12px;
+        padding: 0 0 12px 0;
+        border-top: 1px solid #e6edf5;
+        border-bottom: 1px solid #e6edf5;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .kpi-summary-list {
+        padding-top: 2px;
+    }
+    .kpi-summary-row {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 17px 0;
+        border-bottom: 1px solid #e6edf5;
+    }
+    .kpi-summary-row:last-child {
+        border-bottom: none;
+        padding-bottom: 2px;
+    }
+    .kpi-summary-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.15;
+    }
+    .kpi-summary-meta {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+    .kpi-summary-value {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        padding-left: 14px;
+    }
+    .section-heading-wrap {
+        margin: 6px 0 14px 0;
+    }
+    .section-heading-title {
+        font-size: clamp(2rem, 2.2vw, 2.75rem);
+        line-height: 1.02;
+        letter-spacing: -0.045em;
+        font-weight: 900;
+        color: #0f172a;
+    }
+    .section-heading-title-soft {
+        font-size: 18px;
+        line-height: 1.25;
+        letter-spacing: 0;
+        font-weight: 500;
+        color: #0f172a;
+    }
+    .section-heading-sub {
+        margin-top: 8px;
+        font-size: 1rem;
+        line-height: 1.45;
+        color: #64748b;
+        font-weight: 500;
+    }
+    div[role="radiogroup"][aria-label="Sección"] {
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+    }
+    div[role="radiogroup"][aria-label="Sección"] > label {
+        position: relative;
+        min-width: 0;
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 20px;
+        border: 1px solid #d9e2ec;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+        transition: all 0.15s ease;
+        align-items: center !important;
+    }
+    div[role="radiogroup"][aria-label="Sección"] > label:hover {
+        border-color: #cfd8e6;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
+        transform: translateY(-1px);
+    }
+    div[role="radiogroup"][aria-label="Sección"] > label > div:last-child {
+        font-size: 14px;
+        font-weight: 700;
+        color: #344054;
+        line-height: 1.15;
+    }
+    div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) {
+        border-color: #c9d5e5;
+        background: linear-gradient(135deg, #eef3f9 0%, #f8fbff 50%, #ffffff 100%);
+        box-shadow: 0 16px 30px rgba(109, 132, 164, 0.16);
+    }
+    div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked)::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 6px;
+        background: linear-gradient(180deg, #b9c7da 0%, #e3ebf5 100%);
+        border-radius: 20px 0 0 20px;
+    }
+    div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) > div:last-child {
+        color: #1f2937;
+    }
+    @media (max-width: 1200px) {
+        div[role="radiogroup"][aria-label="Sección"] {
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+        }
+        div[role="radiogroup"][aria-label="Sección"] > label {
+            min-width: 220px;
+        }
+    }
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
 # =========================
-# TABS PRINCIPALES
+# NAVEGACIÓN PRINCIPAL
 # =========================
-tab_overview, tab_riesgos, tab_canon, tab_ing_eg, tab_electricidad = st.tabs(
-    ["🏠 Visión general", "⚠️ Riesgos & cobranzas", "🏢 Canon anual / mensual", "📈 Ingresos & egresos", "⚡ Electricidad"]
+section_options = [
+    "🏠 Visión general",
+    "⚠️ Riesgos & cobranzas",
+    "🏢 Canon anual / mensual",
+    "📈 Ingresos & egresos",
+    "⚡ Electricidad",
+]
+active_section = st.radio(
+    "Sección",
+    options=section_options,
+    horizontal=True,
+    label_visibility="collapsed",
 )
 
 # =========================================================
 # 🏠 TAB 1: VISIÓN GENERAL
 # =========================================================
-with tab_overview:
-    st.subheader("📊 Estado general del proyecto")
+if active_section == "🏠 Visión general":
+    import plotly.graph_objects as go
 
-    # --- Fila 1: KPIs negros (CAPEX / Canon / Cobertura CAPEX) ---
-    sp_left, kpi1, kpi2, kpi3, sp_right = st.columns([1, 3, 3, 3, 1])
+    st.markdown(
+        section_heading(
+            "📊",
+            "Estado general del proyecto",
+            weight_class="section-heading-title-soft",
+        ),
+        unsafe_allow_html=True,
+    )
+
+    # --- KPIs principales en una sola línea ---
+    kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
 
     with kpi1:
-        st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-title">💼 CAPEX</div>
-                <div class="kpi-value">{fmt_clp_largo(CAPEX)}</div>
-                <div class="kpi-sub">Inversión total</div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            card_finanza(
+                "🏦 Caja Banco BCI",
+                fmt_clp_largo(balance_kpi),
+                "#D85E5D",
+                subtitulo="Saldo disponible en cuenta corriente para operación",
+                etiqueta="Bloque 1",
+                size="top",
+            ),
+            unsafe_allow_html=True,
+        )
 
     with kpi2:
-        st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-title">🏢 Ingresos Canon Arriendo</div>
-                <div class="kpi-value">{fmt_clp_largo(ingresos_canon)}</div>
-                <div class="kpi-sub">Acumulado</div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            card_finanza(
+                "💼 CAPEX",
+                fmt_clp_largo(CAPEX),
+                "#DCAA67",
+                subtitulo="Inversión total del proyecto",
+                etiqueta="Bloque 2",
+                size="top",
+            ),
+            unsafe_allow_html=True,
+        )
 
     with kpi3:
-        st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-title">📊 Cobertura CAPEX</div>
-                <div class="kpi-value">{cobertura_capex:.1%}</div>
-                <div class="kpi-sub">Canon / CAPEX</div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            card_finanza(
+                "💹 Utilidad / CAPEX",
+                f"{utilidad_sobre_capex:.2f}x",
+                "#7FA6A2",
+                subtitulo="Sueldos accionistas acumulados relativos a la inversión total",
+                etiqueta="Bloque 3",
+                size="top",
+            ),
+            unsafe_allow_html=True,
+        )
+
+    with kpi4:
+        st.markdown(
+            card_finanza(
+                "📈 Margen neto",
+                f"{margen_neto:.1%}",
+                "#4B5563",
+                subtitulo="Resultado operativo sobre ingresos acumulados",
+                etiqueta="Bloque 4",
+                size="top",
+            ),
+            unsafe_allow_html=True,
+        )
+
+    with kpi5:
+        st.markdown(
+            card_finanza(
+                "💳 Caja / egreso mensual promedio",
+                f"{cobertura_egresos:.2f}x",
+                "#A8A8A8",
+                subtitulo="Caja disponible relativa al gasto mensual promedio",
+                etiqueta="Bloque 5",
+                size="top",
+            ),
+            unsafe_allow_html=True,
+        )
 
     st.caption("Cobertura CAPEX = Ingresos canon acumulados / CAPEX total invertido.")
     st.markdown("")
 
-    # =======================================
-    # TARJETAS FINANCIERAS PRO – DISEÑO EJECUTIVO
-    # =======================================
-    def card_finanza(titulo, valor, color_hex):
-        return f"""
-        <div style="
-            border-radius:16px;
-            padding:14px 18px;
-            border:1px solid #E5E7EB;
-            background:#F9FAFB;                /* 🔥 antes blanco */
-            box-shadow:0 6px 14px rgba(15,23,42,0.05);
-            border-left:5px solid {color_hex};
-        ">
-            <div style="
-                font-size:12px;
-                font-weight:700;
-                color:#6B7280;
-                text-transform:uppercase;
-                letter-spacing:0.08em;
-            ">
-                {titulo}
-            </div>
-            <div style="
-                font-size:30px;                /* 🔥 antes 38px */
-                font-weight:800;
-                margin-top:2px;
-                color:{color_hex};
-                font-variant-numeric:tabular-nums;
-            ">
-                {valor}
-            </div>
-            <div style="
-                font-size:11px;
-                margin-top:4px;
-                color:#9CA3AF;
-            ">
-                Indicador financiero clave
-            </div>
-        </div>
-        """
+    hero_col, side_col = st.columns(2)
+    resumen_items = [
+        {"label": "Ingresos canon arriendo", "meta": "Acumulado histórico de canon", "value": fmt_clp_largo(ingresos_canon)},
+        {"label": "Total ingresos", "meta": "Flujo acumulado", "value": fmt_clp_largo(ingresos_kpi)},
+        {"label": "Total egresos", "meta": "Compromisos pagados", "value": fmt_clp_largo(egresos_kpi)},
+        {"label": "Cuentas por cobrar", "meta": "Neto de abonos", "value": fmt_clp_largo(cuentas_por_cobrar_neto)},
+        {"label": "Egresos por pagar", "meta": "Pendientes de salida", "value": fmt_clp_largo(total_egresos_por_pagar)},
+    ]
 
-
-    # ========== FILA 1 — INGRESOS / EGRESOS / CAJA ==========
-    cA, cB, cC = st.columns(3)
-
-    with cA:
-        st.markdown(
-            card_finanza(
-                "TOTAL INGRESOS",
-                fmt_clp_largo(ingresos_kpi),
-                "#10B981",   # verde
-            ),
-            unsafe_allow_html=True,
+    with hero_col:
+        max_ref = max(abs(balance_kpi), abs(posicion_neta), 1)
+        metric_df = pd.DataFrame(
+            {
+                "Métrica": ["Caja Banco BCI", "Posición Neta"],
+                "Valor": [float(balance_kpi), float(posicion_neta)],
+                "Detalle": [
+                    "Saldo disponible en cuenta corriente para operación.",
+                    "Caja + CxC + EPP",
+                ],
+                "Color": ["#4B5563", "#D85E5D"],
+            }
         )
 
-    with cB:
-        st.markdown(
-            card_finanza(
-                "TOTAL EGRESOS",
-                fmt_clp_largo(egresos_kpi),
-                "#EF4444",   # rojo
+        fig_metrics = go.Figure()
+        fig_metrics.add_vrect(
+            x0=-max_ref * 1.28,
+            x1=0,
+            fillcolor="rgba(148,163,184,0.08)",
+            line_width=0,
+            layer="below",
+        )
+        fig_metrics.add_vline(x=0, line_width=1.5, line_dash="dot", line_color="rgba(71,85,105,0.50)")
+
+        for _, row in metric_df.iterrows():
+            fig_metrics.add_trace(
+                go.Bar(
+                    y=[row["Métrica"]],
+                    x=[row["Valor"]],
+                    orientation="h",
+                    marker=dict(
+                        color=row["Color"],
+                        line=dict(color="rgba(255,255,255,0.75)", width=1),
+                    ),
+                    width=0.46,
+                    text=[f"<b>{row['Métrica']}</b><br>{fmt_clp_largo(row['Valor'])}"],
+                    textposition="inside",
+                    insidetextanchor="middle",
+                    textfont=dict(size=15, color="#ffffff", family="Arial Black, Arial, sans-serif"),
+                    customdata=[[row["Detalle"]]],
+                    hovertemplate="<b>%{y}</b><br>Valor: %{text}<br>%{customdata[0]}<extra></extra>",
+                    showlegend=False,
+                    cliponaxis=False,
+                )
+            )
+
+        fig_metrics.update_layout(
+            template="plotly_white",
+            height=430,
+            margin=dict(l=28, r=28, t=52, b=26),
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#fbfcfe",
+            xaxis=dict(
+                range=[-max_ref * 1.28, max_ref * 1.18],
+                showgrid=True,
+                gridcolor="rgba(203,213,225,0.28)",
+                zeroline=False,
+                tickformat=",.0f",
+                title="CLP",
+                title_font=dict(size=13, color="#64748b"),
+                tickfont=dict(size=12, color="#64748b"),
+                linecolor="rgba(148,163,184,0.20)",
             ),
-            unsafe_allow_html=True,
+            yaxis=dict(
+                showgrid=False,
+                showticklabels=False,
+                linecolor="rgba(148,163,184,0.20)",
+            ),
+            bargap=0.52,
+            annotations=[
+                dict(
+                    x=0,
+                    y=1.18,
+                    xref="paper",
+                    yref="paper",
+                    text="Pulso financiero consolidado",
+                    showarrow=False,
+                    xanchor="left",
+                    font=dict(size=12, color="#64748b"),
+                ),
+                dict(
+                    x=0,
+                    y=1.08,
+                    xref="paper",
+                    yref="paper",
+                    text="<b>Liquidez y posición neta</b>",
+                    showarrow=False,
+                    xanchor="left",
+                    font=dict(size=19, color="#0f172a"),
+                )
+            ],
+        )
+        st.plotly_chart(
+            fig_metrics,
+            use_container_width=True,
+            config={"displaylogo": False, "displayModeBar": False},
         )
 
-    with cC:
-        bal_color = "#10B981" if balance_kpi >= 0 else "#EF4444"
+    with side_col:
         st.markdown(
-            card_finanza(
-                "CAJA BANCO BCI",
-                fmt_clp_largo(balance_kpi),
-                bal_color,
-            ),
-            unsafe_allow_html=True,
-        )
-
-    # ========== FILA 2 — CxC / EPP / POSICIÓN NETA ==========
-    cD, cE, cF = st.columns(3)
-
-    cxc_color = "#F59E0B" if cuentas_por_cobrar_neto > 0 else "#10B981"
-    with cD:
-        st.markdown(
-            card_finanza(
-                "CUENTAS POR COBRAR (NETO)",
-                fmt_clp_largo(cuentas_por_cobrar_neto),
-                cxc_color,
-            ),
-            unsafe_allow_html=True,
-        )
-
-    epp_color = "#EF4444" if total_egresos_por_pagar != 0 else "#10B981"
-    with cE:
-        st.markdown(
-            card_finanza(
-                "EGRESOS POR PAGAR",
-                fmt_clp_largo(total_egresos_por_pagar),
-                epp_color,
-            ),
-            unsafe_allow_html=True,
-        )
-
-    pn_color = "#10B981" if posicion_neta >= 0 else "#EF4444"
-    with cF:
-        st.markdown(
-            card_finanza(
-                "POSICIÓN NETA (CxC + EPP + BN)",
-                fmt_clp_largo(posicion_neta),
-                pn_color,
+            kpi_resumen_panel(
+                "Resumen ejecutivo",
+                "Indicadores secundarios del estado financiero actual",
+                resumen_items,
             ),
             unsafe_allow_html=True,
         )
 
     st.markdown("---")
-
-
-
     # =========================
     # Gráfico PRO: Ingresos por Canon de Arriendo por año + MA-3
     # =========================
-    import plotly.graph_objects as go
-
     # =========================
     # 🏢 Ingresos por canon de arriendo — por año (MA-3)
     # =========================
-    st.markdown("### 📊 Ingresos por Canon de Arriendo ")
+    st.markdown(
+        section_heading(
+            "📊",
+            "Ingresos por Canon de Arriendo",
+            weight_class="section-heading-title-soft",
+        ),
+        unsafe_allow_html=True,
+    )
     st.markdown(
         """
         <div style="
@@ -1169,7 +1681,7 @@ with tab_overview:
                 y=df_canon["Canon_anual_CLP"],
                 name="Canon anual (CLP)",
                 marker=dict(
-                    color="rgba(37, 99, 235, 0.88)",
+                    color="rgba(127, 166, 162, 0.92)",
                     line=dict(width=1.0, color="rgba(255,255,255,0.6)"),
                 ),
                 hovertemplate="<b>Año %{x}</b><br>Canon: $%{y:,.0f}<extra></extra>",
@@ -1183,7 +1695,7 @@ with tab_overview:
                 y=df_canon["MA3"],
                 name="Promedio móvil (MA-3)",
                 mode="lines",
-                line=dict(color="rgba(220,38,38,0.25)", width=8),
+                line=dict(color="rgba(216,94,93,0.24)", width=8),
                 hoverinfo="skip",
                 showlegend=False,
             )
@@ -1194,8 +1706,8 @@ with tab_overview:
                 y=df_canon["MA3"],
                 name="Promedio móvil (MA-3)",
                 mode="lines+markers",
-                line=dict(color="#DC2626", width=3),
-                marker=dict(color="#DC2626", size=6, line=dict(color="white", width=1)),
+                line=dict(color="#D85E5D", width=3),
+                marker=dict(color="#D85E5D", size=6, line=dict(color="white", width=1)),
                 hovertemplate="<b>Año %{x}</b><br>MA-3: $%{y:,.0f}<extra></extra>",
             )
         )
@@ -1211,7 +1723,7 @@ with tab_overview:
                 x=x_list + x_list[::-1],
                 y=y_lower + y_upper[::-1],
                 fill="toself",
-                fillcolor="rgba(220,38,38,0.08)",
+                fillcolor="rgba(216,94,93,0.08)",
                 line=dict(color="rgba(0,0,0,0)"),
                 hoverinfo="skip",
                 showlegend=False,
@@ -1279,12 +1791,235 @@ with tab_overview:
             mime="text/csv",
         )
 
+        st.markdown(
+            section_heading(
+                "📑",
+                "Tabla de KPIs Financieros",
+                weight_class="section-heading-title-soft",
+            ),
+            unsafe_allow_html=True,
+        )
+
+        cartera_vencida_df = df_f.loc[mask_ingreso & sit_norm.eq("NO PAGADO")].copy()
+        cartera_vencida_df["Responsable"] = cartera_vencida_df["Responsable"].astype(str).str.strip()
+        deuda_top3 = (
+            cartera_vencida_df.groupby("Responsable")["Monto"].sum().abs().sort_values(ascending=False)
+            if not cartera_vencida_df.empty
+            else pd.Series(dtype=float)
+        )
+        concentracion_top3 = (deuda_top3.head(3).sum() / deuda_top3.sum()) if not deuda_top3.empty and deuda_top3.sum() else 0.0
+        ticket_promedio_deuda = (
+            cartera_vencida_df["Monto"].abs().sum() / len(cartera_vencida_df)
+            if not cartera_vencida_df.empty
+            else 0.0
+        )
+
+        abonos_resp_df = df_f.loc[mask_ingreso & sit_norm.str.startswith("ABONO")].copy()
+        abonos_resp_df["Responsable"] = abonos_resp_df["Responsable"].astype(str).str.strip()
+        responsables_con_abono = abonos_resp_df["Responsable"].replace("", pd.NA).dropna().nunique()
+        abono_promedio_responsable = (
+            abonos_resp_df["Monto"].abs().sum() / responsables_con_abono
+            if responsables_con_abono
+            else 0.0
+        )
+
+        cartera_edad_df = cartera_vencida_df.copy()
+        cartera_edad_df["Fecha"] = pd.to_datetime(cartera_edad_df.get("Fecha"), errors="coerce")
+        cartera_edad_df = cartera_edad_df.dropna(subset=["Fecha"])
+        if not cartera_edad_df.empty:
+            cartera_edad_df["Dias_vencidos"] = (
+                pd.Timestamp.today().normalize() - cartera_edad_df["Fecha"].dt.normalize()
+            ).dt.days.clip(lower=0)
+            edad_promedio_cartera = float(cartera_edad_df["Dias_vencidos"].mean())
+            edad_promedio_cartera_fmt = f"{edad_promedio_cartera:.0f} días"
+        else:
+            edad_promedio_cartera = None
+            edad_promedio_cartera_fmt = "N/D"
+
+        cobertura_caja_cartera = (
+            balance_kpi / abs(cuentas_por_cobrar_neto)
+            if cuentas_por_cobrar_neto
+            else 0.0
+        )
+
+        canon_period_df = data_src.loc[mask_canon, ["Monto", "Año", "Mes", "Fecha", "Esp"]].copy()
+        canon_period_df["Año_calc"] = pd.to_numeric(canon_period_df.get("Año"), errors="coerce")
+        canon_mes_raw = canon_period_df.get("Mes")
+        canon_mes_num = canon_mes_raw.astype(str).str.extract(r"(\d{1,2})", expand=False) if canon_mes_raw is not None else None
+        canon_period_df["Mes_calc"] = pd.to_numeric(canon_mes_num, errors="coerce")
+        canon_period_df["Fecha"] = pd.to_datetime(canon_period_df.get("Fecha"), errors="coerce")
+        canon_period_df["Año_calc"] = canon_period_df["Año_calc"].fillna(canon_period_df["Fecha"].dt.year)
+        canon_period_df["Mes_calc"] = canon_period_df["Mes_calc"].fillna(canon_period_df["Fecha"].dt.month)
+        canon_period_df = canon_period_df.dropna(subset=["Monto"])
+
+        if not canon_period_df.empty:
+            canon_period_df["Periodo"] = pd.to_datetime(
+                dict(
+                    year=canon_period_df["Año_calc"].fillna(1).astype(int),
+                    month=canon_period_df["Mes_calc"].fillna(1).astype(int),
+                    day=1,
+                ),
+                errors="coerce",
+            )
+            canon_mensual_promedio = (
+                canon_period_df.dropna(subset=["Periodo"])
+                .groupby("Periodo", as_index=False)["Monto"]
+                .sum()["Monto"]
+                .mean()
+            )
+        else:
+            canon_mensual_promedio = 0.0
+
+        ingresos_esp_df = df_f.loc[mask_ingreso & (mask_sit_pagado | mask_sit_abono), ["Monto", "Esp"]].copy()
+        ingresos_esp_df["Esp_num"] = pd.to_numeric(
+            ingresos_esp_df["Esp"].astype(str).str.extract(r"(\d+)", expand=False),
+            errors="coerce",
+        )
+        ingresos_esp_df = ingresos_esp_df[ingresos_esp_df["Esp_num"].between(1, 7, inclusive="both")]
+        espacios_con_ingreso = ingresos_esp_df["Esp_num"].nunique()
+        ingreso_promedio_espacio = (
+            ingresos_esp_df["Monto"].sum() / espacios_con_ingreso
+            if espacios_con_ingreso
+            else 0.0
+        )
+
+        m2_map_fin = {1: 120, 2: 72, 3: 72, 4: 72, 5: 180, 6: 130, 7: 60}
+        canon_m2_df = canon_period_df.copy()
+        canon_m2_df["Esp_num"] = pd.to_numeric(canon_m2_df["Esp"], errors="coerce")
+        canon_m2_df["m2"] = canon_m2_df["Esp_num"].map(m2_map_fin)
+        canon_m2_df = canon_m2_df.dropna(subset=["m2"])
+        canon_m2_promedio = (
+            (canon_m2_df["Monto"] / canon_m2_df["m2"]).mean()
+            if not canon_m2_df.empty
+            else 0.0
+        )
+
+        electricidad_mask = (
+            mask_egreso & mask_sit_pagado &
+            (
+                df_f["Obs"].str.contains(r"\bcge\b|electricidad", case=False, na=False, regex=True) |
+                df_f["CC1"].str.contains(r"\bcge\b|electricidad", case=False, na=False, regex=True)
+            )
+        )
+        egreso_electricidad = df_f.loc[electricidad_mask, "Monto"].abs().sum()
+        pct_electricidad_egresos = (
+            egreso_electricidad / abs(egresos_kpi)
+            if egresos_kpi
+            else 0.0
+        )
+
+        kpi_fin_df = pd.DataFrame(
+            [
+                {
+                    "Indicador": "Caja disponible",
+                    "Valor": fmt_clp_largo(balance_kpi),
+                    "Lectura": "Saldo operativo disponible en cuenta corriente.",
+                },
+                {
+                    "Indicador": "Posición neta",
+                    "Valor": fmt_clp_largo(posicion_neta),
+                    "Lectura": "Caja + cuentas por cobrar netas + egresos por pagar.",
+                },
+                {
+                    "Indicador": "CxC neto",
+                    "Valor": fmt_clp_largo(cuentas_por_cobrar_neto),
+                    "Lectura": "Cuentas por cobrar descontando abonos registrados.",
+                },
+                {
+                    "Indicador": "Resultado operativo",
+                    "Valor": fmt_clp_largo(utilidad_operativa),
+                    "Lectura": "Ingresos menos egresos pagados acumulados.",
+                },
+                {
+                    "Indicador": "Margen neto",
+                    "Valor": f"{margen_neto:.1%}",
+                    "Lectura": "Resultado operativo sobre ingresos acumulados.",
+                },
+                {
+                    "Indicador": "Avance de cobranza sobre cartera vencida",
+                    "Valor": f"{pct_cobranza:.1%}",
+                    "Lectura": "Abonos registrados sobre cartera acumulada en estado no pagado.",
+                },
+                {
+                    "Indicador": "Caja / egreso mensual promedio",
+                    "Valor": f"{cobertura_egresos:.2f}x",
+                    "Lectura": "Caja disponible relativa al promedio mensual de egresos pagados.",
+                },
+                {
+                    "Indicador": "Cobertura CAPEX",
+                    "Valor": f"{cobertura_capex:.1%}",
+                    "Lectura": "Canon acumulado respecto de la inversión total.",
+                },
+                {
+                    "Indicador": "Concentración de deuda top 3",
+                    "Valor": f"{concentracion_top3:.1%}",
+                    "Lectura": "Participación de los 3 mayores responsables sobre la cartera vencida.",
+                },
+                {
+                    "Indicador": "Ticket promedio de deuda",
+                    "Valor": fmt_clp_largo(ticket_promedio_deuda),
+                    "Lectura": "Monto promedio por transacción en estado no pagado.",
+                },
+                {
+                    "Indicador": "Abono promedio por responsable",
+                    "Valor": fmt_clp_largo(abono_promedio_responsable),
+                    "Lectura": "Abono promedio entre responsables con registros de abono.",
+                },
+                {
+                    "Indicador": "Edad promedio de cartera vencida",
+                    "Valor": edad_promedio_cartera_fmt,
+                    "Lectura": "Antigüedad promedio de documentos no pagados con fecha válida.",
+                },
+                {
+                    "Indicador": "Cobertura caja / cartera vencida neta",
+                    "Valor": f"{cobertura_caja_cartera:.2f}x",
+                    "Lectura": "Caja Banco BCI relativa a cuentas por cobrar netas.",
+                },
+                {
+                    "Indicador": "Canon mensual promedio",
+                    "Valor": fmt_clp_largo(canon_mensual_promedio),
+                    "Lectura": "Promedio mensual de canon de arriendo sobre períodos con datos.",
+                },
+                {
+                    "Indicador": "Variación YoY del canon",
+                    "Valor": f"{var_yoy:+.1%}",
+                    "Lectura": f"Variación del canon anual entre {anio_prev if valor_prev is not None else 'N/D'} y {ultimo_anio}.",
+                },
+                {
+                    "Indicador": "Ingreso promedio por espacio",
+                    "Valor": fmt_clp_largo(ingreso_promedio_espacio),
+                    "Lectura": "Ingreso acumulado promedio entre espacios con ingresos registrados.",
+                },
+                {
+                    "Indicador": "Canon por m² promedio",
+                    "Valor": f"${canon_m2_promedio:,.0f}/m²",
+                    "Lectura": "Canon promedio por metro cuadrado a partir de los espacios 1 al 7.",
+                },
+                {
+                    "Indicador": "% electricidad sobre egresos",
+                    "Valor": f"{pct_electricidad_egresos:.1%}",
+                    "Lectura": "Peso de egresos asociados a electricidad/CGE sobre egresos pagados.",
+                },
+            ]
+        )
+
+        _render_table(
+            kpi_fin_df,
+            header_bg="#163A5F",
+            header_fg="white",
+            row_alt="#F8FAFC",
+            compact=False,
+        )
+
 # =========================================================
 # ⚠️ TAB 2: RIESGOS & COBRANZAS
 # =========================================================
-with tab_riesgos:
+if active_section == "⚠️ Riesgos & cobranzas":
               # ---------- Resumen por Responsable (NO PAGADO vs Abonos) ----------
-    st.header("📋 Cuentas por Cobrar / Pagar")
+    st.markdown(
+        section_heading("📋", "Cuentas por Cobrar / Pagar", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
 
     df_cob = df_f.copy()
 
@@ -1338,7 +2073,7 @@ with tab_riesgos:
 
     # ---------- KPIs en formato “card” ----------
     total_deuda_neta = tabla["Deuda"].sum() if not tabla.empty else 0
-    col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
+    col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
 
     kpi_titulo_deuda = (
         "DEUDA AL FIN DEL EJERCICIO"
@@ -1349,92 +2084,52 @@ with tab_riesgos:
     bci_color = "#10B981" if balance_kpi >= 0 else "#EF4444"
     pos_neta_color = "#10B981" if posicion_neta >= 0 else "#EF4444"
 
-    card_style = """
-        background-color:#ffffff;
-        border-radius:14px;
-        padding:14px 18px;
-        border:1px solid #E5E7EB;
-        box-shadow:0 8px 20px rgba(15,23,42,.06);
-    """
-
     with col_kpi1:
         st.markdown(
-            f"""
-            <div style="{card_style}">
-                <div style="
-                    font-size:12px;
-                    text-transform:uppercase;
-                    letter-spacing:.08em;
-                    color:#6B7280;
-                    font-weight:600;
-                ">
-                    {kpi_titulo_deuda}
-                </div>
-                <div style="
-                    font-size:26px;
-                    font-weight:800;
-                    margin-top:4px;
-                    color:{deuda_color};
-                    font-variant-numeric:tabular-nums;
-                ">
-                    ${total_deuda_neta:,.0f}
-                </div>
-            </div>
-            """,
+            card_finanza(
+                kpi_titulo_deuda,
+                f"${total_deuda_neta:,.0f}",
+                deuda_color,
+                subtitulo="Resultado neto de cobros menos abonos",
+                etiqueta="Cobranzas",
+            ),
             unsafe_allow_html=True,
         )
 
     with col_kpi2:
         st.markdown(
-            f"""
-            <div style="{card_style}">
-                <div style="
-                    font-size:12px;
-                    text-transform:uppercase;
-                    letter-spacing:.08em;
-                    color:#6B7280;
-                    font-weight:600;
-                ">
-                    CAJA BANCO BCI
-                </div>
-                <div style="
-                    font-size:26px;
-                    font-weight:800;
-                    margin-top:4px;
-                    color:{bci_color};
-                    font-variant-numeric:tabular-nums;
-                ">
-                    ${balance_kpi:,.0f}
-                </div>
-            </div>
-            """,
+            card_finanza(
+                "CAJA BANCO BCI",
+                f"${balance_kpi:,.0f}",
+                bci_color,
+                subtitulo="Saldo operacional consolidado",
+                etiqueta="Liquidez",
+            ),
             unsafe_allow_html=True,
         )
 
     with col_kpi3:
         st.markdown(
-            f"""
-            <div style="{card_style}">
-                <div style="
-                    font-size:12px;
-                    text-transform:uppercase;
-                    letter-spacing:.08em;
-                    color:#6B7280;
-                    font-weight:600;
-                ">
-                    POSICIÓN NETA (CXC + EPP + BN)
-                </div>
-                <div style="
-                    font-size:26px;
-                    font-weight:800;
-                    margin-top:4px;
-                    color:{pos_neta_color};
-                    font-variant-numeric:tabular-nums;
-                ">
-                    ${posicion_neta:,.0f}
-                </div>
-            </div>
-            """,
+            card_finanza(
+                "POSICIÓN NETA (CXC + EPP + BN)",
+                f"${posicion_neta:,.0f}",
+                pos_neta_color,
+                subtitulo="Lectura global de exposición financiera",
+                etiqueta="Resumen",
+            ),
+            unsafe_allow_html=True,
+        )
+
+    with col_kpi4:
+        st.markdown(
+            card_finanza(
+                "AVANCE DE COBRANZA",
+                f"{pct_cobranza:.1%}",
+                "#A8A8A8",
+                subtitulo="Abonos registrados sobre cartera vencida acumulada",
+                etiqueta="Resumen",
+                size="md",
+            ),
             unsafe_allow_html=True,
         )
 
@@ -1455,6 +2150,10 @@ with tab_riesgos:
     )
 
     # ---- Estilo visual de la tabla ----
+    deuda_cmap = LinearSegmentedColormap.from_list(
+        "deuda_palette",
+        ["#A8A8A8", "#DCAA67", "#D85E5D", "#4B5563"],
+    )
     styler = (
         tabla.style
         .format({
@@ -1497,19 +2196,20 @@ with tab_riesgos:
                 "props": [("background-color", "#EEF2F7")],
             },
         ])
-        .set_properties(subset=["Responsable"], **{"text-align": "left", "font-weight": "600"})
-        .set_properties(subset=["Deuda"], **{"font-weight": "800", "color": "#B42318"})
-        .set_properties(subset=["Monto NO PAGADO"], **{"font-weight": "700", "color": "#7A271A"})
-        .set_properties(subset=["Monto Abonos"], **{"font-weight": "700", "color": "#027A48"})
-        .background_gradient(subset=["Monto NO PAGADO"], cmap="Reds")
-        .background_gradient(subset=["Monto Abonos"], cmap="Greens")
-        .background_gradient(subset=["Deuda"], cmap="YlOrRd")
+        .set_properties(subset=["Responsable"], **{"text-align": "left", "font-weight": "400"})
+        .set_properties(subset=["Deuda"], **{"font-weight": "400", "color": "#B42318"})
+        .set_properties(subset=["Monto NO PAGADO"], **{"font-weight": "400", "color": "#7A271A"})
+        .set_properties(subset=["Monto Abonos"], **{"font-weight": "400", "color": "#027A48"})
+        .background_gradient(subset=["Deuda"], cmap=deuda_cmap)
         .bar(subset=["Progreso"], color="#10B981")
     )
 
     st.dataframe(styler, use_container_width=True)
 
-    st.markdown("### 🧾 Monto a cancelar por espacio (1 al 7)")
+    st.markdown(
+        section_heading("🧾", "Monto a cancelar por espacio (1 al 7)", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     st.caption("Detalle por concepto según Año y Mes, para Esp 1..7.")
 
     df_cancel = df_f.copy()
@@ -1851,12 +2551,12 @@ with tab_riesgos:
 
     fig_cancel = go.Figure()
     color_map = {
-        "Canon mensual": "#1D4ED8",
-        "Gastos comunes": "#15803D",
-        "CGE": "#B45309",
-        "Verisure": "#475467",
-        "Administrativo": "#0E7490",
-        "Deuda": "#B42318",
+        "Canon mensual": "#4B5563",
+        "Gastos comunes": "#7FA6A2",
+        "CGE": "#DCAA67",
+        "Verisure": "#A8A8A8",
+        "Administrativo": "#D85E5D",
+        "Deuda": "#D85E5D",
     }
 
     if single_month_one_space:
@@ -1962,8 +2662,8 @@ with tab_riesgos:
                 y=chart_df["Total a cancelar"],
                 mode="lines+markers+text",
                 name="Total a cancelar",
-                line=dict(color="#0F172A", width=3),
-                marker=dict(size=8, color="#0F172A"),
+                line=dict(color="#4B5563", width=3),
+                marker=dict(size=8, color="#4B5563"),
                 text=[f"${v:,.0f}" for v in chart_df["Total a cancelar"]],
                 textposition="top center",
                 hovertemplate="<b>%{x}</b><br>Total: $%{y:,.0f}<extra></extra>",
@@ -2145,8 +2845,11 @@ with tab_riesgos:
 # =========================================================
 # 🏢 TAB 3: CANON ANUAL / MENSUAL
 # =========================================================
-with tab_canon:
-    st.subheader("🏢 Canon mensual por Año y por Esp")
+if active_section == "🏢 Canon anual / mensual":
+    st.markdown(
+        section_heading("🏢", "Canon mensual por Año y por Esp", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
 
     import plotly.graph_objects as go
 
@@ -2384,8 +3087,11 @@ with tab_canon:
 # =========================================================
 # 🧩 CANON POR M² (integrado en TAB CANON)
 # =========================================================
-with tab_canon:
-    st.subheader("🧩 Canon por m² — Canon Mensual (por Año y Esp)")
+if active_section == "🏢 Canon anual / mensual":
+    st.markdown(
+        section_heading("🧩", "Canon por m² — Canon Mensual (por Año y Esp)", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     st.markdown(
         """
         <div style="
@@ -2622,7 +3328,10 @@ with tab_canon:
 
     # --- Tabla + Excel ---
     escala_lbl = "Mensual" if escala_m2 == "Mensual" else "Diario"
-    st.markdown(f"#### 📄 Dataset agregado (Canon/m² — Año x Esp · {escala_lbl})")
+    st.markdown(
+        section_heading("📄", f"Dataset agregado (Canon/m² — Año x Esp · {escala_lbl})", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
 
     df_x = plot_df.reset_index().rename(columns={"index": "Año"}).copy()
     esp_cols_x = [c for c in df_x.columns if c != "Año"]
@@ -2707,26 +3416,35 @@ with tab_canon:
         )
     else:
         df_x_export = pd.DataFrame([fila_m2_export], columns=df_x_export.columns)
-    with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
-        df_x_export.to_excel(writer, index=False, sheet_name="canon_m2")
-        wb = writer.book
-        ws = writer.sheets["canon_m2"]
+    try:
+        with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
+            df_x_export.to_excel(writer, index=False, sheet_name="canon_m2")
+            wb = writer.book
+            ws = writer.sheets["canon_m2"]
 
-        head_fmt = wb.add_format({"bold": True})
-        ws.set_row(0, None, head_fmt)
+            head_fmt = wb.add_format({"bold": True})
+            ws.set_row(0, None, head_fmt)
 
-        ws.set_column(0, 0, 10)
-        ws.set_column(1, 1, 14)
-        if moneda_m2 == "CLP":
-            numfmt = wb.add_format({"num_format": "$#,##0"})
-            for j, c in enumerate(esp_cols_x, start=1):
-                ws.write(0, j, f"Esp {c} (CLP/m²)", head_fmt)
-        else:
-            numfmt = wb.add_format({"num_format": '#,##0.00'})
-            for j, c in enumerate(esp_cols_x, start=1):
-                ws.write(0, j, f"Esp {c} (UF/m²)", head_fmt)
+            ws.set_column(0, 0, 10)
+            ws.set_column(1, 1, 14)
+            if moneda_m2 == "CLP":
+                numfmt = wb.add_format({"num_format": "$#,##0"})
+                for j, c in enumerate(esp_cols_x, start=1):
+                    ws.write(0, j, f"Esp {c} (CLP/m²)", head_fmt)
+            else:
+                numfmt = wb.add_format({"num_format": '#,##0.00'})
+                for j, c in enumerate(esp_cols_x, start=1):
+                    ws.write(0, j, f"Esp {c} (UF/m²)", head_fmt)
 
-        ws.set_column(1, len(df_x_export.columns)-1, 14, numfmt)
+            ws.set_column(1, len(df_x_export.columns)-1, 14, numfmt)
+    except ModuleNotFoundError:
+        export_cols = ["Año"] + [
+            f"Esp {c} ({'CLP/m²' if moneda_m2 == 'CLP' else 'UF/m²'})" for c in esp_cols_x
+        ]
+        df_x_export_fallback = df_x_export.copy()
+        df_x_export_fallback.columns = export_cols
+        with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+            df_x_export_fallback.to_excel(writer, index=False, sheet_name="canon_m2")
 
     excel_buffer.seek(0)
     st.download_button(
@@ -2739,8 +3457,11 @@ with tab_canon:
 # =========================================================
 # 📈 TAB 5: INGRESOS & EGRESOS (Mensual / Anual)
 # =========================================================
-with tab_ing_eg:
-    st.subheader("📈 Ingresos vs Egresos — Totales por período")
+if active_section == "📈 Ingresos & egresos":
+    st.markdown(
+        section_heading("📈", "Ingresos vs Egresos — Totales por período", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     st.markdown(
         """
         <div style="
@@ -2951,7 +3672,10 @@ with tab_ing_eg:
         st.caption("Egresos se muestran en valor absoluto para facilitar comparación visual.")
 
     st.markdown("---")
-    st.subheader("⚠️ Riesgos de cobro y concentración de montos")
+    st.markdown(
+        section_heading("⚠️", "Riesgos de cobro y concentración de montos", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     st.markdown(
         """
         <div style="
@@ -2967,7 +3691,10 @@ with tab_ing_eg:
         """,
         unsafe_allow_html=True,
     )
-    st.markdown("### 📈 Filtro por centro de costo / situación")
+    st.markdown(
+        section_heading("📈", "Filtro por centro de costo / situación", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
 
     c_top1, c_top2, c_top3, c_top4 = st.columns([2, 1, 1, 1])
     with c_top1:
@@ -3170,7 +3897,10 @@ with tab_ing_eg:
     st.caption("Nota: los montos son la suma de 'Monto' (ingresos positivos, egresos negativos) por categoría.")
 
     st.markdown("---")
-    st.subheader("⚠️ Detalle filtrable de movimientos")
+    st.markdown(
+        section_heading("⚠️", "Detalle filtrable de movimientos", weight_class="section-heading-title-soft"),
+        unsafe_allow_html=True,
+    )
     st.markdown(
         """
         <div style="
@@ -3382,10 +4112,13 @@ with tab_ing_eg:
 # =========================================================
 # ⚡ TAB 6: ELECTRICIDAD (Excel por pestaña)
 # =========================================================
-with tab_electricidad:
+if active_section == "⚡ Electricidad":
     title_col, btn_col = st.columns([6, 1])
     with title_col:
-        st.subheader("⚡ Electricidad — Liquidación por Bodega")
+        st.markdown(
+            section_heading("⚡", "Electricidad — Liquidación por Bodega", weight_class="section-heading-title-soft"),
+            unsafe_allow_html=True,
+        )
         st.caption("Vista idéntica al Excel: inputs generales, boleta CGE, inputs por bodega y liquidación.")
     with btn_col:
         st.markdown("")
@@ -3394,26 +4127,29 @@ with tab_electricidad:
         pdf_btn_placeholder = st.empty()
 
     try:
-        sheets = load_electricidad(ELECTRICIDAD_XLSX)
+        parsed_sheets = load_electricidad_parsed(ELECTRICIDAD_XLSX)
     except ImportError:
-        sheets = {}
+        parsed_sheets = {}
         st.error(
             "Falta la dependencia `openpyxl` para leer archivos .xlsx. "
             "Instálala en tu entorno con: `pip install openpyxl`"
         )
     except Exception as e:
-        sheets = {}
+        parsed_sheets = {}
         st.error(f"No se pudo cargar el Excel de electricidad: {e}")
-    if not sheets:
-        st.warning(f"No se encontró el archivo `{ELECTRICIDAD_XLSX}` en la carpeta del proyecto.")
+    if not parsed_sheets:
+        st.warning(
+            "No se encontraron hojas válidas de electricidad para mostrar. "
+            "La fuente puede venir vacía, con una estructura distinta o haber fallado durante el parseo."
+        )
         st.stop()
 
     # Preferir hojas tipo MES-AÑO (ej. FEB-2026)
-    month_sheets = [s for s in sheets.keys() if "-" in s]
+    month_sheets = [s for s in parsed_sheets.keys() if "-" in s]
     sel_months = st.multiselect(
         "Meses",
-        month_sheets or list(sheets.keys()),
-        default=[month_sheets[0]] if month_sheets else list(sheets.keys())[:1],
+        month_sheets or list(parsed_sheets.keys()),
+        default=[month_sheets[0]] if month_sheets else list(parsed_sheets.keys())[:1],
         key="elec_months",
     )
     if not sel_months:
@@ -3421,8 +4157,7 @@ with tab_electricidad:
         st.stop()
 
     # Selector de bodega
-    first_raw = sheets[sel_months[0]]
-    first_parsed = _parse_mes_sheet(first_raw)
+    first_parsed = parsed_sheets[sel_months[0]]
     bodega_col = first_parsed["inputs_bodega"].columns[0]
     bodegas = (
         first_parsed["inputs_bodega"][bodega_col]
@@ -3434,10 +4169,7 @@ with tab_electricidad:
     sel_bodega = st.selectbox("Bodega", ["Todas"] + bodegas, index=0, key="elec_bodega")
 
     # Parse selected months
-    parsed_by_month = {}
-    for m in sel_months:
-        df_raw = sheets[m]
-        parsed_by_month[m] = _parse_mes_sheet(df_raw)
+    parsed_by_month = {m: parsed_sheets[m] for m in sel_months}
 
     # Encabezado estilo Excel
     st.markdown(

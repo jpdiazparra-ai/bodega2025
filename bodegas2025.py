@@ -1870,7 +1870,9 @@ if active_section == "🏠 Visión general":
             unsafe_allow_html=True,
         )
 
-        cartera_vencida_df = df_f.loc[mask_ingreso & sit_norm.eq("NO PAGADO")].copy()
+        cartera_vencida_df = df_f.loc[
+            df_f["CC_norm"].eq("INGRESO") & df_f["Sit_norm"].eq("NO PAGADO")
+        ].copy()
         cartera_vencida_df["Responsable"] = cartera_vencida_df["Responsable"].astype(str).str.strip()
         deuda_top3 = (
             cartera_vencida_df.groupby("Responsable")["Monto"].sum().abs().sort_values(ascending=False)
@@ -1884,7 +1886,9 @@ if active_section == "🏠 Visión general":
             else 0.0
         )
 
-        abonos_resp_df = df_f.loc[mask_ingreso & sit_norm.str.startswith("ABONO")].copy()
+        abonos_resp_df = df_f.loc[
+            df_f["CC_norm"].eq("INGRESO") & df_f["Sit_norm"].str.startswith("ABONO")
+        ].copy()
         abonos_resp_df["Responsable"] = abonos_resp_df["Responsable"].astype(str).str.strip()
         responsables_con_abono = abonos_resp_df["Responsable"].replace("", pd.NA).dropna().nunique()
         abono_promedio_responsable = (
@@ -1940,11 +1944,14 @@ if active_section == "🏠 Visión general":
         else:
             canon_mensual_promedio = 0.0
 
-        ingresos_esp_df = df_f.loc[mask_ingreso & (mask_sit_pagado | mask_sit_abono), ["Monto", "Esp"]].copy()
-        ingresos_esp_df["Esp_num"] = pd.to_numeric(
-            ingresos_esp_df["Esp"].astype(str).str.extract(r"(\d+)", expand=False),
-            errors="coerce",
-        )
+        ingresos_esp_df = df_f.loc[
+            df_f["CC_norm"].eq("INGRESO") &
+            (
+                df_f["Sit_norm"].eq("PAGADO") |
+                df_f["Sit_norm"].str.startswith("ABONO")
+            ),
+            ["Monto", "Esp_num"],
+        ].copy()
         ingresos_esp_df = ingresos_esp_df[ingresos_esp_df["Esp_num"].between(1, 7, inclusive="both")]
         espacios_con_ingreso = ingresos_esp_df["Esp_num"].nunique()
         ingreso_promedio_espacio = (
@@ -1965,10 +1972,11 @@ if active_section == "🏠 Visión general":
         )
 
         electricidad_mask = (
-            mask_egreso & mask_sit_pagado &
+            df_f["CC_norm"].eq("EGRESO") &
+            df_f["Sit_norm"].eq("PAGADO") &
             (
-                df_f["Obs"].str.contains(r"\bcge\b|electricidad", case=False, na=False, regex=True) |
-                df_f["CC1"].str.contains(r"\bcge\b|electricidad", case=False, na=False, regex=True)
+                df_f["Obs_text"].str.contains(r"\bcge\b|electricidad", case=False, na=False, regex=True) |
+                df_f["CC1_text"].str.contains(r"\bcge\b|electricidad", case=False, na=False, regex=True)
             )
         )
         egreso_electricidad = df_f.loc[electricidad_mask, "Monto"].abs().sum()

@@ -192,8 +192,41 @@ def load_data(url: str) -> pd.DataFrame:
 
 df = load_data(CSV_URL)
 
+@st.cache_data(show_spinner=False)
+def enrich_base_data(df_in: pd.DataFrame) -> pd.DataFrame:
+    df_out = df_in.copy()
+    df_out["Fecha_dt"] = pd.to_datetime(df_out.get("Fecha"), errors="coerce")
+    df_out["CC_norm"] = df_out["CC"].astype(str).str.strip().str.upper()
+    df_out["Sit_norm"] = df_out["Sit"].astype(str).str.strip().str.upper()
+    df_out["Obs_text"] = df_out["Obs"].astype(str)
+    df_out["CC1_text"] = df_out["CC1"].astype(str)
+    df_out["Responsable_clean"] = df_out["Responsable"].astype(str).str.strip()
+    df_out["Esp_num"] = pd.to_numeric(
+        df_out["Esp"].astype(str).str.extract(r"(\d+)", expand=False),
+        errors="coerce",
+    )
+    df_out["Año_sel"] = pd.to_numeric(df_out.get("Año"), errors="coerce")
+    mes_raw = df_out.get("Mes")
+    mes_num = mes_raw.astype(str).str.extract(r"(\d{1,2})", expand=False) if mes_raw is not None else None
+    df_out["Mes_sel"] = pd.to_numeric(mes_num, errors="coerce")
+    df_out["Año_sel"] = df_out["Año_sel"].fillna(df_out["Fecha_dt"].dt.year)
+    df_out["Mes_sel"] = df_out["Mes_sel"].fillna(df_out["Fecha_dt"].dt.month)
+    df_out["Periodo_ref"] = pd.NaT
+    mask_periodo = df_out["Año_sel"].notna() & df_out["Mes_sel"].notna()
+    if mask_periodo.any():
+        df_out.loc[mask_periodo, "Periodo_ref"] = pd.to_datetime(
+            dict(
+                year=df_out.loc[mask_periodo, "Año_sel"].astype(int),
+                month=df_out.loc[mask_periodo, "Mes_sel"].astype(int),
+                day=1,
+            ),
+            errors="coerce",
+        )
+    return df_out
+
+
 # SIN filtros (por ahora): usar todo el dataset
-df_f = df.copy()
+df_f = enrich_base_data(df)
 
 # =========================
 # Carga de Electricidad (Excel local o URL XLSX)
@@ -992,97 +1025,114 @@ def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: 
 # =========================
 CAPEX = 151_834_571
 
-# Canon arriendo
-mask_canon = (
-    (df_f["CC"] == "INGRESO") &
-    (
-        df_f["CC1"].str.contains("arriendo", case=False, na=False) |
-        df_f["Obs"].str.contains("canon", case=False, na=False)
+@st.cache_data(show_spinner=False)
+def compute_base_kpis(df_in: pd.DataFrame, capex: float) -> dict[str, float]:
+    mask_canon = (
+        df_in["CC_norm"].eq("INGRESO") &
+        (
+            df_in["CC1_text"].str.contains("arriendo", case=False, na=False) |
+            df_in["Obs_text"].str.contains("canon", case=False, na=False)
+        )
     )
-)
-ingresos_canon = df_f.loc[mask_canon, "Monto"].sum()
-cobertura_capex = ingresos_canon / CAPEX if CAPEX else 0
+    ingresos_canon = df_in.loc[mask_canon, "Monto"].sum()
+    cobertura_capex = ingresos_canon / capex if capex else 0.0
 
-# Saldo cuenta = PAGADO + ABONOS (según signos en CSV)
-total_pagado = df_f.loc[df_f["Sit"] == "PAGADO", "Monto"].sum()
-mask_abono_obs = df_f["Obs"].str.contains(r"\babono_*\b", case=False, na=False)
-total_abonos = df_f.loc[mask_abono_obs, "Monto"].sum()
-saldo_cuenta = total_pagado + total_abonos
+    total_pagado = df_in.loc[df_in["Sit_norm"].eq("PAGADO"), "Monto"].sum()
+    mask_abono_obs = df_in["Obs_text"].str.contains(r"\babono_*\b", case=False, na=False)
+    total_abonos = df_in.loc[mask_abono_obs, "Monto"].sum()
+    saldo_cuenta = total_pagado + total_abonos
 
-# Ingresos / Egresos KPIs
-mask_ingreso = df_f["CC"].eq("INGRESO")
-mask_egreso  = df_f["CC"].eq("EGRESO")
-sit_up = df_f["Sit"]  # ya normalizado
-
-mask_sit_pagado = sit_up.eq("PAGADO")
-mask_sit_abono  = sit_up.str.startswith("ABONO")
-mask_sueldo_accionista = df_f["Obs"].str.contains(
-    r"sueldos?\s+accion(?:ista|ita)s?",
-    case=False,
-    na=False,
-    regex=True,
-)
-
-ingresos_kpi = df_f.loc[mask_ingreso & (mask_sit_pagado | mask_sit_abono), "Monto"].sum()
-egresos_kpi  = df_f.loc[mask_egreso  &  mask_sit_pagado, "Monto"].sum()
-utilidad_operativa = ingresos_kpi + egresos_kpi
-margen_neto = (utilidad_operativa / ingresos_kpi) if ingresos_kpi else 0.0
-total_sueldos_accionistas = df_f.loc[mask_sueldo_accionista, "Monto"].sum()
-utilidad_sobre_capex = (abs(total_sueldos_accionistas) / CAPEX) if CAPEX else 0.0
-balance_kpi = saldo_cuenta  # interpretación: saldo en cuenta BCI
-
-df_egresos_mes = df_f.loc[mask_egreso & mask_sit_pagado, ["Monto", "Año", "Mes", "Fecha"]].copy()
-df_egresos_mes["Año_calc"] = pd.to_numeric(df_egresos_mes.get("Año"), errors="coerce")
-mes_raw_kpi = df_egresos_mes.get("Mes")
-mes_num_kpi = mes_raw_kpi.astype(str).str.extract(r"(\d{1,2})", expand=False) if mes_raw_kpi is not None else None
-df_egresos_mes["Mes_calc"] = pd.to_numeric(mes_num_kpi, errors="coerce")
-df_egresos_mes["Fecha"] = pd.to_datetime(df_egresos_mes.get("Fecha"), errors="coerce")
-df_egresos_mes["Año_calc"] = df_egresos_mes["Año_calc"].fillna(df_egresos_mes["Fecha"].dt.year)
-df_egresos_mes["Mes_calc"] = df_egresos_mes["Mes_calc"].fillna(df_egresos_mes["Fecha"].dt.month)
-df_egresos_mes = df_egresos_mes.dropna(subset=["Año_calc", "Mes_calc"])
-
-if not df_egresos_mes.empty:
-    df_egresos_mes["Periodo"] = pd.to_datetime(
-        dict(
-            year=df_egresos_mes["Año_calc"].astype(int),
-            month=df_egresos_mes["Mes_calc"].astype(int),
-            day=1,
-        ),
-        errors="coerce",
+    mask_ingreso = df_in["CC_norm"].eq("INGRESO")
+    mask_egreso = df_in["CC_norm"].eq("EGRESO")
+    mask_sit_pagado = df_in["Sit_norm"].eq("PAGADO")
+    mask_sit_abono = df_in["Sit_norm"].str.startswith("ABONO")
+    mask_sueldo_accionista = df_in["Obs_text"].str.contains(
+        r"sueldos?\s+accion(?:ista|ita)s?",
+        case=False,
+        na=False,
+        regex=True,
     )
-    egreso_mensual_promedio = (
-        df_egresos_mes.dropna(subset=["Periodo"])
-        .groupby("Periodo", as_index=False)["Monto"]
-        .sum()["Monto"]
-        .abs()
-        .mean()
-    )
-else:
-    egreso_mensual_promedio = 0.0
 
-cobertura_egresos = (balance_kpi / egreso_mensual_promedio) if egreso_mensual_promedio else 0.0
+    ingresos_kpi = df_in.loc[mask_ingreso & (mask_sit_pagado | mask_sit_abono), "Monto"].sum()
+    egresos_kpi = df_in.loc[mask_egreso & mask_sit_pagado, "Monto"].sum()
+    utilidad_operativa = ingresos_kpi + egresos_kpi
+    margen_neto = (utilidad_operativa / ingresos_kpi) if ingresos_kpi else 0.0
+    total_sueldos_accionistas = df_in.loc[mask_sueldo_accionista, "Monto"].sum()
+    utilidad_sobre_capex = (abs(total_sueldos_accionistas) / capex) if capex else 0.0
 
-# Cuentas por cobrar & egresos por pagar
-sit_norm = df_f["Sit"]
-cc_up    = df_f["CC"]
+    df_egresos_mes = df_in.loc[mask_egreso & mask_sit_pagado & df_in["Periodo_ref"].notna(), ["Periodo_ref", "Monto"]]
+    if not df_egresos_mes.empty:
+        egreso_mensual_promedio = (
+            df_egresos_mes.groupby("Periodo_ref", as_index=False)["Monto"]
+            .sum()["Monto"]
+            .abs()
+            .mean()
+        )
+    else:
+        egreso_mensual_promedio = 0.0
 
-no_pagado_total  = df_f.loc[cc_up.eq("INGRESO") & sit_norm.eq("NO PAGADO"), "Monto"].sum()
-abonos_total     = df_f.loc[cc_up.eq("INGRESO") & sit_norm.str.startswith("ABONO"), "Monto"].sum()
-if abonos_total == 0:
-    abonos_total = df_f.loc[
-        cc_up.eq("INGRESO") &
-        df_f["Obs"].str.contains(r"\babono\b", case=False, na=False),
-        "Monto"
+    cobertura_egresos = (saldo_cuenta / egreso_mensual_promedio) if egreso_mensual_promedio else 0.0
+
+    no_pagado_total = df_in.loc[mask_ingreso & df_in["Sit_norm"].eq("NO PAGADO"), "Monto"].sum()
+    abonos_total = df_in.loc[mask_ingreso & df_in["Sit_norm"].str.startswith("ABONO"), "Monto"].sum()
+    if abonos_total == 0:
+        abonos_total = df_in.loc[
+            mask_ingreso & df_in["Obs_text"].str.contains(r"\babono\b", case=False, na=False),
+            "Monto",
+        ].sum()
+
+    cuentas_por_cobrar_neto = no_pagado_total - abonos_total
+    total_egresos_por_pagar = df_in.loc[
+        mask_egreso & df_in["Sit_norm"].eq("NO PAGADO"),
+        "Monto",
     ].sum()
+    posicion_neta = cuentas_por_cobrar_neto + total_egresos_por_pagar + saldo_cuenta
 
-pct_cobranza = (abonos_total / no_pagado_total) if no_pagado_total else 0.0
-cuentas_por_cobrar_neto = no_pagado_total - abonos_total
+    return {
+        "ingresos_canon": float(ingresos_canon),
+        "cobertura_capex": float(cobertura_capex),
+        "total_pagado": float(total_pagado),
+        "total_abonos": float(total_abonos),
+        "saldo_cuenta": float(saldo_cuenta),
+        "ingresos_kpi": float(ingresos_kpi),
+        "egresos_kpi": float(egresos_kpi),
+        "utilidad_operativa": float(utilidad_operativa),
+        "margen_neto": float(margen_neto),
+        "total_sueldos_accionistas": float(total_sueldos_accionistas),
+        "utilidad_sobre_capex": float(utilidad_sobre_capex),
+        "egreso_mensual_promedio": float(egreso_mensual_promedio),
+        "cobertura_egresos": float(cobertura_egresos),
+        "no_pagado_total": float(no_pagado_total),
+        "abonos_total": float(abonos_total),
+        "pct_cobranza": float((abonos_total / no_pagado_total) if no_pagado_total else 0.0),
+        "cuentas_por_cobrar_neto": float(cuentas_por_cobrar_neto),
+        "total_egresos_por_pagar": float(total_egresos_por_pagar),
+        "posicion_neta": float(posicion_neta),
+        "balance_kpi": float(saldo_cuenta),
+    }
 
-total_egresos_por_pagar = df_f.loc[
-    cc_up.eq("EGRESO") & sit_norm.eq("NO PAGADO"), "Monto"
-].sum()
 
-posicion_neta = cuentas_por_cobrar_neto + total_egresos_por_pagar + balance_kpi
+base_kpis = compute_base_kpis(df_f, CAPEX)
+ingresos_canon = base_kpis["ingresos_canon"]
+cobertura_capex = base_kpis["cobertura_capex"]
+total_pagado = base_kpis["total_pagado"]
+total_abonos = base_kpis["total_abonos"]
+saldo_cuenta = base_kpis["saldo_cuenta"]
+ingresos_kpi = base_kpis["ingresos_kpi"]
+egresos_kpi = base_kpis["egresos_kpi"]
+utilidad_operativa = base_kpis["utilidad_operativa"]
+margen_neto = base_kpis["margen_neto"]
+total_sueldos_accionistas = base_kpis["total_sueldos_accionistas"]
+utilidad_sobre_capex = base_kpis["utilidad_sobre_capex"]
+egreso_mensual_promedio = base_kpis["egreso_mensual_promedio"]
+cobertura_egresos = base_kpis["cobertura_egresos"]
+no_pagado_total = base_kpis["no_pagado_total"]
+abonos_total = base_kpis["abonos_total"]
+pct_cobranza = base_kpis["pct_cobranza"]
+cuentas_por_cobrar_neto = base_kpis["cuentas_por_cobrar_neto"]
+total_egresos_por_pagar = base_kpis["total_egresos_por_pagar"]
+posicion_neta = base_kpis["posicion_neta"]
+balance_kpi = base_kpis["balance_kpi"]
 
 # =========================
 # Estilos HTML para KPIs
@@ -2241,21 +2291,7 @@ if active_section == "⚠️ Riesgos & cobranzas":
     )
     st.caption("Detalle por concepto según Año y Mes, para Esp 1..7.")
 
-    df_cancel = df_f.copy()
-    df_cancel = df_cancel.dropna(subset=["Monto"])
-
-    df_cancel["Año_sel"] = pd.to_numeric(df_cancel.get("Año"), errors="coerce")
-    mes_raw_cancel = df_cancel.get("Mes")
-    mes_num_cancel = mes_raw_cancel.astype(str).str.extract(r"(\d{1,2})", expand=False)
-    df_cancel["Mes_sel"] = pd.to_numeric(mes_num_cancel, errors="coerce")
-
-    # Respaldo con fecha cuando Año/Mes no vienen informados
-    if df_cancel["Año_sel"].isna().all() or df_cancel["Mes_sel"].isna().all():
-        df_cancel["Fecha"] = pd.to_datetime(df_cancel.get("Fecha"), errors="coerce")
-        if df_cancel["Año_sel"].isna().all():
-            df_cancel["Año_sel"] = df_cancel["Fecha"].dt.year
-        if df_cancel["Mes_sel"].isna().all():
-            df_cancel["Mes_sel"] = df_cancel["Fecha"].dt.month
+    df_cancel = df_f.dropna(subset=["Monto"]).copy()
 
     years_cancel = sorted(df_cancel["Año_sel"].dropna().astype(int).unique().tolist())
     year_opts_cancel = ["Todos"] + years_cancel
@@ -2283,18 +2319,12 @@ if active_section == "⚠️ Riesgos & cobranzas":
             key="esp_cancel_esp",
         )
     df_resp_opts = df_f.copy()
-    df_resp_opts["Esp_num"] = pd.to_numeric(
-        df_resp_opts["Esp"].astype(str).str.extract(r"(\d+)", expand=False),
-        errors="coerce",
-    )
     df_resp_opts = df_resp_opts[df_resp_opts["Esp_num"].between(1, 7, inclusive="both")]
     if sel_esp_cancel != "Todos":
         df_resp_opts = df_resp_opts[df_resp_opts["Esp_num"] == int(sel_esp_cancel)]
     responsables_opts_cancel = ["Todos"] + sorted(
-        df_resp_opts["Responsable"]
+        df_resp_opts["Responsable_clean"]
         .dropna()
-        .astype(str)
-        .str.strip()
         .loc[lambda s: s != ""]
         .unique()
         .tolist()
@@ -2312,25 +2342,19 @@ if active_section == "⚠️ Riesgos & cobranzas":
     if sel_month_cancel != "Todos":
         df_cancel = df_cancel[df_cancel["Mes_sel"] == sel_month_cancel]
 
-    df_cancel["Sit"] = df_cancel["Sit"].astype(str).str.strip().str.upper()
-    df_cancel = df_cancel[df_cancel["Sit"].isin(["PAGADO", "NO PAGADO"])]
-
-    df_cancel["Esp_num"] = pd.to_numeric(
-        df_cancel["Esp"].astype(str).str.extract(r"(\d+)", expand=False),
-        errors="coerce",
-    )
+    df_cancel = df_cancel[df_cancel["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
     df_cancel = df_cancel[df_cancel["Esp_num"].between(1, 7, inclusive="both")]
     df_cancel["Esp_num"] = df_cancel["Esp_num"].astype(int)
     if sel_esp_cancel != "Todos":
         df_cancel = df_cancel[df_cancel["Esp_num"] == int(sel_esp_cancel)]
     if sel_resp_cancel != "Todos":
-        df_cancel = df_cancel[df_cancel["Responsable"].astype(str).str.strip() == sel_resp_cancel]
+        df_cancel = df_cancel[df_cancel["Responsable_clean"] == sel_resp_cancel]
     df_cancel_scope = df_cancel.copy()
 
     txt_cancel = (
-        df_cancel["CC1"].astype(str).fillna("")
+        df_cancel["CC1_text"].fillna("")
         + " "
-        + df_cancel["Obs"].astype(str).fillna("")
+        + df_cancel["Obs_text"].fillna("")
     ).str.lower()
 
     df_cancel["Concepto"] = np.select(
@@ -2350,29 +2374,8 @@ if active_section == "⚠️ Riesgos & cobranzas":
     df_cancel["Monto_abs"] = df_cancel["Monto"].abs()
 
     # Deuda por responsable: NO PAGADO - ABONO, excluyendo el período seleccionado.
-    df_deuda = df_f.copy().dropna(subset=["Monto"])
-    df_deuda["Sit"] = df_deuda["Sit"].astype(str).str.strip().str.upper()
-    df_deuda["Obs"] = df_deuda["Obs"].astype(str)
-    df_deuda["Responsable_clean"] = df_deuda["Responsable"].astype(str).str.strip()
+    df_deuda = df_f.dropna(subset=["Monto"]).copy()
     df_deuda = df_deuda[df_deuda["Responsable_clean"] != ""]
-
-    df_deuda["Año_sel"] = pd.to_numeric(df_deuda.get("Año"), errors="coerce")
-    mes_raw_deuda = df_deuda.get("Mes")
-    mes_num_deuda = mes_raw_deuda.astype(str).str.extract(r"(\d{1,2})", expand=False)
-    df_deuda["Mes_sel"] = pd.to_numeric(mes_num_deuda, errors="coerce")
-    df_deuda["Fecha"] = pd.to_datetime(df_deuda.get("Fecha"), errors="coerce")
-    df_deuda["Año_sel"] = df_deuda["Año_sel"].fillna(df_deuda["Fecha"].dt.year)
-    df_deuda["Mes_sel"] = df_deuda["Mes_sel"].fillna(df_deuda["Fecha"].dt.month)
-
-    df_deuda = df_deuda.dropna(subset=["Año_sel", "Mes_sel"])
-    df_deuda["Periodo_ref"] = pd.to_datetime(
-        dict(
-            year=df_deuda["Año_sel"].astype(int),
-            month=df_deuda["Mes_sel"].astype(int),
-            day=1,
-        ),
-        errors="coerce",
-    )
     df_deuda = df_deuda.dropna(subset=["Periodo_ref"])
 
     corte_periodo = None
@@ -2386,10 +2389,8 @@ if active_section == "⚠️ Riesgos & cobranzas":
 
     # Responsables válidos según el período seleccionado y filtros activos en la vista
     responsables_periodo = (
-        df_cancel_scope["Responsable"]
+        df_cancel_scope["Responsable_clean"]
         .dropna()
-        .astype(str)
-        .str.strip()
         .loc[lambda s: s != ""]
         .unique()
         .tolist()
@@ -2402,12 +2403,12 @@ if active_section == "⚠️ Riesgos & cobranzas":
         df_deuda = df_deuda.iloc[0:0]
 
     deuda_np_por_resp = (
-        df_deuda[df_deuda["Sit"] == "NO PAGADO"]
+        df_deuda[df_deuda["Sit_norm"] == "NO PAGADO"]
         .groupby("Responsable_clean")["Monto"]
         .sum()
     )
     abonos_por_resp = (
-        df_deuda[df_deuda["Obs"].str.contains("abono", case=False, na=False)]
+        df_deuda[df_deuda["Obs_text"].str.contains("abono", case=False, na=False)]
         .groupby("Responsable_clean")["Monto"]
         .sum()
     )
@@ -2418,11 +2419,9 @@ if active_section == "⚠️ Riesgos & cobranzas":
     elif sel_resp_cancel != "Todos":
         idx_esp = sorted(
             df_f.loc[
-                df_f["Responsable"].astype(str).str.strip() == sel_resp_cancel,
-                "Esp"
+                df_f["Responsable_clean"] == sel_resp_cancel,
+                "Esp_num"
             ]
-            .astype(str)
-            .str.extract(r"(\d+)", expand=False)
             .dropna()
             .astype(int)
             .loc[lambda s: s.between(1, 7)]
@@ -2450,18 +2449,12 @@ if active_section == "⚠️ Riesgos & cobranzas":
             tabla_cancel[c] = 0
 
     responsables_por_esp = (
-        df_cancel_scope.assign(
-            Responsable_clean=df_cancel_scope["Responsable"].astype(str).str.strip()
-        )
-        .loc[lambda d: d["Responsable_clean"] != ""]
+        df_cancel_scope.loc[lambda d: d["Responsable_clean"] != ""]
         .groupby("Esp_num")["Responsable_clean"]
         .apply(lambda s: ", ".join(sorted(s.dropna().unique().tolist())))
     )
     responsables_lista_por_esp = (
-        df_cancel_scope.assign(
-            Responsable_clean=df_cancel_scope["Responsable"].astype(str).str.strip()
-        )
-        .loc[lambda d: d["Responsable_clean"] != ""]
+        df_cancel_scope.loc[lambda d: d["Responsable_clean"] != ""]
         .groupby("Esp_num")["Responsable_clean"]
         .apply(lambda s: sorted(s.dropna().unique().tolist()))
     )
@@ -2899,38 +2892,16 @@ if active_section == "🏢 Canon anual / mensual":
     )
 
     mask_canon_mensual = (
-        (_data_src["CC"] == "INGRESO") &
+        (_data_src["CC_norm"] == "INGRESO") &
         (
-            _data_src["CC1"].str.contains("canon mensual", case=False, na=False) |
-            _data_src["Obs"].str.contains("canon mensual", case=False, na=False)
+            _data_src["CC1_text"].str.contains("canon mensual", case=False, na=False) |
+            _data_src["Obs_text"].str.contains("canon mensual", case=False, na=False)
         )
     )
     dm = _data_src.loc[mask_canon_mensual].copy()
-
-    dm["Año"] = pd.to_numeric(dm["Año"], errors="coerce")
-    dm["Esp"] = pd.to_numeric(dm["Esp"], errors="coerce")
-    dm["Monto"] = pd.to_numeric(
-        dm["Monto"].astype(str).str.replace(r"[^\d\.-]", "", regex=True),
-        errors="coerce"
-    )
-    mes_raw_canon = dm.get("Mes")
-    mes_num_canon = mes_raw_canon.astype(str).str.extract(r"(\d{1,2})", expand=False)
-    dm["Mes_num"] = pd.to_numeric(mes_num_canon, errors="coerce")
-    dm["Fecha"] = pd.to_datetime(dm.get("Fecha"), errors="coerce")
-    dm["Año_eff"] = dm["Año"].fillna(dm["Fecha"].dt.year)
-    dm["Mes_eff"] = dm["Mes_num"].fillna(dm["Fecha"].dt.month)
-    dm = dm.dropna(subset=["Esp"])
-    dm["Esp"] = dm["Esp"].astype(int)
-    dm = dm.dropna(subset=["Año_eff", "Mes_eff"])
-    dm["Periodo"] = pd.to_datetime(
-        dict(
-            year=dm["Año_eff"].astype(int),
-            month=dm["Mes_eff"].astype(int),
-            day=1,
-        ),
-        errors="coerce",
-    )
-    dm = dm.dropna(subset=["Periodo"])
+    dm = dm.dropna(subset=["Esp_num", "Periodo_ref"])
+    dm["Esp"] = dm["Esp_num"].astype(int)
+    dm["Periodo"] = dm["Periodo_ref"]
 
     agg = (
         dm.groupby(["Periodo","Esp"], as_index=False)["Monto"]
@@ -3156,20 +3127,16 @@ if active_section == "🏢 Canon anual / mensual":
     _df = df_f
 
     canon_mask = (
-        (_df["CC"] == "INGRESO") &
+        (_df["CC_norm"] == "INGRESO") &
         (
-            _df["CC1"].str.contains(r"canon\s*mensual|canon.*arriendo|arriendo.*mensual", case=False, na=False) |
-            _df["Obs"].str.contains(r"canon\s*mensual|canon.*arriendo|arriendo.*mensual", case=False, na=False)
+            _df["CC1_text"].str.contains(r"canon\s*mensual|canon.*arriendo|arriendo.*mensual", case=False, na=False) |
+            _df["Obs_text"].str.contains(r"canon\s*mensual|canon.*arriendo|arriendo.*mensual", case=False, na=False)
         )
     )
     dm = _df.loc[canon_mask].copy()
-
-    dm["Año"] = pd.to_numeric(dm["Año"], errors="coerce")
-    dm["Esp"] = pd.to_numeric(dm["Esp"], errors="coerce")
-    dm["Monto"] = pd.to_numeric(dm["Monto"].astype(str).str.replace(r"[^\d\.-]", "", regex=True), errors="coerce")
-    dm = dm.dropna(subset=["Año","Esp","Monto"])
-    dm["Año"] = dm["Año"].astype(int)
-    dm["Esp"] = dm["Esp"].astype(int)
+    dm = dm.dropna(subset=["Año_sel", "Esp_num", "Monto"])
+    dm["Año"] = dm["Año_sel"].astype(int)
+    dm["Esp"] = dm["Esp_num"].astype(int)
 
     M2_MAP = {1:120, 2:72, 3:72, 4:72, 5:180, 6:130, 7:60}
     dm["m2"] = dm["Esp"].map(M2_MAP)
@@ -3186,7 +3153,7 @@ if active_section == "🏢 Canon anual / mensual":
     )
 
     years_all = (
-        pd.to_numeric(_df["Año"], errors="coerce")
+        _df["Año_sel"]
           .dropna()
           .astype(int)
           .sort_values()
@@ -3517,29 +3484,14 @@ if active_section == "📈 Ingresos & egresos":
     with c3:
         pass
 
-    _df = df_f.copy()
-    _df = _df.dropna(subset=["Monto", "CC"])
-    _df["CC"] = _df["CC"].astype(str).str.strip().str.upper()
-    _df = _df[_df["CC"].isin(["INGRESO", "EGRESO"])]
+    _df = df_f.dropna(subset=["Monto"]).copy()
+    _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
+    _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
 
-    _df["Sit"] = _df["Sit"].astype(str).str.strip().str.upper()
-    _df = _df[_df["Sit"].isin(["PAGADO", "NO PAGADO"])]
-
-    # Usar columnas de la base: "Año" y "Mes"
-    _df["Año_sel"] = pd.to_numeric(_df.get("Año"), errors="coerce")
-    mes_raw = _df.get("Mes")
-    mes_num = (
-        mes_raw.astype(str)
-        .str.extract(r"(\d{1,2})", expand=False)
-    )
-    _df["Mes_sel"] = pd.to_numeric(mes_num, errors="coerce")
-
-    # Fallback si la columna Mes no trae datos
     if _df["Mes_sel"].isna().all():
         st.warning("La columna 'Mes' no tiene datos. Usando la columna 'Fecha' como respaldo.")
-        _df["Fecha"] = pd.to_datetime(_df.get("Fecha"), errors="coerce")
-        _df["Año_sel"] = _df["Fecha"].dt.year
-        _df["Mes_sel"] = _df["Fecha"].dt.month
+        _df["Año_sel"] = _df["Fecha_dt"].dt.year
+        _df["Mes_sel"] = _df["Fecha_dt"].dt.month
 
     _df = _df.dropna(subset=["Año_sel"])
 
@@ -3561,11 +3513,8 @@ if active_section == "📈 Ingresos & egresos":
 
     # Construir Periodo usando Año/Mes
     if periodo == "Mensual":
-        _df = _df.dropna(subset=["Mes_sel"])
-        _df["Periodo"] = pd.to_datetime(
-            dict(year=_df["Año_sel"].astype(int), month=_df["Mes_sel"].astype(int), day=1),
-            errors="coerce"
-        )
+        _df = _df.dropna(subset=["Periodo_ref"])
+        _df["Periodo"] = _df["Periodo_ref"]
         label_x = "Mes"
         x_hover = "%b %Y"
     else:
@@ -4126,11 +4075,11 @@ if active_section == "📈 Ingresos & egresos":
             .apply(_highlight_first_row, axis=1)
         )
         if sit_cols_det:
-            styler_det = styler_det.applymap(_style_sit, subset=sit_cols_det)
+            styler_det = styler_det.map(_style_sit, subset=sit_cols_det)
         if cc_cols_det:
-            styler_det = styler_det.applymap(_style_cc, subset=cc_cols_det)
+            styler_det = styler_det.map(_style_cc, subset=cc_cols_det)
         if monto_cols_det:
-            styler_det = styler_det.applymap(_style_monto, subset=monto_cols_det)
+            styler_det = styler_det.map(_style_monto, subset=monto_cols_det)
         st.caption("Colores guía: fila principal azul suave · PAGADO verde · NO PAGADO rojo · EGRESO rojo / INGRESO verde.")
         st.dataframe(
             styler_det,

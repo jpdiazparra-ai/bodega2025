@@ -11,6 +11,7 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+from xml.sax.saxutils import escape
 
 # =========================
 # Configuración base
@@ -171,7 +172,7 @@ if st.sidebar.button("🔄 Actualizar datos (limpiar caché)"):
 def load_data(url: str) -> pd.DataFrame:
     df = pd.read_csv(url)
     # Normalización y tipos
-    df["Fecha"] = pd.to_datetime(df.get("Fecha"), errors="coerce")
+    df["Fecha"] = pd.to_datetime(df.get("Fecha"), errors="coerce", dayfirst=True)
     df["Monto"] = pd.to_numeric(
         df["Monto"].astype(str).str.replace(r"[^\d\.-]", "", regex=True),
         errors="coerce"
@@ -195,7 +196,7 @@ df = load_data(CSV_URL)
 @st.cache_data(show_spinner=False)
 def enrich_base_data(df_in: pd.DataFrame) -> pd.DataFrame:
     df_out = df_in.copy()
-    df_out["Fecha_dt"] = pd.to_datetime(df_out.get("Fecha"), errors="coerce")
+    df_out["Fecha_dt"] = pd.to_datetime(df_out.get("Fecha"), errors="coerce", dayfirst=True)
     df_out["CC_norm"] = df_out["CC"].astype(str).str.strip().str.upper()
     df_out["Sit_norm"] = df_out["Sit"].astype(str).str.strip().str.upper()
     df_out["Obs_text"] = df_out["Obs"].astype(str)
@@ -707,6 +708,277 @@ def _format_pdf_df(df_in: pd.DataFrame) -> pd.DataFrame:
             df[c] = df[c].apply(lambda v: str(v))
     return df
 
+
+def build_detalle_movimientos_excel(
+    df_in: pd.DataFrame,
+    filtros: dict[str, str],
+    kpis: dict[str, float],
+    resumen_obs: pd.DataFrame | None = None,
+) -> bytes:
+    output = BytesIO()
+    df_export = df_in.copy()
+    if "Fecha" in df_export.columns:
+        df_export["Fecha"] = pd.to_datetime(df_export["Fecha"], errors="coerce").dt.strftime("%Y-%m-%d")
+
+    filtros_df = pd.DataFrame(
+        [{"Campo": k, "Valor": v} for k, v in filtros.items()]
+        + [{"Campo": k, "Valor": v} for k, v in kpis.items()]
+    )
+    resumen_obs_export = resumen_obs.copy() if resumen_obs is not None else pd.DataFrame()
+
+    try:
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df_export.to_excel(writer, index=False, sheet_name="detalle_filtrado")
+            filtros_df.to_excel(writer, index=False, sheet_name="resumen")
+            if not resumen_obs_export.empty:
+                resumen_obs_export.to_excel(writer, index=False, sheet_name="resumen_obs")
+
+            wb = writer.book
+            head_fmt = wb.add_format({"bold": True, "bg_color": "#163A5F", "font_color": "#FFFFFF", "border": 1})
+            money_fmt = wb.add_format({"num_format": "$#,##0"})
+            ws = writer.sheets["detalle_filtrado"]
+
+            for col_idx, col_name in enumerate(df_export.columns):
+                ws.write(0, col_idx, col_name, head_fmt)
+                values = df_export[col_name].astype(str) if not df_export.empty else pd.Series([str(col_name)])
+                max_len = max([len(str(col_name))] + values.str.len().fillna(0).astype(int).tolist())
+                width = min(max(max_len + 2, 10), 36)
+                if col_name == "Monto":
+                    ws.set_column(col_idx, col_idx, 14, money_fmt)
+                else:
+                    ws.set_column(col_idx, col_idx, width)
+
+            if len(df_export.columns) > 0:
+                ws.autofilter(0, 0, max(len(df_export), 1), len(df_export.columns) - 1)
+                ws.freeze_panes(1, 0)
+
+            ws_resumen = writer.sheets["resumen"]
+            ws_resumen.set_column(0, 0, 24)
+            ws_resumen.set_column(1, 1, 28)
+
+            if not resumen_obs_export.empty:
+                ws_obs = writer.sheets["resumen_obs"]
+                for col_idx, col_name in enumerate(resumen_obs_export.columns):
+                    ws_obs.write(0, col_idx, col_name, head_fmt)
+                    values = resumen_obs_export[col_name].astype(str)
+                    width = min(max([len(str(col_name))] + values.str.len().fillna(0).astype(int).tolist()) + 2, 38)
+                    if col_name in {"Pagado", "No pagado", "Abono", "Deuda a la fecha", "TOTAL OBS (FILTRO)"}:
+                        ws_obs.set_column(col_idx, col_idx, 16, money_fmt)
+                    else:
+                        ws_obs.set_column(col_idx, col_idx, max(width, 10))
+                ws_obs.freeze_panes(1, 0)
+    except ModuleNotFoundError:
+        from openpyxl.styles import Font, PatternFill
+        from openpyxl.utils import get_column_letter
+
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            df_export.to_excel(writer, index=False, sheet_name="detalle_filtrado")
+            filtros_df.to_excel(writer, index=False, sheet_name="resumen")
+            if not resumen_obs_export.empty:
+                resumen_obs_export.to_excel(writer, index=False, sheet_name="resumen_obs")
+
+            ws = writer.sheets["detalle_filtrado"]
+            fill = PatternFill(fill_type="solid", fgColor="163A5F")
+            font = Font(color="FFFFFF", bold=True)
+            for cell in ws[1]:
+                cell.fill = fill
+                cell.font = font
+
+            for col_idx, col_name in enumerate(df_export.columns, start=1):
+                values = df_export[col_name].astype(str) if not df_export.empty else pd.Series([str(col_name)])
+                max_len = max([len(str(col_name))] + values.str.len().fillna(0).astype(int).tolist())
+                ws.column_dimensions[get_column_letter(col_idx)].width = min(max(max_len + 2, 10), 36)
+                if col_name == "Monto":
+                    for cell in ws[get_column_letter(col_idx)][1:]:
+                        cell.number_format = "$#,##0"
+
+            if len(df_export.columns) > 0:
+                ws.auto_filter.ref = ws.dimensions
+                ws.freeze_panes = "A2"
+
+            ws_resumen = writer.sheets["resumen"]
+            ws_resumen.column_dimensions["A"].width = 24
+            ws_resumen.column_dimensions["B"].width = 28
+
+            if not resumen_obs_export.empty:
+                ws_obs = writer.sheets["resumen_obs"]
+                for cell in ws_obs[1]:
+                    cell.fill = fill
+                    cell.font = font
+                for col_idx, col_name in enumerate(resumen_obs_export.columns, start=1):
+                    values = resumen_obs_export[col_name].astype(str)
+                    width = min(max([len(str(col_name))] + values.str.len().fillna(0).astype(int).tolist()) + 2, 38)
+                    ws_obs.column_dimensions[get_column_letter(col_idx)].width = max(width, 10)
+                    if col_name in {"Pagado", "No pagado", "Abono", "Deuda a la fecha", "TOTAL OBS (FILTRO)"}:
+                        for cell in ws_obs[get_column_letter(col_idx)][1:]:
+                            cell.number_format = "$#,##0"
+                ws_obs.freeze_panes = "A2"
+
+    output.seek(0)
+    return output.getvalue()
+
+
+def build_detalle_movimientos_pdf(
+    df_in: pd.DataFrame,
+    filtros: dict[str, str],
+    kpis: dict[str, float],
+    resumen_obs: pd.DataFrame | None = None,
+) -> bytes:
+    output = BytesIO()
+    doc = SimpleDocTemplate(
+        output,
+        pagesize=landscape(A4),
+        title="Detalle filtrable de movimientos",
+        leftMargin=24,
+        rightMargin=24,
+        topMargin=24,
+        bottomMargin=24,
+    )
+    styles = getSampleStyleSheet()
+    base = ParagraphStyle("DetalleBase", parent=styles["Normal"], fontSize=7.2, leading=8.6, wordWrap="CJK")
+    header = ParagraphStyle(
+        "DetalleHeader",
+        parent=base,
+        fontName="Helvetica-Bold",
+        alignment=TA_CENTER,
+        textColor=colors.white,
+    )
+    left = ParagraphStyle("DetalleLeft", parent=base, alignment=TA_LEFT)
+    right = ParagraphStyle("DetalleRight", parent=base, alignment=TA_RIGHT)
+    title_style = ParagraphStyle(
+        "DetalleTitle",
+        parent=styles["Title"],
+        fontName="Helvetica-Bold",
+        fontSize=16,
+        leading=19,
+        textColor=colors.HexColor("#0F2D52"),
+        alignment=TA_LEFT,
+    )
+    meta_style = ParagraphStyle(
+        "DetalleMeta",
+        parent=styles["Normal"],
+        fontSize=8.2,
+        leading=10,
+        textColor=colors.HexColor("#334155"),
+    )
+
+    df_export = df_in.copy()
+    if "Fecha" in df_export.columns:
+        df_export["Fecha"] = pd.to_datetime(df_export["Fecha"], errors="coerce").dt.strftime("%Y-%m-%d")
+    resumen_obs_export = resumen_obs.copy() if resumen_obs is not None else pd.DataFrame()
+
+    story = [
+        Paragraph("Detalle filtrable de movimientos", title_style),
+        Paragraph(f"Generado: {pd.Timestamp.now().strftime('%d-%m-%Y %H:%M')}", meta_style),
+        Spacer(1, 8),
+    ]
+
+    resumen_items = [f"{k}: {v}" for k, v in filtros.items()]
+    resumen_items += [f"{k}: {fmt_clp_largo(v) if isinstance(v, (int, float, np.integer, np.floating)) else v}" for k, v in kpis.items()]
+    story.append(Paragraph(escape(" · ".join(resumen_items)), meta_style))
+    story.append(Spacer(1, 10))
+
+    if df_export.empty:
+        story.append(Paragraph("No hay movimientos para los filtros seleccionados.", meta_style))
+        doc.build(story)
+        output.seek(0)
+        return output.getvalue()
+
+    if not resumen_obs_export.empty:
+        story.append(Paragraph("Resumen de montos por OBS", title_style))
+        obs_cols = list(resumen_obs_export.columns)
+        obs_data = [[Paragraph(escape(str(c)), header) for c in obs_cols]]
+        for _, row in resumen_obs_export.iterrows():
+            rendered_row = []
+            for c, v in row.items():
+                if pd.isna(v):
+                    txt = ""
+                elif c in {"Pagado", "No pagado", "Abono", "Deuda a la fecha", "TOTAL OBS (FILTRO)"}:
+                    txt = f"${float(v):,.0f}"
+                else:
+                    txt = str(v)
+                rendered_row.append(Paragraph(escape(txt), right if c in {"Pagado", "No pagado", "Abono", "Deuda a la fecha", "TOTAL OBS (FILTRO)"} else left))
+            obs_data.append(rendered_row)
+        obs_weights = []
+        for c in obs_cols:
+            if c == "OBS":
+                obs_weights.append(2.2)
+            elif c == "Registros":
+                obs_weights.append(0.8)
+            else:
+                obs_weights.append(1.15)
+        obs_total_weight = sum(obs_weights) or 1
+        obs_tbl = Table(
+            obs_data,
+            colWidths=[doc.width * (w / obs_total_weight) for w in obs_weights],
+            repeatRows=1,
+        )
+        obs_style = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#163A5F")),
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#CBD5E1")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ]
+        for r in range(1, len(obs_data)):
+            if (r - 1) % 2 == 0:
+                obs_style.append(("BACKGROUND", (0, r), (-1, r), colors.HexColor("#F8FAFC")))
+        obs_tbl.setStyle(TableStyle(obs_style))
+        story.append(obs_tbl)
+        story.append(Spacer(1, 12))
+        story.append(Paragraph("Detalle filtrado", title_style))
+        story.append(Spacer(1, 6))
+
+    data = [[Paragraph(escape(str(c)), header) for c in df_export.columns]]
+    for _, row in df_export.iterrows():
+        rendered_row = []
+        for c, v in row.items():
+            if pd.isna(v):
+                txt = ""
+            elif c == "Monto":
+                try:
+                    txt = f"${float(v):,.0f}"
+                except Exception:
+                    txt = str(v)
+            else:
+                txt = str(v)
+            rendered_row.append(Paragraph(escape(txt), right if c == "Monto" else left))
+        data.append(rendered_row)
+
+    weights = []
+    for c in df_export.columns:
+        if c in {"Fecha", "Año", "Mes", "Esp", "CC", "Sit", "Monto"}:
+            weights.append(1.0)
+        elif c in {"Responsable", "CC1"}:
+            weights.append(1.6)
+        else:
+            weights.append(2.4)
+    total_weight = sum(weights) or 1
+    col_widths = [doc.width * (w / total_weight) for w in weights]
+
+    tbl = Table(data, colWidths=col_widths, repeatRows=1)
+    style_cmds = [
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#163A5F")),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#CBD5E1")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 3),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+    ]
+    for r in range(1, len(data)):
+        if (r - 1) % 2 == 0:
+            style_cmds.append(("BACKGROUND", (0, r), (-1, r), colors.HexColor("#F8FAFC")))
+    tbl.setStyle(TableStyle(style_cmds))
+    story.append(tbl)
+
+    doc.build(story)
+    output.seek(0)
+    return output.getvalue()
+
 @st.cache_data(show_spinner=False)
 def build_electricidad_pdf(
     title: str,
@@ -1011,6 +1283,40 @@ def kpi_resumen_panel(titulo, subtitulo, items):
     )
 
 
+def kpi_resumen_obs_panel(titulo, subtitulo, items):
+    rows = []
+    for item in items:
+        rows.append(
+            (
+                f'<div class="kpi-summary-row kpi-summary-row-obs">'
+                f'<div class="kpi-summary-label">{item["label"]}</div>'
+                f'<div class="kpi-summary-meta">{item["meta"]}</div>'
+                f'<div class="kpi-summary-value">{item["pagado"]}</div>'
+                f'<div class="kpi-summary-value">{item["no_pagado"]}</div>'
+                f'<div class="kpi-summary-value">{item["abono"]}</div>'
+                f'<div class="kpi-summary-value">{item["pendiente_deuda"]}</div>'
+                f'<div class="kpi-summary-value">{item["value"]}</div>'
+                f'</div>'
+            )
+        )
+    return (
+        f'<div class="kpi-summary-card kpi-summary-card-obs">'
+        f'<div class="kpi-summary-eyebrow">{titulo}</div>'
+        f'<div class="kpi-summary-title">{subtitulo}</div>'
+        f'<div class="kpi-summary-head kpi-summary-head-obs">'
+        f'<div>OBS</div>'
+        f'<div>Descripción</div>'
+        f'<div>Pagado</div>'
+        f'<div>No pagado</div>'
+        f'<div>Abono</div>'
+        f'<div>Deuda a la fecha</div>'
+        f'<div>Valor</div>'
+        f'</div>'
+        f'<div class="kpi-summary-list">{"".join(rows)}</div>'
+        f'</div>'
+    )
+
+
 def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: str = "section-heading-title") -> str:
     subtitle_html = f'<div class="section-heading-sub">{subtitulo}</div>' if subtitulo else ""
     return (
@@ -1029,10 +1335,8 @@ CAPEX = 151_834_571
 def compute_base_kpis(df_in: pd.DataFrame, capex: float) -> dict[str, float]:
     mask_canon = (
         df_in["CC_norm"].eq("INGRESO") &
-        (
-            df_in["CC1_text"].str.contains("arriendo", case=False, na=False) |
-            df_in["Obs_text"].str.contains("canon", case=False, na=False)
-        )
+        df_in["CC1_text"].str.strip().str.lower().eq("arriendo") &
+        df_in["Obs_text"].str.strip().str.lower().eq("canon mensual")
     )
     ingresos_canon = df_in.loc[mask_canon, "Monto"].sum()
     cobertura_capex = ingresos_canon / capex if capex else 0.0
@@ -1047,7 +1351,7 @@ def compute_base_kpis(df_in: pd.DataFrame, capex: float) -> dict[str, float]:
     mask_sit_pagado = df_in["Sit_norm"].eq("PAGADO")
     mask_sit_abono = df_in["Sit_norm"].str.startswith("ABONO")
     mask_sueldo_accionista = df_in["Obs_text"].str.contains(
-        r"sueldos?\s+accion(?:ista|ita)s?",
+        r"sueldos?\s+accion(?:ista|ita)s?|sueldo\s+adolfo\s+orellana|sueldo\s+jonathan\s+mac[-\s]*kay",
         case=False,
         na=False,
         regex=True,
@@ -1328,6 +1632,51 @@ st.markdown("""
         white-space: nowrap;
         padding-left: 14px;
     }
+    .kpi-summary-compact .kpi-summary-card {
+        padding: 14px 18px;
+        border-radius: 20px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        margin: 6px 0 12px 0;
+    }
+    .kpi-summary-compact .kpi-summary-eyebrow {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+    .kpi-summary-compact .kpi-summary-title {
+        font-size: 12.5px;
+        margin-bottom: 10px;
+    }
+    .kpi-summary-compact .kpi-summary-head {
+        padding-bottom: 8px;
+        font-size: 11px;
+    }
+    .kpi-summary-compact .kpi-summary-row {
+        padding: 10px 0;
+    }
+    .kpi-summary-compact .kpi-summary-label,
+    .kpi-summary-compact .kpi-summary-value {
+        font-size: 13.5px;
+    }
+    .kpi-summary-compact .kpi-summary-meta {
+        font-size: 12.5px;
+    }
+    .kpi-summary-card-obs {
+        overflow-x: auto;
+    }
+    .kpi-summary-head-obs,
+    .kpi-summary-row-obs {
+        grid-template-columns: minmax(160px, 1.35fr) minmax(82px, 0.65fr) minmax(90px, 0.78fr) minmax(96px, 0.84fr) minmax(84px, 0.72fr) minmax(112px, 0.92fr) minmax(96px, 0.84fr);
+    }
+    .kpi-summary-head-obs > div:nth-child(n+3),
+    .kpi-summary-row-obs > div:nth-child(n+3) {
+        text-align: right;
+    }
+    .kpi-summary-compact .kpi-summary-row-obs {
+        min-width: 900px;
+    }
+    .kpi-summary-compact .kpi-summary-head-obs {
+        min-width: 900px;
+    }
     .section-heading-wrap {
         margin: 6px 0 14px 0;
     }
@@ -1477,7 +1826,7 @@ if active_section == "🏠 Visión general":
                 "💹 Utilidad / CAPEX",
                 f"{utilidad_sobre_capex:.2f}x",
                 "#7FA6A2",
-                subtitulo="Sueldos accionistas acumulados relativos a la inversión total",
+                subtitulo="Sueldos Adolfo Orellana y Jonathan Mac-Kay relativos a la inversión total",
                 etiqueta="Bloque 3",
                 size="top",
             ),
@@ -1664,13 +2013,11 @@ if active_section == "🏠 Visión general":
     # Usa df_f si existen filtros aplicados; si no, usa df completo
     data_src = df_f if "df_f" in locals() else df
 
-    # Filtro canon: CC == INGRESO y (CC1 contiene "arriendo" o Obs contiene "canon")
+    # Filtro canon: CC == INGRESO y CC1 == Arriendo y Obs == Canon mensual
     mask_canon = (
-        (data_src["CC"].astype(str) == "INGRESO") &
-        (
-            data_src["CC1"].astype(str).str.contains("arriendo", case=False, na=False) |
-            data_src["Obs"].astype(str).str.contains("canon", case=False, na=False)
-        )
+        data_src["CC"].astype(str).str.strip().str.upper().eq("INGRESO") &
+        data_src["CC1"].astype(str).str.strip().str.lower().eq("arriendo") &
+        data_src["Obs"].astype(str).str.strip().str.lower().eq("canon mensual")
     )
 
     # Agregado anual
@@ -2901,10 +3248,8 @@ if active_section == "🏢 Canon anual / mensual":
 
     mask_canon_mensual = (
         (_data_src["CC_norm"] == "INGRESO") &
-        (
-            _data_src["CC1_text"].str.contains("canon mensual", case=False, na=False) |
-            _data_src["Obs_text"].str.contains("canon mensual", case=False, na=False)
-        )
+        _data_src["CC1_text"].str.strip().str.lower().eq("arriendo") &
+        _data_src["Obs_text"].str.strip().str.lower().eq("canon mensual")
     )
     dm = _data_src.loc[mask_canon_mensual].copy()
     dm = dm.dropna(subset=["Esp_num", "Periodo_ref"])
@@ -3136,10 +3481,8 @@ if active_section == "🏢 Canon anual / mensual":
 
     canon_mask = (
         (_df["CC_norm"] == "INGRESO") &
-        (
-            _df["CC1_text"].str.contains(r"canon\s*mensual|canon.*arriendo|arriendo.*mensual", case=False, na=False) |
-            _df["Obs_text"].str.contains(r"canon\s*mensual|canon.*arriendo|arriendo.*mensual", case=False, na=False)
-        )
+        _df["CC1_text"].str.strip().str.lower().eq("arriendo") &
+        _df["Obs_text"].str.strip().str.lower().eq("canon mensual")
     )
     dm = _df.loc[canon_mask].copy()
     dm = dm.dropna(subset=["Año_sel", "Esp_num", "Monto"])
@@ -3463,6 +3806,16 @@ if active_section == "🏢 Canon anual / mensual":
 # =========================================================
 if active_section == "📈 Ingresos & egresos":
     st.markdown(
+        """
+        <style>
+        .kpi-card-top {
+            display: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
         section_heading("📈", "Ingresos vs Egresos — Totales por período", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
     )
@@ -3484,6 +3837,18 @@ if active_section == "📈 Ingresos & egresos":
 
     import plotly.graph_objects as go
 
+    _df = df_f.dropna(subset=["Monto"]).copy()
+    _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
+    _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+
+    if _df["Mes_sel"].isna().all():
+        _df["Año_sel"] = _df["Fecha_dt"].dt.year
+        _df["Mes_sel"] = _df["Fecha_dt"].dt.month
+
+    _df = _df.dropna(subset=["Año_sel"])
+    years = sorted(_df["Año_sel"].dropna().astype(int).unique().tolist())
+    year_opts = ["Todos"] + years
+
     c1, c2, c3 = st.columns([1, 1, 2])
     with c1:
         periodo = st.radio("Periodo", ["Mensual", "Anual"], horizontal=True, index=0, key="periodo_ing_eg")
@@ -3491,20 +3856,6 @@ if active_section == "📈 Ingresos & egresos":
         st.caption("Se usan montos desde la columna F (Monto). Ingresos y egresos según columna CC.")
     with c3:
         pass
-
-    _df = df_f.dropna(subset=["Monto"]).copy()
-    _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
-    _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
-
-    if _df["Mes_sel"].isna().all():
-        st.warning("La columna 'Mes' no tiene datos. Usando la columna 'Fecha' como respaldo.")
-        _df["Año_sel"] = _df["Fecha_dt"].dt.year
-        _df["Mes_sel"] = _df["Fecha_dt"].dt.month
-
-    _df = _df.dropna(subset=["Año_sel"])
-
-    years = sorted(_df["Año_sel"].dropna().astype(int).unique().tolist())
-    year_opts = ["Todos"] + years
 
     c_year, c_month = st.columns([1, 1])
     with c_year:
@@ -3908,7 +4259,7 @@ if active_section == "📈 Ingresos & egresos":
     for c in ["CC1", "Obs", "Responsable"]:
         df_det[c] = df_det[c].astype(str).str.strip()
 
-    d1, d2, d3, d4 = st.columns([1, 1, 1, 1])
+    d1, d2, d3, d4, d5, d6 = st.columns([1, 1, 1, 1, 1, 1])
     with d1:
         cc1_opts = ["Todos"] + sorted([v for v in df_det["CC1"].dropna().unique().tolist() if v != ""])
         sel_cc1_det = st.selectbox("CC1", cc1_opts, index=0, key="det_cc1")
@@ -3939,53 +4290,109 @@ if active_section == "📈 Ingresos & egresos":
     if sel_anio_det != "Todos" and "Año" in df_det_f.columns:
         df_det_f = df_det_f[pd.to_numeric(df_det_f["Año"], errors="coerce").astype("Int64") == int(sel_anio_det)]
 
+    with d5:
+        if "Mes_sel" in df_det_f.columns:
+            mes_vals = pd.to_numeric(df_det_f["Mes_sel"], errors="coerce").dropna().astype(int).unique().tolist()
+            mes_opts = ["Todos"] + sorted(mes_vals)
+        else:
+            mes_opts = ["Todos"]
+        sel_mes_det = st.selectbox("Mes", mes_opts, index=0, key="det_mes")
+    if sel_mes_det != "Todos" and "Mes_sel" in df_det_f.columns:
+        df_det_f = df_det_f[pd.to_numeric(df_det_f["Mes_sel"], errors="coerce").astype("Int64") == int(sel_mes_det)]
+
+    with d6:
+        if "Sit" in df_det_f.columns:
+            sit_opts = ["Todos"] + sorted([v for v in df_det_f["Sit"].dropna().unique().tolist() if v != ""])
+        else:
+            sit_opts = ["Todos"]
+        sel_sit_det = st.multiselect("Situación", sit_opts, default=["Todos"], key="det_sit")
+    if "Todos" not in sel_sit_det and sel_sit_det and "Sit" in df_det_f.columns:
+        df_det_f = df_det_f[df_det_f["Sit"].isin(sel_sit_det)]
+
     # KPIs de detalle (debajo de selectores)
     sit_det = df_det_f["Sit"].astype(str).str.strip().str.upper() if "Sit" in df_det_f.columns else pd.Series([], dtype=str)
     monto_total_det = float(df_det_f["Monto"].sum()) if not df_det_f.empty else 0.0
-    monto_por_pagar_det = float(df_det_f.loc[sit_det == "NO PAGADO", "Monto"].abs().sum()) if not df_det_f.empty else 0.0
-    monto_pagado_det = float(df_det_f.loc[sit_det == "PAGADO", "Monto"].abs().sum()) if not df_det_f.empty else 0.0
+    monto_por_pagar_det = abs(float(df_det_f.loc[sit_det == "NO PAGADO", "Monto"].sum())) if not df_det_f.empty else 0.0
+    monto_pagado_det = abs(float(df_det_f.loc[sit_det == "PAGADO", "Monto"].sum())) if not df_det_f.empty else 0.0
     monto_abonos_det = float(
         df_det_f.loc[df_det_f["Obs"].astype(str).str.contains("abono", case=False, na=False), "Monto"].abs().sum()
     ) if not df_det_f.empty else 0.0
 
-    k_det1, k_det2, k_det3, k_det4 = st.columns(4)
-    with k_det1:
-        st.markdown(
-            card_finanza(
-                "MONTO TOTAL (FILTRO)",
-                fmt_clp_largo(monto_total_det),
-                "#1D4ED8",
-            ),
-            unsafe_allow_html=True,
+    resumen_obs_export = pd.DataFrame()
+    if "Obs" in df_det_f.columns and not df_det_f.empty:
+        resumen_obs = df_det_f.copy()
+        resumen_obs["Obs_resumen"] = resumen_obs["Obs"].astype(str).str.strip().replace("", "Sin OBS")
+        resumen_obs["Sit_resumen"] = resumen_obs["Sit"].astype(str).str.strip().str.upper() if "Sit" in resumen_obs.columns else ""
+        resumen_obs["Monto_pagado_obs"] = np.where(resumen_obs["Sit_resumen"].eq("PAGADO"), resumen_obs["Monto"], 0.0)
+        resumen_obs["Monto_no_pagado_obs"] = np.where(resumen_obs["Sit_resumen"].eq("NO PAGADO"), resumen_obs["Monto"], 0.0)
+        mask_abono_obs_det = (
+            resumen_obs["Sit_resumen"].str.startswith("ABONO") |
+            resumen_obs["Obs_resumen"].astype(str).str.contains("abono", case=False, na=False)
         )
-    with k_det2:
-        st.markdown(
-            card_finanza(
-                "MONTO POR PAGAR",
-                fmt_clp_largo(monto_por_pagar_det),
-                "#EF4444",
-            ),
-            unsafe_allow_html=True,
+        resumen_obs["Monto_abono_obs"] = np.where(mask_abono_obs_det, resumen_obs["Monto"], 0.0)
+        resumen_obs_tbl = (
+            resumen_obs.groupby("Obs_resumen", dropna=False)
+            .agg(
+                Registros=("Monto", "size"),
+                Pagado=("Monto_pagado_obs", "sum"),
+                **{"No pagado": ("Monto_no_pagado_obs", "sum")},
+                Abono=("Monto_abono_obs", "sum"),
+                **{"TOTAL OBS (FILTRO)": ("Monto", "sum")},
+            )
+            .reset_index()
+            .rename(columns={"Obs_resumen": "OBS"})
         )
-    with k_det3:
-        st.markdown(
-            card_finanza(
-                "MONTO PAGADO",
-                fmt_clp_largo(monto_pagado_det),
-                "#10B981",
-            ),
-            unsafe_allow_html=True,
+        resumen_obs_tbl["Deuda a la fecha"] = resumen_obs_tbl["No pagado"] - resumen_obs_tbl["Abono"]
+        resumen_obs_tbl = (
+            resumen_obs_tbl.sort_values("TOTAL OBS (FILTRO)", ascending=True)
+            .reset_index(drop=True)
         )
-    with k_det4:
-        st.markdown(
-            card_finanza(
-                "ABONOS",
-                fmt_clp_largo(monto_abonos_det),
-                "#0E7490",
-            ),
-            unsafe_allow_html=True,
-        )
-
+        if not resumen_obs_tbl.empty:
+            mostrar_fila_total_obs = len(resumen_obs_tbl) > 1
+            if mostrar_fila_total_obs:
+                resumen_obs_tbl = pd.concat(
+                    [
+                        resumen_obs_tbl,
+                        pd.DataFrame(
+                            [
+                                {
+                                    "OBS": "TOTAL TABLA (FILTRO)",
+                                    "Registros": len(resumen_obs),
+                                    "Pagado": resumen_obs["Monto_pagado_obs"].sum(),
+                                    "No pagado": resumen_obs["Monto_no_pagado_obs"].sum(),
+                                    "Abono": resumen_obs["Monto_abono_obs"].sum(),
+                                    "Deuda a la fecha": resumen_obs["Monto_no_pagado_obs"].sum() - resumen_obs["Monto_abono_obs"].sum(),
+                                    "TOTAL OBS (FILTRO)": monto_total_det,
+                                }
+                            ]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+            resumen_obs_export = resumen_obs_tbl.copy()
+            resumen_obs_items = []
+            for _, row in resumen_obs_tbl.iterrows():
+                resumen_obs_items.append(
+                    {
+                        "label": escape(str(row["OBS"])),
+                        "meta": f'{int(row["Registros"]):,} registros'.replace(",", "."),
+                        "pagado": fmt_clp_largo(float(row["Pagado"])),
+                        "no_pagado": fmt_clp_largo(float(row["No pagado"])),
+                        "abono": fmt_clp_largo(float(row["Abono"])),
+                        "pendiente_deuda": fmt_clp_largo(float(row["Deuda a la fecha"])),
+                        "value": fmt_clp_largo(float(row["TOTAL OBS (FILTRO)"])),
+                    }
+                )
+            st.markdown(
+                '<div class="kpi-summary-compact">'
+                + kpi_resumen_obs_panel(
+                    "Resumen de montos por OBS",
+                    "Montos agrupados según los filtros activos del detalle",
+                    resumen_obs_items,
+                )
+                + "</div>",
+                unsafe_allow_html=True,
+            )
     if "Fecha" in df_det_f.columns:
         df_det_f["Fecha"] = pd.to_datetime(df_det_f["Fecha"], errors="coerce")
         df_det_f = df_det_f.sort_values(["Fecha", "Año", "Mes"], ascending=[False, False, False], na_position="last")
@@ -4001,7 +4408,58 @@ if active_section == "📈 Ingresos & egresos":
     else:
         df_det_show = df_det_view.copy()
         if "Fecha" in df_det_show.columns:
-            df_det_show["Fecha"] = pd.to_datetime(df_det_show["Fecha"], errors="coerce").dt.strftime("%Y-%m-%d")
+            df_det_show["Fecha"] = (
+                pd.to_datetime(df_det_show["Fecha"], errors="coerce")
+                .dt.strftime("%Y-%m-%d")
+                .fillna("Sin fecha")
+            )
+
+        filtros_det_export = {
+            "CC1": sel_cc1_det,
+            "OBS": sel_obs_det,
+            "Responsable": sel_resp_det,
+            "Año": sel_anio_det,
+            "Mes": sel_mes_det,
+            "Situación": ", ".join(sel_sit_det) if sel_sit_det else "Todos",
+            "Registros": str(len(df_det_view)),
+        }
+        kpis_det_export = {
+            "Total tabla (filtro)": monto_total_det,
+            "Monto por pagar": monto_por_pagar_det,
+            "Monto pagado": monto_pagado_det,
+            "Abonos": monto_abonos_det,
+        }
+        pdf_detalle = build_detalle_movimientos_pdf(
+            df_det_view,
+            filtros_det_export,
+            kpis_det_export,
+            resumen_obs_export,
+        )
+        excel_detalle = build_detalle_movimientos_excel(
+            df_det_view,
+            filtros_det_export,
+            kpis_det_export,
+            resumen_obs_export,
+        )
+
+        dl_pdf_det, dl_excel_det, _ = st.columns([1.1, 1.15, 5])
+        with dl_pdf_det:
+            st.download_button(
+                "📄 Descargar PDF",
+                data=pdf_detalle,
+                file_name="detalle_movimientos_filtrado.pdf",
+                mime="application/pdf",
+                key="download_detalle_movimientos_pdf",
+            )
+        with dl_excel_det:
+            st.download_button(
+                "📊 Descargar Excel",
+                data=excel_detalle,
+                file_name="detalle_movimientos_filtrado.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="download_detalle_movimientos_excel",
+            )
+
         st.caption("Vista acotada a 20 filas visibles. Usa el scroll interno de la tabla para recorrer todo.")
         visible_rows = 20
         row_height_px = 35

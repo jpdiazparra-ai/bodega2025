@@ -4483,7 +4483,7 @@ if active_section == "📈 Ingresos & egresos":
             ),
         )
         resumen_obs_tbl = (
-            resumen_obs_tbl.sort_values("Deuda a la fecha", ascending=True)
+            resumen_obs_tbl.sort_values("Pagado", ascending=True)
             .reset_index(drop=True)
         )
         if not resumen_obs_tbl.empty:

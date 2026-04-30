@@ -2768,25 +2768,40 @@ if active_section == "⚠️ Riesgos & cobranzas":
         df_cancel = df_cancel[df_cancel["Responsable_clean"] == sel_resp_cancel]
     df_cancel_scope = df_cancel.copy()
 
+    obs_cancel_norm = (
+        df_cancel["Obs_text"].fillna("").astype(str)
+        .str.normalize("NFKD")
+        .str.encode("ascii", errors="ignore")
+        .str.decode("utf-8")
+        .str.casefold()
+        .str.replace(r"\s+", " ", regex=True)
+        .str.strip()
+    )
     txt_cancel = (
-        df_cancel["CC1_text"].fillna("")
+        df_cancel["CC1_text"].fillna("").astype(str)
         + " "
-        + df_cancel["Obs_text"].fillna("")
-    ).str.lower()
+        + df_cancel["Obs_text"].fillna("").astype(str)
+    ).str.normalize("NFKD").str.encode("ascii", errors="ignore").str.decode("utf-8").str.casefold()
+
+    mask_obs_gc = obs_cancel_norm.str.contains(r"\bpago arrendatario\s*-\s*gc\b", regex=True, na=False)
+    mask_obs_verisure = obs_cancel_norm.str.contains(r"\bpago arrendatario\s*-\s*verisure\b", regex=True, na=False)
+    mask_obs_interes = obs_cancel_norm.str.contains(r"\binteres bancario\b", regex=True, na=False)
+    mask_obs_garantia = obs_cancel_norm.str.contains(r"\bgarantia\b", regex=True, na=False)
 
     df_cancel["Concepto"] = np.select(
         [
             txt_cancel.str.contains(r"canon\s*mensual", regex=True, na=False),
-            txt_cancel.str.contains(r"gastos?\s*comunes?", regex=True, na=False),
+            mask_obs_gc,
             txt_cancel.str.contains(r"\bcge\b|boleta\s*cge|electricidad", regex=True, na=False),
-            txt_cancel.str.contains(r"verisure", regex=True, na=False),
-            txt_cancel.str.contains(r"administrativ[oa]", regex=True, na=False),
+            mask_obs_verisure,
+            mask_obs_interes,
+            mask_obs_garantia,
         ],
-        ["Canon mensual", "Gastos comunes", "CGE", "Verisure", "Administrativo"],
+        ["Canon mensual", "Gastos comunes", "CGE", "Verisure", "Administrativo", "Garantia"],
         default="Otros",
     )
 
-    conceptos_objetivo = ["Canon mensual", "Gastos comunes", "CGE", "Verisure", "Administrativo"]
+    conceptos_objetivo = ["Canon mensual", "Gastos comunes", "CGE", "Verisure", "Administrativo", "Garantia"]
     df_cancel = df_cancel[df_cancel["Concepto"].isin(conceptos_objetivo)].copy()
     df_cancel["Monto_abs"] = df_cancel["Monto"].abs()
 
@@ -2876,7 +2891,10 @@ if active_section == "⚠️ Riesgos & cobranzas":
         .apply(lambda s: sorted(s.dropna().unique().tolist()))
     )
 
-    tabla_cancel = tabla_cancel[conceptos_objetivo]
+    mostrar_garantia = float(pd.to_numeric(tabla_cancel["Garantia"], errors="coerce").fillna(0).abs().sum()) > 0
+    conceptos_visibles = [c for c in conceptos_objetivo if c != "Garantia" or mostrar_garantia]
+
+    tabla_cancel = tabla_cancel[conceptos_visibles]
     tabla_cancel.insert(
         0,
         "Responsable",
@@ -2885,7 +2903,11 @@ if active_section == "⚠️ Riesgos & cobranzas":
     tabla_cancel["Deuda"] = tabla_cancel.index.to_series().map(
         lambda esp: sum(deuda_por_resp.get(r, 0) for r in responsables_lista_por_esp.get(esp, []))
     ).fillna(0)
-    tabla_cancel["Total a cancelar"] = tabla_cancel[conceptos_objetivo + ["Deuda"]].sum(axis=1)
+    tabla_cancel["Total a cancelar"] = tabla_cancel[conceptos_visibles + ["Deuda"]].sum(axis=1)
+    if sel_resp_cancel != "Todos" and len(idx_esp) > 1:
+        tabla_cancel = tabla_cancel[
+            pd.to_numeric(tabla_cancel["Total a cancelar"], errors="coerce").fillna(0) != 0
+        ]
     tabla_cancel.index = [f"Esp {i}" for i in tabla_cancel.index]
 
     if df_cancel.empty:
@@ -2978,14 +3000,20 @@ if active_section == "⚠️ Riesgos & cobranzas":
 
     import plotly.graph_objects as go
 
-    chart_cols = conceptos_objetivo + ["Deuda"]
+    chart_cols = conceptos_visibles + ["Deuda"]
     chart_df = tabla_cancel.reset_index().rename(columns={"index": "Espacio"}).copy()
     single_space_view = len(chart_df) == 1
+    responsable_un_espacio = sel_resp_cancel != "Todos" and len(idx_esp) == 1
     single_month_one_space = (
         single_space_view
-        and sel_year_cancel != "Todos"
-        and sel_month_cancel != "Todos"
-        and str(sel_esp_cancel).strip().lower() not in {"todos", "todas"}
+        and (
+            (
+                sel_year_cancel != "Todos"
+                and sel_month_cancel != "Todos"
+                and str(sel_esp_cancel).strip().lower() not in {"todos", "todas"}
+            )
+            or responsable_un_espacio
+        )
     )
 
     fig_cancel = go.Figure()
@@ -2995,6 +3023,7 @@ if active_section == "⚠️ Riesgos & cobranzas":
         "CGE": "#DCAA67",
         "Verisure": "#A8A8A8",
         "Administrativo": "#D85E5D",
+        "Garantia": "#1D4ED8",
         "Deuda": "#D85E5D",
     }
 

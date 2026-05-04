@@ -18,6 +18,12 @@ from xml.sax.saxutils import escape
 # =========================
 st.set_page_config(page_title="Análisis Financiero - OK-DTA V2", layout="wide")
 
+CHART_GRAY = "#A8A8A8"
+CHART_RED = "#D85E5D"
+CHART_GOLD = "#DCAA67"
+CHART_TEAL = "#7FA6A2"
+CHART_DARK = "#4B5563"
+
 # --- Logo -> data URI ---
 def data_uri(path: str) -> str:
     p = Path(path)
@@ -745,6 +751,7 @@ def build_detalle_movimientos_excel(
     filtros: dict[str, str],
     kpis: dict[str, float],
     resumen_obs: pd.DataFrame | None = None,
+    grafico_obs: pd.DataFrame | None = None,
 ) -> bytes:
     output = BytesIO()
     df_export = df_in.copy()
@@ -756,6 +763,17 @@ def build_detalle_movimientos_excel(
         + [{"Campo": k, "Valor": v} for k, v in kpis.items()]
     )
     resumen_obs_export = resumen_obs.copy() if resumen_obs is not None else pd.DataFrame()
+    grafico_obs_export = grafico_obs.copy() if grafico_obs is not None else pd.DataFrame()
+    if not grafico_obs_export.empty and "Periodo_chart" in grafico_obs_export.columns:
+        grafico_obs_export["Periodo"] = pd.to_datetime(
+            grafico_obs_export["Periodo_chart"],
+            errors="coerce",
+        ).dt.strftime("%Y-%m")
+        chart_cols_export = [
+            c for c in ["Periodo", "Registros", "Pagado", "No pagado", "Abono", "RESULTADO", "Deuda a la fecha"]
+            if c in grafico_obs_export.columns
+        ]
+        grafico_obs_export = grafico_obs_export[chart_cols_export]
 
     try:
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
@@ -763,6 +781,8 @@ def build_detalle_movimientos_excel(
             filtros_df.to_excel(writer, index=False, sheet_name="resumen")
             if not resumen_obs_export.empty:
                 resumen_obs_export.to_excel(writer, index=False, sheet_name="resumen_obs")
+            if not grafico_obs_export.empty:
+                grafico_obs_export.to_excel(writer, index=False, sheet_name="grafico_obs")
 
             wb = writer.book
             head_fmt = wb.add_format({"bold": True, "bg_color": "#163A5F", "font_color": "#FFFFFF", "border": 1})
@@ -801,9 +821,48 @@ def build_detalle_movimientos_excel(
                         result_fmt = wb.add_format({"num_format": "$#,##0", "bold": True, "bg_color": "#DBEAFE", "font_color": "#0F2D52"})
                         ws_obs.set_column(col_idx, col_idx, 16, result_fmt)
                 ws_obs.freeze_panes(1, 0)
+            if not grafico_obs_export.empty:
+                ws_chart = writer.sheets["grafico_obs"]
+                for col_idx, col_name in enumerate(grafico_obs_export.columns):
+                    ws_chart.write(0, col_idx, col_name, head_fmt)
+                    width = 18 if col_name != "Periodo" else 14
+                    if col_name in {"Pagado", "No pagado", "Abono", "RESULTADO", "Deuda a la fecha"}:
+                        ws_chart.set_column(col_idx, col_idx, width, money_fmt)
+                    else:
+                        ws_chart.set_column(col_idx, col_idx, width)
+                ws_chart.freeze_panes(1, 0)
+                if len(grafico_obs_export) > 0:
+                    col_lookup = {c: i for i, c in enumerate(grafico_obs_export.columns)}
+                    chart_bar = wb.add_chart({"type": "column"})
+                    for col_name, color in [("Pagado", CHART_TEAL), ("No pagado", CHART_RED), ("Abono", CHART_GOLD)]:
+                        if col_name in col_lookup:
+                            chart_bar.add_series({
+                                "name": ["grafico_obs", 0, col_lookup[col_name]],
+                                "categories": ["grafico_obs", 1, col_lookup["Periodo"], len(grafico_obs_export), col_lookup["Periodo"]],
+                                "values": ["grafico_obs", 1, col_lookup[col_name], len(grafico_obs_export), col_lookup[col_name]],
+                                "fill": {"color": color},
+                                "border": {"color": color},
+                            })
+                    if "Deuda a la fecha" in col_lookup:
+                        chart_line = wb.add_chart({"type": "line"})
+                        chart_line.add_series({
+                            "name": ["grafico_obs", 0, col_lookup["Deuda a la fecha"]],
+                            "categories": ["grafico_obs", 1, col_lookup["Periodo"], len(grafico_obs_export), col_lookup["Periodo"]],
+                            "values": ["grafico_obs", 1, col_lookup["Deuda a la fecha"], len(grafico_obs_export), col_lookup["Deuda a la fecha"]],
+                            "line": {"color": CHART_DARK, "width": 2.5},
+                            "marker": {"type": "circle", "size": 6, "border": {"color": CHART_DARK}, "fill": {"color": CHART_DARK}},
+                        })
+                        chart_bar.combine(chart_line)
+                    chart_bar.set_title({"name": "Evolución por año y mes según OBS"})
+                    chart_bar.set_x_axis({"name": "Periodo"})
+                    chart_bar.set_y_axis({"name": "Monto (CLP)", "num_format": "$#,##0"})
+                    chart_bar.set_legend({"position": "bottom"})
+                    chart_bar.set_size({"width": 860, "height": 380})
+                    ws_chart.insert_chart("I2", chart_bar)
     except ModuleNotFoundError:
         from openpyxl.styles import Font, PatternFill
         from openpyxl.utils import get_column_letter
+        from openpyxl.chart import BarChart, LineChart, Reference
 
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
@@ -811,6 +870,8 @@ def build_detalle_movimientos_excel(
             filtros_df.to_excel(writer, index=False, sheet_name="resumen")
             if not resumen_obs_export.empty:
                 resumen_obs_export.to_excel(writer, index=False, sheet_name="resumen_obs")
+            if not grafico_obs_export.empty:
+                grafico_obs_export.to_excel(writer, index=False, sheet_name="grafico_obs")
 
             ws = writer.sheets["detalle_filtrado"]
             fill = PatternFill(fill_type="solid", fgColor="163A5F")
@@ -854,6 +915,47 @@ def build_detalle_movimientos_excel(
                             cell.fill = result_fill
                             cell.font = result_font
                 ws_obs.freeze_panes = "A2"
+            if not grafico_obs_export.empty:
+                ws_chart = writer.sheets["grafico_obs"]
+                for cell in ws_chart[1]:
+                    cell.fill = fill
+                    cell.font = font
+                for col_idx, col_name in enumerate(grafico_obs_export.columns, start=1):
+                    ws_chart.column_dimensions[get_column_letter(col_idx)].width = 18 if col_name != "Periodo" else 14
+                    if col_name in {"Pagado", "No pagado", "Abono", "RESULTADO", "Deuda a la fecha"}:
+                        for cell in ws_chart[get_column_letter(col_idx)][1:]:
+                            cell.number_format = "$#,##0"
+                ws_chart.freeze_panes = "A2"
+                col_lookup = {c: i + 1 for i, c in enumerate(grafico_obs_export.columns)}
+                if len(grafico_obs_export) > 0 and {"Periodo", "Pagado", "No pagado", "Abono"}.issubset(col_lookup):
+                    bar = BarChart()
+                    data = Reference(
+                        ws_chart,
+                        min_col=col_lookup["Pagado"],
+                        max_col=col_lookup["Abono"],
+                        min_row=1,
+                        max_row=len(grafico_obs_export) + 1,
+                    )
+                    cats = Reference(ws_chart, min_col=col_lookup["Periodo"], min_row=2, max_row=len(grafico_obs_export) + 1)
+                    bar.add_data(data, titles_from_data=True)
+                    bar.set_categories(cats)
+                    bar.title = "Evolución por año y mes según OBS"
+                    bar.y_axis.title = "Monto (CLP)"
+                    bar.x_axis.title = "Periodo"
+                    bar.height = 9
+                    bar.width = 19
+                    if "Deuda a la fecha" in col_lookup:
+                        line = LineChart()
+                        line_data = Reference(
+                            ws_chart,
+                            min_col=col_lookup["Deuda a la fecha"],
+                            min_row=1,
+                            max_row=len(grafico_obs_export) + 1,
+                        )
+                        line.add_data(line_data, titles_from_data=True)
+                        line.set_categories(cats)
+                        bar += line
+                    ws_chart.add_chart(bar, "I2")
 
     output.seek(0)
     return output.getvalue()
@@ -864,6 +966,7 @@ def build_detalle_movimientos_pdf(
     filtros: dict[str, str],
     kpis: dict[str, float],
     resumen_obs: pd.DataFrame | None = None,
+    grafico_obs: pd.DataFrame | None = None,
 ) -> bytes:
     output = BytesIO()
     doc = SimpleDocTemplate(
@@ -907,6 +1010,7 @@ def build_detalle_movimientos_pdf(
     if "Fecha" in df_export.columns:
         df_export["Fecha"] = pd.to_datetime(df_export["Fecha"], errors="coerce").dt.strftime("%Y-%m-%d")
     resumen_obs_export = resumen_obs.copy() if resumen_obs is not None else pd.DataFrame()
+    grafico_obs_export = grafico_obs.copy() if grafico_obs is not None else pd.DataFrame()
 
     story = [
         Paragraph("Detalle filtrable de movimientos", title_style),
@@ -977,6 +1081,97 @@ def build_detalle_movimientos_pdf(
         obs_tbl.setStyle(TableStyle(obs_style))
         story.append(obs_tbl)
         story.append(Spacer(1, 12))
+
+        if not grafico_obs_export.empty:
+            story.append(Paragraph("Evolución por año y mes según OBS", title_style))
+            try:
+                fig_obs_pdf = build_obs_periodo_figure(grafico_obs_export)
+                png_bytes = fig_obs_pdf.to_image(format="png", width=1180, height=520, scale=2)
+                img_buf = BytesIO(png_bytes)
+                story.append(RLImage(img_buf, width=doc.width, height=290))
+                story.append(Spacer(1, 12))
+            except Exception:
+                matplotlib_rendered = False
+                try:
+                    import os
+                    import tempfile
+
+                    os.environ.setdefault("MPLCONFIGDIR", tempfile.gettempdir())
+                    import matplotlib.pyplot as plt
+
+                    chart_pdf = grafico_obs_export.copy()
+                    chart_pdf["Periodo_label"] = (
+                        chart_pdf["Periodo_txt"]
+                        if "Periodo_txt" in chart_pdf.columns
+                        else pd.to_datetime(chart_pdf["Periodo_chart"], errors="coerce").dt.strftime("%Y-%m")
+                    )
+                    x_pos = np.arange(len(chart_pdf))
+                    width = 0.24
+                    fig, ax = plt.subplots(figsize=(11.8, 4.9), dpi=180)
+                    ax.bar(x_pos - width, chart_pdf["Pagado"], width, label="Pagado", color=CHART_TEAL)
+                    ax.bar(x_pos, chart_pdf["No pagado"], width, label="No pagado", color=CHART_RED)
+                    ax.bar(x_pos + width, chart_pdf["Abono"], width, label="Abono", color=CHART_GOLD)
+                    ax.plot(
+                        x_pos,
+                        chart_pdf["Deuda a la fecha"],
+                        label="Deuda a la fecha",
+                        color=CHART_DARK,
+                        linewidth=2.4,
+                        marker="o",
+                        markersize=4.8,
+                    )
+                    ax.axhline(0, color=CHART_GRAY, linewidth=0.8)
+                    ax.set_title("Evolución por año y mes según OBS", loc="left", fontsize=12, weight="bold", color="#0F2D52")
+                    ax.set_ylabel("Monto (CLP)")
+                    tick_idx = [i for i in range(len(chart_pdf)) if i % 6 == 0]
+                    if len(chart_pdf) > 1 and (len(chart_pdf) - 1) not in tick_idx:
+                        tick_idx.append(len(chart_pdf) - 1)
+                    ax.set_xticks(x_pos[tick_idx])
+                    ax.set_xticklabels(chart_pdf["Periodo_label"].iloc[tick_idx], rotation=0, ha="center")
+                    ax.grid(axis="y", color="#E2E8F0", linewidth=0.7)
+                    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=4, frameon=False)
+                    ax.yaxis.set_major_formatter(lambda v, _: f"${v:,.0f}")
+                    fig.subplots_adjust(left=0.08, right=0.98, top=0.88, bottom=0.22)
+                    img_buf = BytesIO()
+                    fig.savefig(img_buf, format="png", bbox_inches="tight", facecolor="white")
+                    plt.close(fig)
+                    img_buf.seek(0)
+                    story.append(RLImage(img_buf, width=doc.width, height=290))
+                    story.append(Spacer(1, 12))
+                    matplotlib_rendered = True
+                except Exception:
+                    matplotlib_rendered = False
+
+                if not matplotlib_rendered:
+                    chart_cols = [
+                        c for c in ["Periodo_txt", "Registros", "Pagado", "No pagado", "Abono", "RESULTADO", "Deuda a la fecha"]
+                        if c in grafico_obs_export.columns
+                    ]
+                    chart_data = [[Paragraph(escape("Periodo" if c == "Periodo_txt" else str(c)), header) for c in chart_cols]]
+                    for _, row in grafico_obs_export[chart_cols].iterrows():
+                        rendered_row = []
+                        for c, v in row.items():
+                            if pd.isna(v):
+                                txt = ""
+                            elif c in {"Pagado", "No pagado", "RESULTADO", "Abono", "Deuda a la fecha"}:
+                                txt = f"${float(v):,.0f}"
+                            else:
+                                txt = str(v)
+                            rendered_row.append(Paragraph(escape(txt), right if c != "Periodo_txt" else left))
+                        chart_data.append(rendered_row)
+                    chart_tbl = Table(chart_data, repeatRows=1)
+                    chart_tbl.setStyle(TableStyle([
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#163A5F")),
+                        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#CBD5E1")),
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                        ("TOPPADDING", (0, 0), (-1, -1), 3),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                    ]))
+                    story.append(chart_tbl)
+                    story.append(Spacer(1, 12))
+
         story.append(Paragraph("Detalle filtrado", title_style))
         story.append(Spacer(1, 6))
 
@@ -1283,6 +1478,81 @@ def fmt_short(v: float) -> str:
     return f"${v:,.0f}"
 
 
+def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
+    import plotly.graph_objects as go
+
+    fig_obs_periodo = go.Figure()
+    fig_obs_periodo.add_trace(
+        go.Scatter(
+            x=chart_periodo["Periodo_chart"],
+            y=chart_periodo["Deuda a la fecha"],
+            mode="markers",
+            name="Resumen",
+            marker=dict(size=18, color="rgba(0,0,0,0)"),
+            showlegend=False,
+            customdata=chart_periodo[["Hover"]] if "Hover" in chart_periodo.columns else None,
+            hovertemplate="<b>%{x|%b %Y}</b><br>%{customdata[0]}<extra></extra>",
+        )
+    )
+    series_obs = [
+        ("Pagado", CHART_TEAL),
+        ("No pagado", CHART_RED),
+        ("Abono", CHART_GOLD),
+    ]
+    for col_name, color in series_obs:
+        fig_obs_periodo.add_trace(
+            go.Bar(
+                x=chart_periodo["Periodo_chart"],
+                y=chart_periodo[col_name],
+                name=col_name,
+                marker_color=color,
+                hoverinfo="skip",
+            )
+        )
+
+    fig_obs_periodo.add_trace(
+        go.Scatter(
+            x=chart_periodo["Periodo_chart"],
+            y=chart_periodo["Deuda a la fecha"],
+            name="Deuda a la fecha",
+            mode="lines+markers",
+            line=dict(color=CHART_DARK, width=3, shape="spline"),
+            marker=dict(size=8, color=CHART_DARK, line=dict(width=2, color="white")),
+            hoverinfo="skip",
+        )
+    )
+
+    fig_obs_periodo.add_hline(y=0, line_width=1, line_color=CHART_GRAY)
+    fig_obs_periodo.update_layout(
+        height=430,
+        barmode="relative",
+        margin=dict(l=20, r=20, t=36, b=20),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(248,250,252,0.92)",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="left",
+            x=0,
+        ),
+        xaxis=dict(
+            title="Período",
+            tickformat="%b %Y",
+            showgrid=False,
+        ),
+        yaxis=dict(
+            title="Monto (CLP)",
+            tickprefix="$",
+            separatethousands=True,
+            gridcolor="#E2E8F0",
+            zeroline=False,
+        ),
+        hovermode="x unified",
+    )
+    return fig_obs_periodo
+
+
 def card_finanza(titulo, valor, color_hex, subtitulo="Indicador financiero clave", etiqueta="Indicador", size="md"):
     size_map = {
         "lg": ("42px", "kpi-card kpi-card-lg"),
@@ -1438,7 +1708,12 @@ def compute_base_kpis(df_in: pd.DataFrame, capex: float) -> dict[str, float]:
         mask_egreso & df_in["Sit_norm"].eq("NO PAGADO"),
         "Monto",
     ].sum()
-    posicion_neta = cuentas_por_cobrar_neto + total_egresos_por_pagar + saldo_cuenta
+
+    deuda_fin_ejercicio = (
+        df_in.loc[df_in["Sit_norm"].eq("NO PAGADO"), "Monto"].sum()
+        - total_abonos
+    )
+    posicion_neta = saldo_cuenta - abs(deuda_fin_ejercicio) if deuda_fin_ejercicio < 0 else saldo_cuenta + deuda_fin_ejercicio
 
     return {
         "ingresos_canon": float(ingresos_canon),
@@ -1459,6 +1734,7 @@ def compute_base_kpis(df_in: pd.DataFrame, capex: float) -> dict[str, float]:
         "pct_cobranza": float((abonos_total / no_pagado_total) if no_pagado_total else 0.0),
         "cuentas_por_cobrar_neto": float(cuentas_por_cobrar_neto),
         "total_egresos_por_pagar": float(total_egresos_por_pagar),
+        "deuda_fin_ejercicio": float(deuda_fin_ejercicio),
         "posicion_neta": float(posicion_neta),
         "balance_kpi": float(saldo_cuenta),
     }
@@ -1483,6 +1759,7 @@ abonos_total = base_kpis["abonos_total"]
 pct_cobranza = base_kpis["pct_cobranza"]
 cuentas_por_cobrar_neto = base_kpis["cuentas_por_cobrar_neto"]
 total_egresos_por_pagar = base_kpis["total_egresos_por_pagar"]
+deuda_fin_ejercicio = base_kpis["deuda_fin_ejercicio"]
 posicion_neta = base_kpis["posicion_neta"]
 balance_kpi = base_kpis["balance_kpi"]
 
@@ -2113,6 +2390,8 @@ if active_section == "🏠 Visión general":
             .rolling(window=3, min_periods=1)
             .mean()
         )
+        df_canon["YoY"] = df_canon["Canon_anual_CLP"].pct_change().replace([np.inf, -np.inf], 0).fillna(0)
+        df_canon["Acumulado"] = df_canon["Canon_anual_CLP"].cumsum()
 
         # ---------- KPI resumen ----------
         ultimo_anio = int(df_canon["Año"].max())
@@ -2130,7 +2409,7 @@ if active_section == "🏠 Visión general":
             valor_prev = None
             var_yoy = 0.0
 
-        color_yoy = "#10B981" if var_yoy >= 0 else "#EF4444"
+        color_yoy = CHART_TEAL if var_yoy >= 0 else CHART_RED
 
         st.markdown(
             f"""
@@ -2151,100 +2430,109 @@ if active_section == "🏠 Visión general":
         )
 
         # ---------- GRÁFICO ----------
-        fig = go.Figure()
+        from plotly.subplots import make_subplots
 
-        # Barras: canon anual
+        df_canon["Hover"] = (
+            "Canon anual: $" + df_canon["Canon_anual_CLP"].map(lambda v: f"{v:,.0f}")
+            + "<br>Promedio móvil MA-3: $" + df_canon["MA3"].map(lambda v: f"{v:,.0f}")
+            + "<br>Variación YoY: " + df_canon["YoY"].map(lambda v: f"{v:+.1%}")
+            + "<br>Acumulado: $" + df_canon["Acumulado"].map(lambda v: f"{v:,.0f}")
+        )
+
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+        fig.add_trace(
+            go.Scatter(
+                x=df_canon["Año"],
+                y=df_canon["Canon_anual_CLP"],
+                mode="markers",
+                name="Resumen",
+                marker=dict(size=20, color="rgba(0,0,0,0)"),
+                showlegend=False,
+                customdata=df_canon[["Hover"]],
+                hovertemplate="<b>Año %{x}</b><br>%{customdata[0]}<extra></extra>",
+            ),
+            secondary_y=False,
+        )
+
         fig.add_trace(
             go.Bar(
                 x=df_canon["Año"],
                 y=df_canon["Canon_anual_CLP"],
-                name="Canon anual (CLP)",
+                name="Canon anual",
                 marker=dict(
-                    color="rgba(127, 166, 162, 0.92)",
-                    line=dict(width=1.0, color="rgba(255,255,255,0.6)"),
+                    color=CHART_TEAL,
+                    line=dict(width=1.0, color="rgba(255,255,255,0.75)"),
                 ),
-                hovertemplate="<b>Año %{x}</b><br>Canon: $%{y:,.0f}<extra></extra>",
-            )
+                hoverinfo="skip",
+            ),
+            secondary_y=False,
         )
 
-        # Línea: MA-3 (glow + línea principal)
         fig.add_trace(
             go.Scatter(
                 x=df_canon["Año"],
                 y=df_canon["MA3"],
-                name="Promedio móvil (MA-3)",
-                mode="lines",
-                line=dict(color="rgba(216,94,93,0.24)", width=8),
-                hoverinfo="skip",
-                showlegend=False,
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=df_canon["Año"],
-                y=df_canon["MA3"],
-                name="Promedio móvil (MA-3)",
+                name="Promedio móvil MA-3",
                 mode="lines+markers",
-                line=dict(color="#D85E5D", width=3),
-                marker=dict(color="#D85E5D", size=6, line=dict(color="white", width=1)),
-                hovertemplate="<b>Año %{x}</b><br>MA-3: $%{y:,.0f}<extra></extra>",
-            )
+                line=dict(color=CHART_DARK, width=3.2, shape="spline"),
+                marker=dict(color=CHART_DARK, size=7, line=dict(color="white", width=1.5)),
+                hoverinfo="skip",
+            ),
+            secondary_y=False,
         )
-
-        # Sombreado técnico bajo la línea
-        x_list = df_canon["Año"].tolist()
-        y_ma = df_canon["MA3"].astype(float)
-        y_lower = (y_ma * 0.97).tolist()
-        y_upper = (y_ma * 1.03).tolist()
 
         fig.add_trace(
             go.Scatter(
-                x=x_list + x_list[::-1],
-                y=y_lower + y_upper[::-1],
-                fill="toself",
-                fillcolor="rgba(216,94,93,0.08)",
-                line=dict(color="rgba(0,0,0,0)"),
+                x=df_canon["Año"],
+                y=df_canon["YoY"],
+                name="Variación YoY",
+                mode="lines+markers",
+                line=dict(color=CHART_GOLD, width=2.4, dash="dot"),
+                marker=dict(
+                    size=7,
+                    color=np.where(df_canon["YoY"] >= 0, CHART_GOLD, CHART_RED),
+                    line=dict(color="white", width=1.2),
+                ),
                 hoverinfo="skip",
-                showlegend=False,
-            )
+            ),
+            secondary_y=True,
         )
+
+        if len(df_canon) >= 1:
+            last_row = df_canon.iloc[-1]
+            fig.add_annotation(
+                x=last_row["Año"],
+                y=last_row["Canon_anual_CLP"],
+                text=f"${last_row['Canon_anual_CLP']:,.0f}",
+                showarrow=True,
+                arrowhead=2,
+                ax=-34,
+                ay=-34,
+                bgcolor="rgba(255,255,255,0.92)",
+                bordercolor="#CBD5E1",
+                borderwidth=1,
+                font=dict(size=11, color="#0F172A"),
+            )
 
         fig.update_layout(
             template="plotly_white",
-            height=500,
-            margin=dict(l=20, r=20, t=56, b=20),
+            height=540,
+            margin=dict(l=24, r=42, t=74, b=30),
             title=dict(
-                text="📊 Ingresos por Canon de Arriendo (Anual)",
+                text="Ingresos por Canon de Arriendo · evolución anual",
                 x=0.01,
                 xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
+                font=dict(size=19, color="#0F2D52"),
             ),
             legend=dict(
                 orientation="h",
-                y=1.12,
-                x=0.5,
-                xanchor="center",
+                yanchor="bottom",
+                y=1.02,
+                x=0.01,
+                xanchor="left",
                 font=dict(size=12),
-                bgcolor="rgba(255,255,255,0.85)",
-                bordercolor="rgba(15,45,82,0.15)",
-                borderwidth=1,
-            ),
-            xaxis=dict(
-                title="Año",
-                tickmode="linear",
-                showgrid=False,
-                linecolor="rgba(15,45,82,0.25)",
-                tickfont=dict(size=12, color="#334155"),
-            ),
-            yaxis=dict(
-                title="Monto (CLP)",
-                tickformat=",.0f",
-                gridcolor="rgba(15,45,82,0.10)",
-                zeroline=False,
-                ticks="outside",
-                ticklen=6,
-                tickfont=dict(size=12, color="#334155"),
-                linecolor="rgba(15,45,82,0.20)",
+                bgcolor="rgba(255,255,255,0)",
             ),
             plot_bgcolor="#F8FAFC",
             paper_bgcolor="#F8FAFC",
@@ -2256,6 +2544,35 @@ if active_section == "🏠 Visión general":
                 bordercolor="#E5E7EB",
             ),
             bargap=0.22,
+        )
+        fig.add_hline(y=0, line_width=1, line_color=CHART_GRAY, opacity=0.6, secondary_y=False)
+        fig.update_xaxes(
+            title_text="Año",
+            tickmode="linear",
+            dtick=1,
+            showgrid=False,
+            linecolor="rgba(15,45,82,0.25)",
+            tickfont=dict(size=12, color="#334155"),
+        )
+        fig.update_yaxes(
+            title_text="Canon CLP",
+            tickprefix="$",
+            separatethousands=True,
+            gridcolor="rgba(15,45,82,0.10)",
+            zeroline=False,
+            ticks="outside",
+            ticklen=6,
+            tickfont=dict(size=12, color="#334155"),
+            linecolor="rgba(15,45,82,0.20)",
+            secondary_y=False,
+        )
+        fig.update_yaxes(
+            title_text="YoY",
+            tickformat=".0%",
+            showgrid=False,
+            zeroline=False,
+            tickfont=dict(size=12, color="#334155"),
+            secondary_y=True,
         )
 
 
@@ -2600,10 +2917,10 @@ if active_section == "⚠️ Riesgos & cobranzas":
     with col_kpi3:
         st.markdown(
             card_finanza(
-                "POSICIÓN NETA (CXC + EPP + BN)",
+                "POSICIÓN NETA (BCI - DEUDA)",
                 f"${posicion_neta:,.0f}",
                 pos_neta_color,
-                subtitulo="Lectura global de exposición financiera",
+                subtitulo="Caja Banco BCI menos deuda al fin del ejercicio",
                 etiqueta="Resumen",
                 size="risk",
             ),
@@ -4040,88 +4357,168 @@ if active_section == "📈 Ingresos & egresos":
         k1, k2, k3 = st.columns(3)
         with k1:
             st.markdown(
-                card_finanza("TOTAL INGRESO", fmt_clp_largo(total_ing), "#10B981"),
+                card_finanza("TOTAL INGRESO", fmt_clp_largo(total_ing), CHART_TEAL),
                 unsafe_allow_html=True,
             )
         with k2:
             st.markdown(
-                card_finanza("TOTAL EGRESO", fmt_clp_largo(total_egr), "#EF4444"),
+                card_finanza("TOTAL EGRESO", fmt_clp_largo(total_egr), CHART_RED),
                 unsafe_allow_html=True,
             )
         with k3:
-            net_color = "#10B981" if total_neto >= 0 else "#EF4444"
+            net_color = CHART_TEAL if total_neto >= 0 else CHART_RED
             st.markdown(
                 card_finanza("TOTAL NETO", fmt_clp_largo(total_neto), net_color),
                 unsafe_allow_html=True,
             )
 
-        fig_ie = go.Figure()
+        from plotly.subplots import make_subplots
+
+        base["Egresos_plot"] = -base["Egresos_abs"]
+        base["Margen"] = np.where(base["Ingresos"] != 0, base["Neto"] / base["Ingresos"], 0.0)
+        base["Neto_color"] = np.where(base["Neto"] >= 0, CHART_TEAL, CHART_RED)
+        base["Tooltip"] = (
+            "Ingresos: $" + base["Ingresos"].map(lambda v: f"{v:,.0f}")
+            + "<br>Egresos: $" + base["Egresos_abs"].map(lambda v: f"{v:,.0f}")
+            + "<br>Neto: $" + base["Neto"].map(lambda v: f"{v:,.0f}")
+            + "<br>Margen: " + base["Margen"].map(lambda v: f"{v:.1%}")
+        )
+
+        fig_ie = make_subplots(specs=[[{"secondary_y": True}]])
 
         fig_ie.add_trace(
             go.Scatter(
                 x=base["Periodo"],
-                y=base["Ingresos"],
-                mode="lines+markers",
-                name="Ingresos",
-                line=dict(color="#10B981", width=3),
-                marker=dict(size=6),
-                hovertemplate=f"<b>{label_x} %{x_hover}</b><br>Ingresos: $%{{y:,.0f}}<extra></extra>",
-            )
-        )
-        fig_ie.add_trace(
-            go.Scatter(
-                x=base["Periodo"],
-                y=base["Egresos_abs"],
-                mode="lines+markers",
-                name="Egresos",
-                line=dict(color="#EF4444", width=3),
-                marker=dict(size=6),
-                hovertemplate=f"<b>{label_x} %{x_hover}</b><br>Egresos: $%{{y:,.0f}}<extra></extra>",
-            )
+                y=base["Neto"],
+                mode="markers",
+                name="Resumen",
+                marker=dict(size=18, color="rgba(0,0,0,0)"),
+                showlegend=False,
+                customdata=base[["Tooltip"]],
+                hovertemplate=f"<b>{label_x} %{{x|{x_hover}}}</b><br>%{{customdata[0]}}<extra></extra>",
+            ),
+            secondary_y=False,
         )
 
         fig_ie.add_trace(
             go.Bar(
                 x=base["Periodo"],
-                y=base["Neto"],
-                name="Neto",
-                marker_color="#2563EB",
-                opacity=0.25,
-                hovertemplate=f"<b>{label_x} %{x_hover}</b><br>Neto: $%{{y:,.0f}}<extra></extra>",
-            )
+                y=base["Ingresos"],
+                name="Ingresos",
+                marker=dict(
+                    color=CHART_TEAL,
+                    line=dict(color=CHART_TEAL, width=1),
+                ),
+                hoverinfo="skip",
+                offsetgroup="flujo",
+            ),
+            secondary_y=False,
         )
+        fig_ie.add_trace(
+            go.Bar(
+                x=base["Periodo"],
+                y=base["Egresos_plot"],
+                name="Egresos",
+                marker=dict(
+                    color=CHART_RED,
+                    line=dict(color=CHART_RED, width=1),
+                ),
+                hoverinfo="skip",
+                offsetgroup="flujo",
+            ),
+            secondary_y=False,
+        )
+        fig_ie.add_trace(
+            go.Scatter(
+                x=base["Periodo"],
+                y=base["Neto"],
+                mode="lines+markers",
+                name="Neto",
+                line=dict(color=CHART_DARK, width=3.2, shape="spline"),
+                marker=dict(
+                    size=8,
+                    color=base["Neto_color"],
+                    line=dict(color="#FFFFFF", width=1.5),
+                ),
+                hoverinfo="skip",
+            ),
+            secondary_y=False,
+        )
+        fig_ie.add_trace(
+            go.Scatter(
+                x=base["Periodo"],
+                y=base["Margen"],
+                mode="lines",
+                name="Margen neto",
+                line=dict(color=CHART_GOLD, width=2.2, dash="dot"),
+                hoverinfo="skip",
+            ),
+            secondary_y=True,
+        )
+
+        fig_ie.add_hline(y=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75, secondary_y=False)
+        if not base.empty:
+            ultimo = base.iloc[-1]
+            fig_ie.add_annotation(
+                x=ultimo["Periodo"],
+                y=ultimo["Neto"],
+                text=f"Neto ${ultimo['Neto']:,.0f}",
+                showarrow=True,
+                arrowhead=2,
+                ax=36,
+                ay=-34 if ultimo["Neto"] >= 0 else 34,
+                bgcolor="rgba(255,255,255,0.92)",
+                bordercolor="#CBD5E1",
+                borderwidth=1,
+                font=dict(size=11, color="#0F172A"),
+            )
 
         fig_ie.update_layout(
             title=dict(
-                text=f"📈 Ingresos y Egresos — {periodo} · {tipo_analisis}",
+                text=f"Ingresos, egresos y resultado neto — {periodo} · {tipo_analisis}",
                 x=0.02,
                 xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
+                font=dict(size=19, color="#0F2D52"),
             ),
-            xaxis_title=label_x,
-            yaxis_title="Monto (CLP)",
             template="plotly_white",
-            height=520,
-            margin=dict(l=20, r=20, t=78, b=20),
+            height=560,
+            margin=dict(l=24, r=34, t=84, b=34),
             legend=dict(
                 orientation="h",
+                yanchor="bottom",
                 y=1.02,
-                x=0.02,
-                bgcolor="rgba(255,255,255,0.85)",
-                bordercolor="rgba(15,45,82,0.15)",
-                borderwidth=1,
+                xanchor="left",
+                x=0.01,
+                bgcolor="rgba(255,255,255,0)",
             ),
             hovermode="x unified",
             paper_bgcolor="#F8FAFC",
             plot_bgcolor="#FFFFFF",
+            bargap=0.24,
         )
-        fig_ie.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+        fig_ie.update_xaxes(
+            title_text=label_x,
+            showgrid=False,
+            linecolor="rgba(15,45,82,0.25)",
+            tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
+            rangeslider=dict(visible=(periodo == "Mensual"), thickness=0.06),
+        )
         fig_ie.update_yaxes(
+            title_text="Flujo CLP",
             showgrid=True,
             gridcolor="rgba(15,45,82,0.10)",
             zeroline=False,
-            tickformat=",.0f",
+            tickprefix="$",
+            separatethousands=True,
             linecolor="rgba(15,45,82,0.20)",
+            secondary_y=False,
+        )
+        fig_ie.update_yaxes(
+            title_text="Margen",
+            tickformat=".0%",
+            showgrid=False,
+            zeroline=False,
+            secondary_y=True,
         )
 
         st.plotly_chart(
@@ -4199,9 +4596,9 @@ if active_section == "📈 Ingresos & egresos":
     def color_by_sign_or_cc(series_values, series_dim=None):
         if series_dim == "CC":
             return series_values.map(
-                {"INGRESO": "#10B981", "EGRESO": "#EF4444"}
-            ).fillna("#2563EB")
-        return series_values.apply(lambda v: "#10B981" if v >= 0 else "#EF4444")
+                {"INGRESO": CHART_TEAL, "EGRESO": CHART_RED}
+            ).fillna(CHART_DARK)
+        return series_values.apply(lambda v: CHART_TEAL if v >= 0 else CHART_RED)
 
     if chart_type == "Barras":
         top_keys = topN[dim].tolist()
@@ -4223,79 +4620,136 @@ if active_section == "📈 Ingresos & egresos":
 
         base_dim["Egresos_abs"] = base_dim["Egresos"].abs()
         base_dim["Neto"] = base_dim["Ingresos"] - base_dim["Egresos_abs"]
+        base_dim = base_dim.merge(topN[[dim, "Total CLP", "N° Transacciones"]], on=dim, how="left")
+        base_dim["Impacto_abs"] = base_dim["Ingresos"].abs() + base_dim["Egresos_abs"]
+        impacto_total = base_dim["Impacto_abs"].sum()
+        base_dim["Concentración"] = np.where(impacto_total != 0, base_dim["Impacto_abs"] / impacto_total, 0.0)
+        base_dim["Neto_color"] = np.where(base_dim["Neto"] >= 0, CHART_TEAL, CHART_RED)
+        base_dim["Tooltip"] = (
+            "Ingresos: $" + base_dim["Ingresos"].map(lambda v: f"{v:,.0f}")
+            + "<br>Egresos: $" + base_dim["Egresos_abs"].map(lambda v: f"{v:,.0f}")
+            + "<br>Neto: $" + base_dim["Neto"].map(lambda v: f"{v:,.0f}")
+            + "<br>Transacciones: " + base_dim["N° Transacciones"].fillna(0).astype(int).astype(str)
+            + "<br>Concentración: " + base_dim["Concentración"].map(lambda v: f"{v:.1%}")
+        )
 
         if order_by == "Total CLP":
-            base_dim = base_dim.merge(topN[[dim, "Total CLP"]], on=dim, how="left")
-            base_dim = base_dim.sort_values("Total CLP", ascending=True)
+            base_dim = base_dim.sort_values("Impacto_abs", ascending=True)
         else:
-            base_dim = base_dim.merge(topN[[dim, "N° Transacciones"]], on=dim, how="left")
             base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
 
         fig_top = go.Figure()
 
         fig_top.add_trace(
             go.Scatter(
-                x=base_dim[dim],
-                y=base_dim["Ingresos"],
-                mode="lines+markers",
-                name="Ingresos",
-                line=dict(color="#10B981", width=3),
-                marker=dict(size=6),
-                hovertemplate="<b>%{x}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
+                x=base_dim["Neto"],
+                y=base_dim[dim],
+                mode="markers",
+                name="Resumen",
+                marker=dict(size=18, color="rgba(0,0,0,0)"),
+                showlegend=False,
+                customdata=base_dim[["Tooltip"]],
+                hovertemplate="<b>%{y}</b><br>%{customdata[0]}<extra></extra>",
             )
         )
+
         fig_top.add_trace(
-            go.Scatter(
-                x=base_dim[dim],
-                y=base_dim["Egresos_abs"],
-                mode="lines+markers",
-                name="Egresos",
-                line=dict(color="#EF4444", width=3),
-                marker=dict(size=6),
-                hovertemplate="<b>%{x}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
+            go.Bar(
+                x=base_dim["Ingresos"],
+                y=base_dim[dim],
+                orientation="h",
+                name="Ingresos",
+                marker=dict(color=CHART_TEAL, line=dict(color=CHART_TEAL, width=1)),
+                hoverinfo="skip",
             )
         )
         fig_top.add_trace(
             go.Bar(
-                x=base_dim[dim],
-                y=base_dim["Neto"],
+                x=-base_dim["Egresos_abs"],
+                y=base_dim[dim],
+                orientation="h",
+                name="Egresos",
+                marker=dict(color=CHART_RED, line=dict(color=CHART_RED, width=1)),
+                hoverinfo="skip",
+            )
+        )
+        fig_top.add_trace(
+            go.Scatter(
+                x=base_dim["Neto"],
+                y=base_dim[dim],
+                mode="markers",
                 name="Neto",
-                marker_color="#2563EB",
-                opacity=0.25,
-                hovertemplate="<b>%{x}</b><br>Neto: $%{y:,.0f}<extra></extra>",
+                marker=dict(
+                    size=np.clip(base_dim["N° Transacciones"].fillna(1).astype(float) * 1.8 + 8, 10, 28),
+                    color=base_dim["Neto_color"],
+                    line=dict(color="#FFFFFF", width=1.8),
+                    symbol="diamond",
+                ),
+                hoverinfo="skip",
             )
         )
 
+        max_abs_riesgo = max(
+            float(base_dim["Ingresos"].abs().max()) if not base_dim.empty else 0.0,
+            float(base_dim["Egresos_abs"].abs().max()) if not base_dim.empty else 0.0,
+            float(base_dim["Neto"].abs().max()) if not base_dim.empty else 0.0,
+            1.0,
+        )
+        top_label = base_dim.iloc[-1] if not base_dim.empty else None
+        if top_label is not None:
+            fig_top.add_annotation(
+                x=top_label["Neto"],
+                y=top_label[dim],
+                text=f"Neto ${top_label['Neto']:,.0f}",
+                showarrow=True,
+                arrowhead=2,
+                ax=34 if top_label["Neto"] >= 0 else -34,
+                ay=-20,
+                bgcolor="rgba(255,255,255,0.92)",
+                bordercolor="#CBD5E1",
+                borderwidth=1,
+                font=dict(size=11, color="#0F172A"),
+            )
+
         fig_top.update_layout(
             title=dict(
-                text=f"📈 Top {top_n} por '{dim}' · {order_by} · {periodo_filtro_lbl}",
+                text=f"Exposición y concentración Top {top_n} por {dim} · {periodo_filtro_lbl}",
                 x=0.02,
                 xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
+                font=dict(size=19, color="#0F2D52"),
             ),
-            xaxis_title=dim,
-            yaxis_title="Monto (CLP)",
             template="plotly_white",
-            margin=dict(l=20, r=20, t=72, b=20),
+            height=max(520, 34 * len(base_dim) + 190),
+            margin=dict(l=24, r=34, t=84, b=36),
             legend=dict(
                 orientation="h",
-                y=1.04,
-                x=0.02,
-                bgcolor="rgba(255,255,255,0.85)",
-                bordercolor="rgba(15,45,82,0.15)",
-                borderwidth=1,
+                yanchor="bottom",
+                y=1.02,
+                xanchor="left",
+                x=0.01,
+                bgcolor="rgba(255,255,255,0)",
             ),
-            hovermode="x unified",
+            hovermode="closest",
             paper_bgcolor="#F8FAFC",
             plot_bgcolor="#FFFFFF",
+            barmode="relative",
         )
-        fig_top.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
-        fig_top.update_yaxes(
+        fig_top.add_vline(x=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75)
+        fig_top.update_xaxes(
+            title_text="Monto CLP",
             showgrid=True,
             gridcolor="rgba(15,45,82,0.10)",
             zeroline=False,
-            tickformat=",.0f",
+            tickprefix="$",
+            separatethousands=True,
+            range=[-max_abs_riesgo * 1.14, max_abs_riesgo * 1.14],
             linecolor="rgba(15,45,82,0.20)",
+        )
+        fig_top.update_yaxes(
+            title_text=dim,
+            showgrid=False,
+            linecolor="rgba(15,45,82,0.25)",
+            automargin=True,
         )
 
         st.plotly_chart(
@@ -4308,21 +4762,23 @@ if active_section == "📈 Ingresos & egresos":
             },
         )
     else:
-        treemap_df = topN.sort_values("Total CLP", ascending=False).copy()
+        treemap_df = topN.copy()
+        treemap_df["Impacto_abs"] = treemap_df["Total CLP"].abs()
+        treemap_df["Neto_color"] = treemap_df["Total CLP"]
         if dim == "CC":
             color_col = dim
             color_scale = None
         else:
-            color_col = "Total CLP"
-            color_scale = ["#EF4444", "#F59E0B", "#10B981"]
+            color_col = "Neto_color"
+            color_scale = [CHART_RED, CHART_GOLD, CHART_TEAL]
 
         fig_tree = px.treemap(
             treemap_df,
             path=[dim],
-            values=sort_col if sort_col in treemap_df.columns else "Total CLP",
+            values="Impacto_abs" if order_by == "Total CLP" else "N° Transacciones",
             color=color_col,
             color_continuous_scale=color_scale,
-            title=f"🧭 Distribución Top {top_n} por '{dim}' · {order_by} · {periodo_filtro_lbl}",
+            title=f"Concentración Top {top_n} por {dim} · {order_by} · {periodo_filtro_lbl}",
         )
         if dim == "CC":
             fig_tree.update_traces(
@@ -4331,8 +4787,8 @@ if active_section == "📈 Ingresos & egresos":
                 )
             )
         fig_tree.update_traces(
-            hovertemplate="<b>%{label}</b><br>Valor: %{value:,.0f}<extra></extra>",
-            textinfo="label+value",
+            hovertemplate="<b>%{label}</b><br>Impacto: $%{value:,.0f}<extra></extra>",
+            textinfo="label+percent entry",
             textfont=dict(size=12),
         )
         fig_tree.update_layout(
@@ -4479,6 +4935,7 @@ if active_section == "📈 Ingresos & egresos":
     ) if not df_det_f.empty else 0.0
 
     resumen_obs_export = pd.DataFrame()
+    grafico_obs_export = pd.DataFrame()
     if "Obs" in df_det_f.columns and not df_det_f.empty:
         resumen_obs = df_det_f.copy()
         resumen_obs["Obs_resumen"] = resumen_obs["Obs"].astype(str).str.strip().replace("", "Sin OBS")
@@ -4569,6 +5026,65 @@ if active_section == "📈 Ingresos & egresos":
                 + "</div>",
                 unsafe_allow_html=True,
             )
+
+            chart_obs = resumen_obs.copy()
+            chart_obs["Año_chart"] = pd.to_numeric(chart_obs.get("Año_sel"), errors="coerce")
+            chart_obs["Mes_chart"] = pd.to_numeric(chart_obs.get("Mes_sel"), errors="coerce")
+            chart_obs = chart_obs.dropna(subset=["Año_chart", "Mes_chart", "Monto"])
+            if not chart_obs.empty:
+                chart_obs["Periodo_chart"] = pd.to_datetime(
+                    dict(
+                        year=chart_obs["Año_chart"].astype(int),
+                        month=chart_obs["Mes_chart"].astype(int),
+                        day=1,
+                    ),
+                    errors="coerce",
+                )
+                chart_obs = chart_obs.dropna(subset=["Periodo_chart"])
+
+            if not chart_obs.empty:
+                chart_periodo = (
+                    chart_obs.groupby("Periodo_chart", as_index=False)
+                    .agg(
+                        Registros=("Monto", "size"),
+                        Pagado=("Monto_pagado_obs", "sum"),
+                        **{"No pagado": ("Monto_no_pagado_obs", "sum")},
+                        Abono=("Monto_abono_obs", "sum"),
+                    )
+                    .sort_values("Periodo_chart")
+                )
+                chart_periodo["RESULTADO"] = chart_periodo["Pagado"] + chart_periodo["No pagado"]
+                chart_periodo["Deuda a la fecha"] = np.where(
+                    (chart_periodo["Pagado"] < 0) & (chart_periodo["No pagado"] < 0),
+                    chart_periodo["No pagado"] + chart_periodo["Abono"],
+                    np.where(
+                        chart_periodo["Pagado"] < 0,
+                        chart_periodo["Pagado"] + chart_periodo["Abono"],
+                        chart_periodo["No pagado"] - chart_periodo["Abono"],
+                    ),
+                )
+                chart_periodo["Periodo_txt"] = chart_periodo["Periodo_chart"].dt.strftime("%Y-%m")
+                chart_periodo["Hover"] = (
+                    "Registros: " + chart_periodo["Registros"].astype(int).astype(str)
+                    + "<br>Pagado: $" + chart_periodo["Pagado"].map(lambda v: f"{v:,.0f}")
+                    + "<br>No pagado: $" + chart_periodo["No pagado"].map(lambda v: f"{v:,.0f}")
+                    + "<br>Abono: $" + chart_periodo["Abono"].map(lambda v: f"{v:,.0f}")
+                    + "<br>Deuda: $" + chart_periodo["Deuda a la fecha"].map(lambda v: f"{v:,.0f}")
+                )
+
+                st.markdown(
+                    section_heading(
+                        "📊",
+                        "Evolución por año y mes según OBS",
+                        "Montos calculados con los mismos selectores del resumen",
+                        weight_class="section-heading-title-soft",
+                    ),
+                    unsafe_allow_html=True,
+                )
+
+                grafico_obs_export = chart_periodo.copy()
+                fig_obs_periodo = build_obs_periodo_figure(chart_periodo)
+                st.plotly_chart(fig_obs_periodo, use_container_width=True)
     if "Fecha" in df_det_f.columns:
         df_det_f["Fecha"] = pd.to_datetime(df_det_f["Fecha"], errors="coerce")
         df_det_f = df_det_f.sort_values(["Fecha", "Año", "Mes"], ascending=[False, False, False], na_position="last")
@@ -4610,12 +5126,14 @@ if active_section == "📈 Ingresos & egresos":
             filtros_det_export,
             kpis_det_export,
             resumen_obs_export,
+            grafico_obs_export,
         )
         excel_detalle = build_detalle_movimientos_excel(
             df_det_view,
             filtros_det_export,
             kpis_det_export,
             resumen_obs_export,
+            grafico_obs_export,
         )
 
         dl_pdf_det, dl_excel_det, _ = st.columns([1.1, 1.15, 5])

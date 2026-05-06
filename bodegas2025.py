@@ -24,6 +24,8 @@ CHART_RED = "#D85E5D"
 CHART_GOLD = "#DCAA67"
 CHART_TEAL = "#7FA6A2"
 CHART_DARK = "#4B5563"
+CHART_BAR_TEAL = "#9DB9B5"
+CHART_BAR_RED = "#D07A75"
 
 # --- Logo -> data URI ---
 def data_uri(path: str) -> str:
@@ -2102,9 +2104,9 @@ st.markdown("---")
 # =========================
 section_options = [
     "🏠 Visión general",
+    "📈 Ingresos & egresos",
     "⚠️ Riesgos & cobranzas",
     "🏢 Canon anual / mensual",
-    "📈 Ingresos & egresos",
     "⚡ Electricidad",
 ]
 active_section = st.radio(
@@ -3019,7 +3021,7 @@ if active_section == "⚠️ Riesgos & cobranzas":
     st.dataframe(styler, use_container_width=True)
 
     st.markdown(
-        section_heading("🧾", "Monto a cancelar por espacio (1 al 7)", weight_class="section-heading-title-soft"),
+        section_heading("🧾", "Información cobranza Gmail", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
     )
     st.caption("Detalle por concepto según Año y Mes, para Esp 1..7.")
@@ -4259,6 +4261,10 @@ if active_section == "📈 Ingresos & egresos":
         st.caption("Se usan montos desde la columna F (Monto). Ingresos y egresos según columna CC.")
 
     df_ie = df_f.copy()
+    fecha_dt_acum_col = "Fecha_dt"
+    anio_acum_col = "Año_sel"
+    mes_acum_col = "Mes_sel"
+    periodo_ref_acum_col = "Periodo_ref"
     if tipo_analisis == "Contable":
         df_ie["Fecha_dt"] = df_ie["Fecha_dt_contable"]
         df_ie["Año_sel"] = df_ie["Año_sel_contable"]
@@ -4267,6 +4273,10 @@ if active_section == "📈 Ingresos & egresos":
         df_ie["Fecha"] = df_ie["FECHA CONTABLE"]
         df_ie["Año"] = df_ie["AÑO CONTABLE"]
         df_ie["Mes"] = df_ie["Mes CONTABLE"]
+        fecha_dt_acum_col = "Fecha_dt_contable"
+        anio_acum_col = "Año_sel_contable"
+        mes_acum_col = "Mes_sel_contable"
+        periodo_ref_acum_col = "Periodo_ref_contable"
         if df_ie["Año_sel"].isna().all() and df_ie["Fecha_dt"].isna().all():
             st.warning("No hay fechas contables válidas para este análisis.")
 
@@ -4306,20 +4316,24 @@ if active_section == "📈 Ingresos & egresos":
         )
     )
 
-    _df_acum = df_ie.dropna(subset=["Monto"]).copy()
+    _df_acum = df_f.dropna(subset=["Monto"]).copy()
+    _df_acum["Fecha_dt_acum"] = _df_acum[fecha_dt_acum_col]
+    _df_acum["Año_sel_acum"] = _df_acum[anio_acum_col]
+    _df_acum["Mes_sel_acum"] = _df_acum[mes_acum_col]
+    _df_acum["Periodo_ref_acum"] = _df_acum[periodo_ref_acum_col]
     _df_acum = _df_acum[_df_acum["CC_norm"].isin(["INGRESO", "EGRESO"])]
     _df_acum = _df_acum[_df_acum["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
-    if _df_acum["Mes_sel"].isna().all():
-        _df_acum["Año_sel"] = _df_acum["Fecha_dt"].dt.year
-        _df_acum["Mes_sel"] = _df_acum["Fecha_dt"].dt.month
+    if _df_acum["Mes_sel_acum"].isna().all():
+        _df_acum["Año_sel_acum"] = _df_acum["Fecha_dt_acum"].dt.year
+        _df_acum["Mes_sel_acum"] = _df_acum["Fecha_dt_acum"].dt.month
 
     if periodo == "Mensual":
-        _df_acum = _df_acum.dropna(subset=["Periodo_ref"])
-        _df_acum["Periodo"] = _df_acum["Periodo_ref"]
+        _df_acum = _df_acum.dropna(subset=["Periodo_ref_acum"])
+        _df_acum["Periodo"] = _df_acum["Periodo_ref_acum"]
     else:
-        _df_acum = _df_acum.dropna(subset=["Año_sel"])
+        _df_acum = _df_acum.dropna(subset=["Año_sel_acum"])
         _df_acum["Periodo"] = pd.to_datetime(
-            dict(year=_df_acum["Año_sel"].astype(int), month=1, day=1),
+            dict(year=_df_acum["Año_sel_acum"].astype(int), month=1, day=1),
             errors="coerce"
         )
 
@@ -4395,30 +4409,30 @@ if active_section == "📈 Ingresos & egresos":
         k1, k2, k3, k4, k5 = st.columns(5)
         with k1:
             st.markdown(
-                card_finanza("TOTAL INGRESO", fmt_clp_largo(total_ing), CHART_TEAL),
+                card_finanza("TOTAL INGRESO", fmt_clp_largo(total_ing), CHART_TEAL, subtitulo="Suma de ingresos del período"),
                 unsafe_allow_html=True,
             )
         with k2:
             st.markdown(
-                card_finanza("TOTAL EGRESO", fmt_clp_largo(total_egr), CHART_RED),
+                card_finanza("TOTAL EGRESO", fmt_clp_largo(total_egr), CHART_RED, subtitulo="Suma de egresos del período"),
                 unsafe_allow_html=True,
             )
         with k3:
             net_color = CHART_TEAL if total_neto >= 0 else CHART_RED
             st.markdown(
-                card_finanza("TOTAL NETO", fmt_clp_largo(total_neto), net_color),
+                card_finanza("TOTAL NETO", fmt_clp_largo(total_neto), net_color, subtitulo="Ingresos menos egresos"),
                 unsafe_allow_html=True,
             )
         with k4:
             net_acum_color = CHART_TEAL if total_neto_acumulado >= 0 else CHART_RED
             st.markdown(
-                card_finanza("NETO ACUMULADO", fmt_clp_largo(total_neto_acumulado), net_acum_color),
+                card_finanza("NETO ACUMULADO", fmt_clp_largo(total_neto_acumulado), net_acum_color, subtitulo="Suma histórica del neto"),
                 unsafe_allow_html=True,
             )
         with k5:
             margen_color = CHART_TEAL if total_margen >= 0 else CHART_RED
             st.markdown(
-                card_finanza("MARGEN", f"{total_margen:.1%}", margen_color),
+                card_finanza("MARGEN", f"{total_margen:.1%}", margen_color, subtitulo="Neto dividido por ingresos"),
                 unsafe_allow_html=True,
             )
 
@@ -4457,8 +4471,8 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Ingresos"],
                 name="Ingresos",
                 marker=dict(
-                    color=CHART_TEAL,
-                    line=dict(color=CHART_TEAL, width=1),
+                    color=CHART_BAR_TEAL,
+                    line=dict(color=CHART_BAR_TEAL, width=1),
                 ),
                 hoverinfo="skip",
                 offsetgroup="flujo",
@@ -4471,8 +4485,8 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Egresos_plot"],
                 name="Egresos",
                 marker=dict(
-                    color=CHART_RED,
-                    line=dict(color=CHART_RED, width=1),
+                    color=CHART_BAR_RED,
+                    line=dict(color=CHART_BAR_RED, width=1),
                 ),
                 hoverinfo="skip",
                 offsetgroup="flujo",
@@ -4500,7 +4514,7 @@ if active_section == "📈 Ingresos & egresos":
                 x=base["Periodo"],
                 y=base["Neto_acumulado"],
                 mode="lines+markers",
-                name=f"Neto acumulado: {fmt_clp_largo(total_neto_acumulado)}",
+                name="Neto acumulado",
                 line=dict(color="#0F2D52", width=2.6, dash="dash", shape="spline"),
                 marker=dict(size=7, color="#0F2D52", line=dict(color="#FFFFFF", width=1.2)),
                 hoverinfo="skip",
@@ -4626,6 +4640,164 @@ if active_section == "📈 Ingresos & egresos":
 
         st.caption("Egresos se muestran en valor absoluto para facilitar comparación visual.")
 
+        def build_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
+            if modo == "Contable":
+                anio_col = "Año_sel_contable"
+                mes_col = "Mes_sel_contable"
+                periodo_col = "Periodo_ref_contable"
+            else:
+                anio_col = "Año_sel"
+                mes_col = "Mes_sel"
+                periodo_col = "Periodo_ref"
+
+            df_cmp = df_src.dropna(subset=["Monto"]).copy()
+            df_cmp = df_cmp[df_cmp["CC_norm"].isin(["INGRESO", "EGRESO"])]
+            df_cmp = df_cmp[df_cmp["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+            if periodo == "Mensual":
+                df_cmp = df_cmp.dropna(subset=[periodo_col])
+                df_cmp["Periodo"] = df_cmp[periodo_col]
+            else:
+                df_cmp = df_cmp.dropna(subset=[anio_col])
+                df_cmp["Periodo"] = pd.to_datetime(
+                    dict(year=df_cmp[anio_col].astype(int), month=1, day=1),
+                    errors="coerce",
+                )
+
+            df_cmp["Periodo"] = pd.to_datetime(df_cmp["Periodo"], errors="coerce")
+            df_cmp = df_cmp.dropna(subset=["Periodo"])
+            if df_cmp.empty:
+                return pd.DataFrame(columns=["Periodo", modo, f"{modo} acumulado"])
+
+            agg_cmp = (
+                df_cmp.groupby(["Periodo", "CC_norm"], as_index=False)["Monto"]
+                .sum()
+                .sort_values("Periodo")
+            )
+            ingresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+            egresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+            base_cmp = pd.DataFrame({"Periodo": sorted(agg_cmp["Periodo"].dropna().unique())})
+            base_cmp["Periodo"] = pd.to_datetime(base_cmp["Periodo"], errors="coerce")
+            base_cmp = base_cmp.merge(ingresos_cmp[["Periodo", "Ingresos"]], on="Periodo", how="left")
+            base_cmp = base_cmp.merge(egresos_cmp[["Periodo", "Egresos"]], on="Periodo", how="left")
+            base_cmp = base_cmp.fillna(0).sort_values("Periodo")
+            base_cmp[modo] = base_cmp["Ingresos"] - base_cmp["Egresos"].abs()
+            base_cmp[f"{modo} acumulado"] = base_cmp[modo].cumsum()
+
+            if sel_year != "Todos":
+                base_cmp = base_cmp[base_cmp["Periodo"].dt.year == int(sel_year)]
+            if sel_month != "Todos" and periodo == "Mensual":
+                base_cmp = base_cmp[base_cmp["Periodo"].dt.month == int(sel_month)]
+
+            return base_cmp[["Periodo", modo, f"{modo} acumulado"]]
+
+        neto_financiero = build_neto_comparativo(df_f, "Financiero")
+        neto_contable = build_neto_comparativo(df_f, "Contable")
+        neto_cmp = neto_financiero.merge(neto_contable, on="Periodo", how="outer").sort_values("Periodo")
+
+        if neto_cmp.empty:
+            st.info(f"No se encuentran registros para comparar neto financiero y contable en {periodo_filtro_lbl}.")
+        else:
+            neto_cmp = neto_cmp.fillna(0)
+            vista_neto_cmp = st.radio(
+                "Visualizar",
+                ["Neto", "Neto acumulado", "Ambos"],
+                horizontal=True,
+                index=0,
+                key="vista_neto_fin_cont",
+            )
+            fig_neto_cmp = go.Figure()
+
+            if vista_neto_cmp in ["Neto", "Ambos"]:
+                fig_neto_cmp.add_trace(
+                    go.Scatter(
+                        x=neto_cmp["Periodo"],
+                        y=neto_cmp["Financiero"],
+                        mode="lines+markers",
+                        name="Neto financiero",
+                        line=dict(color="#2563EB", width=3.2, shape="spline"),
+                        marker=dict(size=8, color="#2563EB", line=dict(color="#FFFFFF", width=1.4)),
+                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
+                    )
+                )
+                fig_neto_cmp.add_trace(
+                    go.Scatter(
+                        x=neto_cmp["Periodo"],
+                        y=neto_cmp["Contable"],
+                        mode="lines+markers",
+                        name="Neto contable",
+                        line=dict(color="#DC8A28", width=3.2, dash="dot", shape="spline"),
+                        marker=dict(size=8, color="#DC8A28", line=dict(color="#FFFFFF", width=1.4)),
+                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
+                    )
+                )
+
+            if vista_neto_cmp in ["Neto acumulado", "Ambos"]:
+                fig_neto_cmp.add_trace(
+                    go.Scatter(
+                        x=neto_cmp["Periodo"],
+                        y=neto_cmp["Financiero acumulado"],
+                        mode="lines+markers",
+                        name="Neto acumulado financiero",
+                        line=dict(color="#0F766E", width=3.4, dash="dash", shape="spline"),
+                        marker=dict(size=8, color="#0F766E", line=dict(color="#FFFFFF", width=1.4)),
+                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado financiero: $%{y:,.0f}<extra></extra>",
+                    )
+                )
+                fig_neto_cmp.add_trace(
+                    go.Scatter(
+                        x=neto_cmp["Periodo"],
+                        y=neto_cmp["Contable acumulado"],
+                        mode="lines+markers",
+                        name="Neto acumulado contable",
+                        line=dict(color="#B91C1C", width=3.4, dash="dashdot", shape="spline"),
+                        marker=dict(size=8, color="#B91C1C", line=dict(color="#FFFFFF", width=1.4)),
+                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado contable: $%{y:,.0f}<extra></extra>",
+                    )
+                )
+            fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75)
+            fig_neto_cmp.update_layout(
+                title=dict(
+                    text=f"Neto financiero vs neto contable — {periodo} · {periodo_filtro_lbl}",
+                    x=0.02,
+                    xanchor="left",
+                    font=dict(size=18, color="#0F2D52"),
+                ),
+                template="plotly_white",
+                height=420,
+                margin=dict(l=24, r=34, t=76, b=34),
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="left",
+                    x=0.01,
+                    bgcolor="rgba(255,255,255,0)",
+                ),
+                hovermode="x unified",
+                paper_bgcolor="#F8FAFC",
+                plot_bgcolor="#FFFFFF",
+            )
+            fig_neto_cmp.update_xaxes(
+                title_text=label_x,
+                showgrid=False,
+                tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
+                linecolor="rgba(15,45,82,0.25)",
+            )
+            fig_neto_cmp.update_yaxes(
+                title_text="Neto CLP",
+                showgrid=True,
+                gridcolor="rgba(15,45,82,0.10)",
+                zeroline=False,
+                tickprefix="$",
+                separatethousands=True,
+                linecolor="rgba(15,45,82,0.20)",
+            )
+            st.plotly_chart(
+                fig_neto_cmp,
+                use_container_width=True,
+                config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
+            )
+
     st.markdown("---")
     st.markdown(
         section_heading("⚠️", "Riesgos de cobro y concentración de montos", weight_class="section-heading-title-soft"),
@@ -4679,7 +4851,17 @@ if active_section == "📈 Ingresos & egresos":
             key="topn_pro",
         )
 
-    df_riesgos = df_ie_base_periodo.copy()
+    df_riesgos = df_ie_base_periodo.dropna(subset=["Monto"]).copy()
+    df_riesgos[dim] = df_riesgos[dim].astype(str).str.strip()
+    df_riesgos = df_riesgos[
+        df_riesgos[dim].notna()
+        & (df_riesgos[dim] != "")
+        & (df_riesgos[dim].str.upper() != "NAN")
+    ]
+    if df_riesgos.empty:
+        st.info(f"No se encuentran registros para {periodo_filtro_lbl} en análisis {tipo_analisis.lower()}.")
+        st.stop()
+
     topN_raw = (
         df_riesgos.groupby(dim)["Monto"]
         .agg(["sum", "count"])
@@ -4756,7 +4938,7 @@ if active_section == "📈 Ingresos & egresos":
                 y=base_dim[dim],
                 orientation="h",
                 name="Ingresos",
-                marker=dict(color=CHART_TEAL, line=dict(color=CHART_TEAL, width=1)),
+                marker=dict(color=CHART_BAR_TEAL, line=dict(color=CHART_BAR_TEAL, width=1)),
                 hoverinfo="skip",
             )
         )
@@ -4766,7 +4948,7 @@ if active_section == "📈 Ingresos & egresos":
                 y=base_dim[dim],
                 orientation="h",
                 name="Egresos",
-                marker=dict(color=CHART_RED, line=dict(color=CHART_RED, width=1)),
+                marker=dict(color=CHART_BAR_RED, line=dict(color=CHART_BAR_RED, width=1)),
                 hoverinfo="skip",
             )
         )

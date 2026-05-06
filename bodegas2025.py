@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.express as px
 import numpy as np
@@ -1770,14 +1771,12 @@ st.markdown("""
     <style>
     .kpi-card {
         position: relative;
-        min-height: 162px;
-        padding: 18px 20px 18px 22px;
+        min-height: 168px;
+        padding: 20px 22px 20px 24px;
         border-radius: 28px;
-        border: 1px solid color-mix(in srgb, var(--accent, #d7dfeb) 28%, #d7dfeb);
-        background:
-            radial-gradient(circle at top right, color-mix(in srgb, var(--accent, #f8fafc) 12%, transparent) 0%, transparent 34%),
-            linear-gradient(135deg, color-mix(in srgb, var(--accent, #f7f9fc) 14%, #f7f9fc) 0%, #ffffff 55%, color-mix(in srgb, var(--accent, #f4f7fb) 10%, #f4f7fb) 100%);
-        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+        border: 1px solid #d9e3ef;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 56%, #f5f8fc 100%);
+        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.06);
         overflow: hidden;
     }
     .kpi-card::before {
@@ -1785,7 +1784,7 @@ st.markdown("""
         position: absolute;
         inset: 0 auto 0 0;
         width: 8px;
-        background: linear-gradient(180deg, var(--accent, #d5ddeb) 0%, color-mix(in srgb, var(--accent, #d5ddeb) 28%, #eef3f9) 100%);
+        background: linear-gradient(180deg, #eef4fb 0%, #f7fafd 100%);
         border-radius: 28px 0 0 28px;
     }
     .kpi-card::after {
@@ -1796,27 +1795,27 @@ st.markdown("""
         width: 12px;
         height: 12px;
         border-radius: 999px;
-        background: color-mix(in srgb, var(--accent, #cbd5e1) 60%, white);
-        opacity: 0.55;
+        background: #eef2f7;
+        opacity: 1;
     }
     .kpi-card-lg {
         min-height: 176px;
     }
     .kpi-card-md {
-        min-height: 138px;
-        padding: 16px 18px 16px 20px;
+        min-height: 168px;
+        padding: 20px 22px 20px 24px;
     }
     .kpi-card-sm {
-        min-height: 112px;
-        padding: 14px 16px 14px 18px;
+        min-height: 146px;
+        padding: 18px 20px 18px 22px;
     }
     .kpi-card-stack {
         min-height: 170px;
-        padding: 16px 18px 18px 20px;
+        padding: 20px 22px 20px 24px;
     }
     .kpi-card-top {
         min-height: 238px;
-        padding: 15px 18px 16px 20px;
+        padding: 20px 22px 20px 24px;
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
@@ -1829,7 +1828,7 @@ st.markdown("""
     }
     .kpi-card-risk {
         min-height: 182px;
-        padding: 16px 18px 16px 20px;
+        padding: 20px 22px 20px 24px;
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
@@ -1847,7 +1846,7 @@ st.markdown("""
         letter-spacing: 0.14em;
         margin-bottom: 12px;
         opacity: 0.95;
-        color: color-mix(in srgb, var(--accent, #64748b) 74%, #475569);
+        color: #64748b;
     }
     .kpi-title {
         font-size: 17px;
@@ -1864,7 +1863,7 @@ st.markdown("""
         letter-spacing: -0.03em;
         font-variant-numeric: tabular-nums;
         margin-bottom: 10px;
-        color: color-mix(in srgb, var(--accent, #0f172a) 60%, #0f172a);
+        color: #0f172a;
         padding: 6px 0 2px 0;
     }
     .kpi-sub {
@@ -4307,6 +4306,41 @@ if active_section == "📈 Ingresos & egresos":
         )
     )
 
+    _df_acum = df_ie.dropna(subset=["Monto"]).copy()
+    _df_acum = _df_acum[_df_acum["CC_norm"].isin(["INGRESO", "EGRESO"])]
+    _df_acum = _df_acum[_df_acum["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+    if _df_acum["Mes_sel"].isna().all():
+        _df_acum["Año_sel"] = _df_acum["Fecha_dt"].dt.year
+        _df_acum["Mes_sel"] = _df_acum["Fecha_dt"].dt.month
+
+    if periodo == "Mensual":
+        _df_acum = _df_acum.dropna(subset=["Periodo_ref"])
+        _df_acum["Periodo"] = _df_acum["Periodo_ref"]
+    else:
+        _df_acum = _df_acum.dropna(subset=["Año_sel"])
+        _df_acum["Periodo"] = pd.to_datetime(
+            dict(year=_df_acum["Año_sel"].astype(int), month=1, day=1),
+            errors="coerce"
+        )
+
+    _df_acum["Periodo"] = pd.to_datetime(_df_acum["Periodo"], errors="coerce")
+    _df_acum = _df_acum.dropna(subset=["Periodo"])
+    agg_acum = (
+        _df_acum.groupby(["Periodo", "CC"], as_index=False)["Monto"]
+        .sum()
+        .sort_values("Periodo")
+    )
+    ingresos_acum = agg_acum[agg_acum["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos_acum"})
+    egresos_acum = agg_acum[agg_acum["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos_acum"})
+    base_acum = pd.DataFrame({"Periodo": sorted(agg_acum["Periodo"].dropna().unique())})
+    base_acum["Periodo"] = pd.to_datetime(base_acum["Periodo"], errors="coerce")
+    base_acum = base_acum.merge(ingresos_acum[["Periodo", "Ingresos_acum"]], on="Periodo", how="left")
+    base_acum = base_acum.merge(egresos_acum[["Periodo", "Egresos_acum"]], on="Periodo", how="left")
+    base_acum = base_acum.fillna(0).sort_values("Periodo")
+    base_acum["Neto_periodo_acum"] = base_acum["Ingresos_acum"] - base_acum["Egresos_acum"].abs()
+    base_acum["Neto_acumulado"] = base_acum["Neto_periodo_acum"].cumsum()
+    neto_acumulado_periodo = base_acum[["Periodo", "Neto_acumulado"]]
+
     _df = df_ie_base_periodo.copy()
     _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
     _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
@@ -4349,12 +4383,16 @@ if active_section == "📈 Ingresos & egresos":
     else:
         base["Egresos_abs"] = base["Egresos"].abs()
         base["Neto"] = base["Ingresos"] - base["Egresos_abs"]
+        base = base.merge(neto_acumulado_periodo, on="Periodo", how="left")
+        base["Neto_acumulado"] = base["Neto_acumulado"].fillna(base["Neto"].cumsum())
 
         total_ing = float(base["Ingresos"].sum())
         total_egr = float(base["Egresos_abs"].sum())
         total_neto = float(base["Neto"].sum())
+        total_neto_acumulado = float(base["Neto_acumulado"].iloc[-1])
+        total_margen = (total_neto / total_ing) if total_ing else 0.0
 
-        k1, k2, k3 = st.columns(3)
+        k1, k2, k3, k4, k5 = st.columns(5)
         with k1:
             st.markdown(
                 card_finanza("TOTAL INGRESO", fmt_clp_largo(total_ing), CHART_TEAL),
@@ -4371,6 +4409,18 @@ if active_section == "📈 Ingresos & egresos":
                 card_finanza("TOTAL NETO", fmt_clp_largo(total_neto), net_color),
                 unsafe_allow_html=True,
             )
+        with k4:
+            net_acum_color = CHART_TEAL if total_neto_acumulado >= 0 else CHART_RED
+            st.markdown(
+                card_finanza("NETO ACUMULADO", fmt_clp_largo(total_neto_acumulado), net_acum_color),
+                unsafe_allow_html=True,
+            )
+        with k5:
+            margen_color = CHART_TEAL if total_margen >= 0 else CHART_RED
+            st.markdown(
+                card_finanza("MARGEN", f"{total_margen:.1%}", margen_color),
+                unsafe_allow_html=True,
+            )
 
         from plotly.subplots import make_subplots
 
@@ -4381,6 +4431,7 @@ if active_section == "📈 Ingresos & egresos":
             "Ingresos: $" + base["Ingresos"].map(lambda v: f"{v:,.0f}")
             + "<br>Egresos: $" + base["Egresos_abs"].map(lambda v: f"{v:,.0f}")
             + "<br>Neto: $" + base["Neto"].map(lambda v: f"{v:,.0f}")
+            + "<br>Neto acumulado: $" + base["Neto_acumulado"].map(lambda v: f"{v:,.0f}")
             + "<br>Margen: " + base["Margen"].map(lambda v: f"{v:.1%}")
         )
 
@@ -4447,6 +4498,18 @@ if active_section == "📈 Ingresos & egresos":
         fig_ie.add_trace(
             go.Scatter(
                 x=base["Periodo"],
+                y=base["Neto_acumulado"],
+                mode="lines+markers",
+                name=f"Neto acumulado: {fmt_clp_largo(total_neto_acumulado)}",
+                line=dict(color="#0F2D52", width=2.6, dash="dash", shape="spline"),
+                marker=dict(size=7, color="#0F2D52", line=dict(color="#FFFFFF", width=1.2)),
+                hoverinfo="skip",
+            ),
+            secondary_y=False,
+        )
+        fig_ie.add_trace(
+            go.Scatter(
+                x=base["Periodo"],
                 y=base["Margen"],
                 mode="lines",
                 name="Margen neto",
@@ -4490,6 +4553,8 @@ if active_section == "📈 Ingresos & egresos":
                 xanchor="left",
                 x=0.01,
                 bgcolor="rgba(255,255,255,0)",
+                itemclick=False,
+                itemdoubleclick=False,
             ),
             hovermode="x unified",
             paper_bgcolor="#F8FAFC",
@@ -4521,11 +4586,43 @@ if active_section == "📈 Ingresos & egresos":
             secondary_y=True,
         )
 
-        st.plotly_chart(
-            fig_ie,
-            use_container_width=True,
+        legend_script = """
+        const chart = document.getElementById('{plot_id}');
+        const legendIndexes = () => chart.data
+            .map((trace, index) => trace.showlegend === false ? null : index)
+            .filter(index => index !== null);
+        const isVisible = value => value === undefined || value === true;
+        const setVisibility = visible => Plotly.restyle(chart, {visible: visible});
+
+        chart.on('plotly_legendclick', eventData => {
+            const clicked = eventData.curveNumber;
+            const indexes = legendIndexes();
+            const allVisible = indexes.every(index => isVisible(chart.data[index].visible));
+            const visible = chart.data.map((trace, index) => {
+                if (trace.showlegend === false) {
+                    return true;
+                }
+                if (allVisible) {
+                    return index === clicked ? true : 'legendonly';
+                }
+                return index === clicked ? true : (isVisible(trace.visible) ? true : 'legendonly');
+            });
+            setVisibility(visible);
+            return false;
+        });
+
+        chart.on('plotly_legenddoubleclick', eventData => {
+            setVisibility(chart.data.map(() => true));
+            return false;
+        });
+        """
+        fig_ie_html = fig_ie.to_html(
+            full_html=False,
+            include_plotlyjs=True,
             config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
+            post_script=legend_script,
         )
+        components.html(fig_ie_html, height=630, scrolling=False)
 
         st.caption("Egresos se muestran en valor absoluto para facilitar comparación visual.")
 

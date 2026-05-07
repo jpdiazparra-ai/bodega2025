@@ -6057,14 +6057,25 @@ if active_section == "📈 Ingresos & egresos":
             border-radius:10px;
             background:#ffffff;
             padding:14px;
-            height:100%;
+            height:424px;
+            box-sizing:border-box;
             box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            display:flex;
+            flex-direction:column;
         }
         .ie-analysis-title {
             color:#081735;
             font-size:16px;
             font-weight:950;
             margin-bottom:12px;
+            flex:0 0 auto;
+        }
+        .ie-analysis-list {
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            flex:1 1 auto;
+            min-height:0;
         }
         .ie-analysis-row {
             display:grid;
@@ -6074,8 +6085,9 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #e5ebf3;
             border-radius:8px;
             padding:10px 11px;
-            margin-bottom:9px;
             background:#fbfdff;
+            flex:1 1 0;
+            min-height:0;
         }
         .ie-analysis-icon {
             width:30px;
@@ -6882,37 +6894,39 @@ if active_section == "📈 Ingresos & egresos":
                 f"""
                 <div class="ie-analysis-card">
                     <div class="ie-analysis-title">Análisis rápido del período</div>
-                    <div class="ie-analysis-row" style="--accent:#059669;--soft:#DCFCE7;">
-                        <div class="ie-analysis-icon">↑</div>
-                        <div>
-                            <div class="ie-analysis-label">Mayores ingresos</div>
-                            <div class="ie-analysis-sub">{top_ingreso_label}</div>
+                    <div class="ie-analysis-list">
+                        <div class="ie-analysis-row" style="--accent:#059669;--soft:#DCFCE7;">
+                            <div class="ie-analysis-icon">↑</div>
+                            <div>
+                                <div class="ie-analysis-label">Mayores ingresos</div>
+                                <div class="ie-analysis-sub">{top_ingreso_label}</div>
+                            </div>
+                            <div class="ie-analysis-value">{fmt_clp_largo(top_ingreso_val)}</div>
                         </div>
-                        <div class="ie-analysis-value">{fmt_clp_largo(top_ingreso_val)}</div>
-                    </div>
-                    <div class="ie-analysis-row" style="--accent:#DC2626;--soft:#FEE2E2;">
-                        <div class="ie-analysis-icon">↓</div>
-                        <div>
-                            <div class="ie-analysis-label">Mayores egresos</div>
-                            <div class="ie-analysis-sub">{top_egreso_label}</div>
+                        <div class="ie-analysis-row" style="--accent:#DC2626;--soft:#FEE2E2;">
+                            <div class="ie-analysis-icon">↓</div>
+                            <div>
+                                <div class="ie-analysis-label">Mayores egresos</div>
+                                <div class="ie-analysis-sub">{top_egreso_label}</div>
+                            </div>
+                            <div class="ie-analysis-value">-{fmt_clp_largo(top_egreso_val)}</div>
                         </div>
-                        <div class="ie-analysis-value">-{fmt_clp_largo(top_egreso_val)}</div>
-                    </div>
-                    <div class="ie-analysis-row" style="--accent:#2563EB;--soft:#DBEAFE;">
-                        <div class="ie-analysis-icon">=</div>
-                        <div>
-                            <div class="ie-analysis-label">Resultado neto del período</div>
-                            <div class="ie-analysis-sub">{'Superávit' if total_neto >= 0 else 'Déficit'} operacional</div>
+                        <div class="ie-analysis-row" style="--accent:#2563EB;--soft:#DBEAFE;">
+                            <div class="ie-analysis-icon">=</div>
+                            <div>
+                                <div class="ie-analysis-label">Resultado neto del período</div>
+                                <div class="ie-analysis-sub">{'Superávit' if total_neto >= 0 else 'Déficit'} operacional</div>
+                            </div>
+                            <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
                         </div>
-                        <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
-                    </div>
-                    <div class="ie-analysis-row" style="--accent:#B7791F;--soft:#FEF3C7;">
-                        <div class="ie-analysis-icon">⚑</div>
-                        <div>
-                            <div class="ie-analysis-label">Tendencia</div>
-                            <div class="ie-analysis-sub">{tendencia_txt}</div>
+                        <div class="ie-analysis-row" style="--accent:#B7791F;--soft:#FEF3C7;">
+                            <div class="ie-analysis-icon">⚑</div>
+                            <div>
+                                <div class="ie-analysis-label">Tendencia</div>
+                                <div class="ie-analysis-sub">{tendencia_txt}</div>
+                            </div>
+                            <div class="ie-risk-pill" style="background:{tendencia_bg};color:{tendencia_fg};">{tendencia_estado}</div>
                         </div>
-                        <div class="ie-risk-pill" style="background:{tendencia_bg};color:{tendencia_fg};">{tendencia_estado}</div>
                     </div>
                 </div>
                 """,

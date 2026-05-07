@@ -39,6 +39,14 @@ def data_uri(path: str) -> str:
 LOGO_URI = data_uri("Logo_balmaceda.png")  # el archivo está en la misma carpeta del .py
 HERO_URI = data_uri("IMG_7331.jpeg")
 
+section_options = [
+    "🏠 Visión general",
+    "📈 Ingresos & egresos",
+    "⚠️ Riesgos & cobranzas",
+    "🏢 Canon anual / mensual",
+    "⚡ Electricidad",
+]
+
 # =======================
 # HERO HEADER
 # =======================
@@ -47,45 +55,182 @@ st.markdown("""
 /* Quitar espacio superior global */
 main {
     padding-top: 0rem !important;
+    background: #f3f7fb;
 }
 .block-container {
-    padding-top: 0.8rem !important;
+    max-width: 1680px;
+    padding: 0.3rem 1rem 0.75rem 1rem !important;
+}
+section[data-testid="stSidebar"] {
+    width: 252px !important;
+    min-width: 252px !important;
+    background: linear-gradient(180deg, #061d3b 0%, #031326 62%, #020b17 100%);
+    border-right: 1px solid rgba(148, 163, 184, 0.16);
+}
+section[data-testid="stSidebar"] > div {
+    background: transparent;
+    padding: 1.15rem 0.65rem 1rem 0.65rem;
+}
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
+    color: #e5edf7;
+}
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 18px 10px;
+}
+.sidebar-brand-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(226,232,240,0.20);
+}
+.sidebar-brand-logo img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+.sidebar-brand-title {
+    font-size: 14px;
+    line-height: 1.05;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+.sidebar-brand-sub {
+    margin-top: 3px;
+    font-size: 11px;
+    color: rgba(226,232,240,0.72);
+    font-weight: 600;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] {
+    display: flex !important;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label {
+    min-height: 43px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    transition: all 0.15s ease;
+    align-items: center !important;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label:hover {
+    background: rgba(59, 130, 246, 0.14);
+    border-color: rgba(147, 197, 253, 0.14);
+}
+section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) {
+    background: linear-gradient(135deg, #2b6fd6 0%, #174a9b 100%);
+    border-color: rgba(191, 219, 254, 0.24);
+    box-shadow: 0 12px 26px rgba(29, 78, 216, 0.28);
+}
+section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label > div:last-child {
+    color: #dbeafe;
+    font-size: 13px;
+    line-height: 1.25;
+    font-weight: 780;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) > div:last-child {
+    color: #ffffff;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] input {
+    display: none;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label {
+    min-height: 43px !important;
+    padding: 0 12px !important;
+    border-radius: 8px !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    transition: all 0.15s ease !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child {
+    display: none !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
+    color: #dbeafe !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+    font-weight: 780 !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) {
+    background: linear-gradient(135deg, #2b6fd6 0%, #174a9b 100%) !important;
+    border-color: rgba(191, 219, 254, 0.24) !important;
+    box-shadow: 0 12px 26px rgba(29, 78, 216, 0.28) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) [data-testid="stMarkdownContainer"] p {
+    color: #ffffff !important;
+}
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #ffffff !important;
+    font-size: 13px !important;
+    letter-spacing: 0.02em;
+}
+.sidebar-bottom-spacer {
+    height: clamp(90px, 18vh, 210px);
+}
+section[data-testid="stSidebar"] .stButton > button {
+    width: 100%;
+    min-height: 54px;
+    border-radius: 8px;
+    border: 1px solid rgba(147,197,253,0.22);
+    background: rgba(15, 45, 82, 0.78);
+    color: #e5edf7;
+    font-size: 13.5px;
+    line-height: 1.25;
+    font-weight: 800;
+}
+section[data-testid="stSidebar"] .stButton > button:hover {
+    border-color: rgba(191,219,254,0.45);
+    background: rgba(30, 64, 175, 0.82);
+    color: #ffffff;
 }
 .dashboard-hero {
     position: relative;
     overflow: hidden;
-    min-height: 305px;
-    margin: 0 0 12px 0;
-    border-radius: 34px;
+    min-height: 76px;
+    margin: 0 0 8px 0;
+    border-radius: 10px;
     border: 1px solid #d8e1ed;
-    background:
-        linear-gradient(180deg, rgba(248,250,252,0.30) 0%, rgba(248,250,252,0.58) 100%),
-        linear-gradient(90deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.70) 34%, rgba(255,255,255,0.18) 100%),
-        url('""" + HERO_URI + """');
-    background-size: cover;
-    background-position: center 58%;
-    box-shadow: 0 22px 44px rgba(15, 23, 42, 0.10);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 62%, #f1f6fb 100%);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.07);
 }
 .dashboard-hero::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 45%, rgba(15,23,42,0.10) 100%);
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(15,45,82,0.04) 100%);
     pointer-events: none;
 }
 .dashboard-hero-inner {
     position: relative;
     z-index: 1;
-    max-width: 1280px;
-    padding: 58px 46px 34px 46px;
+    max-width: none;
+    padding: 14px 22px 12px 22px;
 }
 .dashboard-hero-badge {
+    display: none;
     position: absolute;
-    top: 56px;
-    right: 46px;
-    width: 78px;
-    height: 78px;
-    border-radius: 24px;
+    top: 24px;
+    right: 28px;
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,29 +240,30 @@ main {
     box-shadow: 0 10px 20px rgba(148,163,184,0.18);
 }
 .dashboard-hero-badge img {
-    width: 54px;
-    height: 54px;
+    width: 38px;
+    height: 38px;
     object-fit: contain;
 }
 .dashboard-hero-title {
-    max-width: calc(100% - 140px);
-    margin: 18px 0 10px 0;
-    font-size: clamp(2.5rem, 4vw, 4.45rem);
-    line-height: 0.98;
-    letter-spacing: -0.06em;
+    max-width: 100%;
+    margin: 0 0 3px 0;
+    font-size: clamp(1.25rem, 1.45vw, 1.65rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
     font-weight: 900;
     color: #0f172a;
 }
 .dashboard-hero-subtitle {
-    max-width: 1500px;
-    font-size: clamp(1rem, 1.5vw, 1.18rem);
-    line-height: 1.55;
+    max-width: 960px;
+    font-size: 0.82rem;
+    line-height: 1.25;
     color: rgba(51,65,85,0.86);
     font-weight: 500;
 }
 .dashboard-hero-meta {
-    margin-top: 14px;
-    font-size: 0.92rem;
+    display: none;
+    margin-top: 8px;
+    font-size: 0.76rem;
     color: rgba(71,85,105,0.88);
     font-weight: 600;
 }
@@ -151,19 +297,6 @@ main {
     }
 }
 </style>
-<div class="dashboard-hero">
-    <div class="dashboard-hero-inner">
-        <div class="dashboard-hero-badge">
-            <img src='""" + LOGO_URI + """' alt='Logo'>
-        </div>
-        <div class="dashboard-hero-title">Arquitectura Financiera de Bodegas</div>
-        <div class="dashboard-hero-subtitle">
-            Panel interactivo para analizar caja, cobranzas, canon, egresos y liquidación eléctrica del proyecto,
-            con foco en lectura ejecutiva y seguimiento financiero consolidado.
-        </div>
-        <div class="dashboard-hero-meta">Fuente: Google Sheets (CSV) · Agrupaciones dinámicas y visualizaciones interactivas</div>
-    </div>
-</div>
 """, unsafe_allow_html=True)
 
 
@@ -173,6 +306,24 @@ main {
 # =========================
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuoX_V5rYls-pBu7F3_VP2APS3FL7-eYbn9uDWUGJQZbxNfQTm9gRlyDlE69wWJjsDQpDzi2lt31Ak/pub?gid=1154929321&single=true&output=csv"
 
+st.sidebar.markdown(
+    f"""
+    <div class="sidebar-brand">
+        <div class="sidebar-brand-logo"><img src="{LOGO_URI}" alt="Logo"></div>
+        <div>
+            <div class="sidebar-brand-title">Bodegas<br>Balmaceda</div>
+            <div class="sidebar-brand-sub">Panel financiero</div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+active_section = st.sidebar.radio(
+    "Sección",
+    options=section_options,
+    label_visibility="collapsed",
+)
+st.sidebar.markdown('<div class="sidebar-bottom-spacer"></div>', unsafe_allow_html=True)
 st.sidebar.header("⚙️ Controles")
 if st.sidebar.button("🔄 Actualizar datos (limpiar caché)"):
     st.cache_data.clear()
@@ -1647,6 +1798,26 @@ def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: 
         f'</div>'
     )
 
+
+def tab_header(titulo: str, subtitulo: str = "", show_download: bool = True) -> str:
+    subtitle_html = f'<div class="tab-title-sub">{subtitulo}</div>' if subtitulo else ""
+    actions = (
+        '<div class="tab-actions">'
+        '<div class="tab-action">↗ Compartir</div>'
+        '<div class="tab-action">☆</div>'
+        '<div class="tab-action">•••</div>'
+        '<div class="tab-action tab-action-primary">⇩ Descargar reporte</div>'
+        '</div>'
+        if show_download
+        else ""
+    )
+    return (
+        '<div class="tab-title-row">'
+        f'<div><div class="tab-title-main">{titulo}</div>{subtitle_html}</div>'
+        f'{actions}'
+        '</div>'
+    )
+
 # =========================
 # KPI base (cálculos comunes)
 # =========================
@@ -2018,7 +2189,7 @@ st.markdown("""
         min-width: 900px;
     }
     .section-heading-wrap {
-        margin: 6px 0 14px 0;
+        margin: 22px 0 14px 0;
     }
     .section-heading-title {
         font-size: clamp(2rem, 2.2vw, 2.75rem);
@@ -2028,11 +2199,11 @@ st.markdown("""
         color: #0f172a;
     }
     .section-heading-title-soft {
-        font-size: 18px;
-        line-height: 1.25;
-        letter-spacing: 0;
-        font-weight: 500;
-        color: #0f172a;
+        font-size: 22px;
+        line-height: 1.18;
+        letter-spacing: -0.018em;
+        font-weight: 900;
+        color: #081735;
     }
     .section-heading-sub {
         margin-top: 8px;
@@ -2041,86 +2212,759 @@ st.markdown("""
         color: #64748b;
         font-weight: 500;
     }
-    div[role="radiogroup"][aria-label="Sección"] {
-        display: grid !important;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 10px;
-        width: 100%;
+    .tab-title-row {
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        margin:22px 0 14px 0;
+        gap:16px;
     }
-    div[role="radiogroup"][aria-label="Sección"] > label {
-        position: relative;
-        min-width: 0;
-        width: 100%;
-        padding: 10px 14px;
-        border-radius: 20px;
-        border: 1px solid #d9e2ec;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
-        transition: all 0.15s ease;
-        align-items: center !important;
+    .tab-title-main {
+        color:#081735;
+        font-size:28px;
+        font-weight:900;
+        letter-spacing:-0.025em;
+        line-height:1;
     }
-    div[role="radiogroup"][aria-label="Sección"] > label:hover {
-        border-color: #cfd8e6;
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
-        transform: translateY(-1px);
+    .tab-title-sub {
+        margin-top:7px;
+        color:#475569;
+        font-size:14px;
+        font-weight:600;
     }
-    div[role="radiogroup"][aria-label="Sección"] > label > div:last-child {
-        font-size: 14px;
-        font-weight: 700;
-        color: #344054;
-        line-height: 1.15;
+    .tab-actions {
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+        justify-content:flex-end;
     }
-    div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) {
-        border-color: #c9d5e5;
-        background: linear-gradient(135deg, #eef3f9 0%, #f8fbff 50%, #ffffff 100%);
-        box-shadow: 0 16px 30px rgba(109, 132, 164, 0.16);
+    .tab-action {
+        height:38px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:7px;
+        border:1px solid #dbe3ee;
+        background:#ffffff;
+        color:#0f1f3d;
+        padding:0 13px;
+        font-size:12px;
+        font-weight:800;
+        box-shadow:0 8px 18px rgba(15,23,42,0.04);
+        white-space:nowrap;
     }
-    div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked)::before {
-        content: "";
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 6px;
-        background: linear-gradient(180deg, #b9c7da 0%, #e3ebf5 100%);
-        border-radius: 20px 0 0 20px;
-    }
-    div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) > div:last-child {
-        color: #1f2937;
-    }
-    @media (max-width: 1200px) {
-        div[role="radiogroup"][aria-label="Sección"] {
-            grid-template-columns: repeat(2, minmax(220px, 1fr));
-        }
-        div[role="radiogroup"][aria-label="Sección"] > label {
-            min-width: 220px;
-        }
+    .tab-action-primary {
+        background:#0B3A86;
+        border-color:#0B3A86;
+        color:#ffffff;
     }
     </style>
 """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-# =========================
-# NAVEGACIÓN PRINCIPAL
-# =========================
-section_options = [
-    "🏠 Visión general",
-    "📈 Ingresos & egresos",
-    "⚠️ Riesgos & cobranzas",
-    "🏢 Canon anual / mensual",
-    "⚡ Electricidad",
-]
-active_section = st.radio(
-    "Sección",
-    options=section_options,
-    horizontal=True,
-    label_visibility="collapsed",
-)
 
 # =========================================================
 # 🏠 TAB 1: VISIÓN GENERAL
 # =========================================================
 if active_section == "🏠 Visión general":
     import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+
+    data_src = df_f.copy()
+    mask_canon_home = (
+        data_src["CC_norm"].eq("INGRESO")
+        & data_src["CC1_text"].str.strip().str.lower().eq("arriendo")
+        & data_src["Obs_text"].str.strip().str.lower().eq("canon mensual")
+    )
+    df_canon_home = data_src.loc[mask_canon_home, ["Año", "Monto"]].copy()
+    df_canon_home["Año"] = pd.to_numeric(df_canon_home["Año"], errors="coerce")
+    df_canon_home["Monto"] = pd.to_numeric(df_canon_home["Monto"], errors="coerce")
+    df_canon_home = df_canon_home.dropna(subset=["Año", "Monto"])
+    if not df_canon_home.empty:
+        df_canon_home = (
+            df_canon_home.groupby("Año", as_index=False)["Monto"]
+            .sum()
+            .sort_values("Año")
+            .rename(columns={"Monto": "Canon anual"})
+        )
+        df_canon_home["MA3"] = df_canon_home["Canon anual"].rolling(window=3, min_periods=1).mean()
+        df_canon_home["YoY"] = df_canon_home["Canon anual"].pct_change().replace([np.inf, -np.inf], 0).fillna(0)
+        df_canon_home["Acumulado"] = df_canon_home["Canon anual"].cumsum()
+        canon_ultimo = float(df_canon_home["Canon anual"].iloc[-1])
+        canon_yoy = float(df_canon_home["YoY"].iloc[-1])
+    else:
+        df_canon_home = pd.DataFrame(columns=["Año", "Canon anual", "MA3", "YoY", "Acumulado"])
+        canon_ultimo = 0.0
+        canon_yoy = 0.0
+
+    health_score = 100
+    health_score -= 28 if posicion_neta < 0 else 0
+    health_score -= 22 if margen_neto < 0 else 0
+    health_score -= 22 if cobertura_egresos < 1 else 0
+    health_score -= 18 if cobertura_capex < 1 else 0
+    health_score = int(max(0, min(100, health_score)))
+    estado_txt = "RIESGO" if health_score < 45 else ("ATENCIÓN" if health_score < 70 else "SALUDABLE")
+    estado_color = "#DC2626" if health_score < 45 else ("#F59E0B" if health_score < 70 else "#059669")
+    runway_txt = f"{cobertura_egresos:.1f} meses de runway"
+
+    st.markdown(
+        """
+        <style>
+        .asset-toolbar {
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+            margin:0 0 7px 0;
+        }
+        .asset-chip {
+            min-height:30px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:0 14px;
+            border-radius:6px;
+            border:1px solid #dbe3ee;
+            background:#ffffff;
+            color:#0f1f3d;
+            font-size:12px;
+            font-weight:700;
+            box-shadow:0 8px 18px rgba(15,23,42,0.04);
+        }
+        .asset-kpi-grid {
+            display:grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap:8px;
+            margin: 3px 0 7px 0;
+        }
+        .asset-kpi {
+            min-height:78px;
+            border-radius:10px;
+            border:1px solid var(--border);
+            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+            padding:8px 10px 8px 10px;
+            display:grid;
+            grid-template-columns:34px 1fr;
+            gap:7px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+        }
+        .asset-kpi-icon {
+            width:30px;
+            height:30px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--halo);
+            color:var(--accent);
+            font-size:16px;
+            font-weight:900;
+        }
+        .asset-kpi-title {
+            color:#0f1f3d;
+            font-size:10.5px;
+            font-weight:800;
+            margin-bottom:4px;
+        }
+        .asset-kpi-value {
+            color:var(--accent);
+            font-size:18px;
+            line-height:1.05;
+            font-weight:900;
+            letter-spacing:-0.025em;
+            white-space:nowrap;
+        }
+        .asset-kpi-badge {
+            display:inline-block;
+            margin-top:3px;
+            padding:2px 5px;
+            border-radius:5px;
+            background:var(--badge-bg);
+            color:var(--badge-fg);
+            font-size:9px;
+            font-weight:800;
+        }
+        .asset-kpi-note {
+            grid-column:2;
+            color:#475569;
+            font-size:9.5px;
+            font-weight:600;
+            margin-top:2px;
+        }
+        .asset-status {
+            display:grid;
+            grid-template-columns: 1.2fr 1fr 1fr 1fr 1.55fr;
+            gap:10px;
+            align-items:center;
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:7px 10px;
+            margin: 0 0 7px 0;
+            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+        }
+        .asset-status-title {
+            font-size:12px;
+            color:#0f1f3d;
+            font-weight:900;
+            margin-bottom:4px;
+        }
+        .asset-status-pill {
+            display:inline-flex;
+            min-width:92px;
+            justify-content:center;
+            padding:4px 10px;
+            border-radius:8px;
+            background:var(--estado);
+            color:white;
+            font-size:10.5px;
+            font-weight:900;
+        }
+        .asset-status-item {
+            border-left:1px solid #e5ebf3;
+            padding-left:8px;
+            min-height:28px;
+        }
+        .asset-dot {
+            display:inline-block;
+            width:9px;
+            height:9px;
+            border-radius:999px;
+            background:var(--dot);
+            margin-right:8px;
+        }
+        .asset-status-label {
+            color:#0f1f3d;
+            font-size:10px;
+            font-weight:800;
+        }
+        .asset-status-sub {
+            margin-top:4px;
+            color:#475569;
+            font-size:9.5px;
+            font-weight:600;
+        }
+        .asset-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:12px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            min-height:100%;
+        }
+        .asset-card-title {
+            color:#081735;
+            font-size:15px;
+            font-weight:900;
+            margin-bottom:10px;
+        }
+        .asset-summary-list {
+            display:flex;
+            flex-direction:column;
+            gap:7px;
+        }
+        .asset-summary-row {
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:10px;
+            align-items:center;
+            border:1px solid #e5ebf3;
+            border-radius:8px;
+            padding:8px 9px;
+            background:#fbfdff;
+        }
+        .asset-summary-label {
+            color:#0f1f3d;
+            font-size:11px;
+            line-height:1.15;
+            font-weight:900;
+        }
+        .asset-summary-sub {
+            margin-top:3px;
+            color:#64748b;
+            font-size:9.5px;
+            font-weight:700;
+        }
+        .asset-summary-value {
+            color:#081735;
+            font-size:11px;
+            font-weight:950;
+            text-align:right;
+            white-space:nowrap;
+        }
+        .trend-grid {
+            display:grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap:8px;
+        }
+        .trend-mini {
+            border:1px solid #e2e8f0;
+            border-radius:8px;
+            padding:10px;
+            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+            min-height:86px;
+        }
+        .trend-mini-title {
+            color:#0f1f3d;
+            font-size:10.5px;
+            line-height:1.15;
+            font-weight:900;
+        }
+        .trend-mini-value {
+            margin-top:8px;
+            font-size:20px;
+            line-height:1;
+            font-weight:950;
+            color:var(--trend);
+        }
+        .trend-mini-sub {
+            margin-top:6px;
+            color:#64748b;
+            font-size:10px;
+            font-weight:700;
+        }
+        .asset-callout {
+            margin-top:10px;
+            border-radius:8px;
+            background:#ecfdf3;
+            border:1px solid #ccebd8;
+            color:#14532d;
+            padding:8px 10px;
+            font-size:10px;
+            line-height:1.35;
+            font-weight:750;
+        }
+        .asset-diagnosis-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:12px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            min-height:100%;
+        }
+        .asset-diagnosis-grid {
+            display:grid;
+            grid-template-columns:1.1fr .9fr;
+            gap:10px;
+            align-items:center;
+        }
+        .asset-diagnosis-list {
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            color:#0f1f3d;
+            font-size:11px;
+            font-weight:850;
+        }
+        .asset-diagnosis-list span {
+            color:#64748b;
+            font-size:10px;
+            font-weight:700;
+        }
+        @media (max-width: 1300px) {
+            .asset-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .asset-status { grid-template-columns: 1fr; }
+            .asset-status-item { border-left:0; padding-left:0; border-top:1px solid #e5ebf3; padding-top:12px; }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        {tab_header("Visión general", "Estado del activo y métricas financieras consolidadas")}
+        <div class="asset-kpi-grid">
+            <div class="asset-kpi" style="--accent:#DC2626;--soft:#fff7f7;--halo:#fde2e2;--border:#f1caca;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
+                <div class="asset-kpi-icon">↘</div>
+                <div>
+                    <div class="asset-kpi-title">Posición Neta</div>
+                    <div class="asset-kpi-value">{fmt_clp_largo(posicion_neta)}</div>
+                    <div class="asset-kpi-badge">{'Déficit' if posicion_neta < 0 else 'Superávit'} acumulado</div>
+                </div>
+                <div class="asset-kpi-note">Caja + CxC neta + egresos por pagar</div>
+            </div>
+            <div class="asset-kpi" style="--accent:#047857;--soft:#f6fffb;--halo:#d8f5e4;--border:#cfe9de;--badge-bg:#dcfce7;--badge-fg:#166534;">
+                <div class="asset-kpi-icon">▰</div>
+                <div>
+                    <div class="asset-kpi-title">Caja Disponible</div>
+                    <div class="asset-kpi-value">{fmt_clp_largo(balance_kpi)}</div>
+                    <div class="asset-kpi-badge">Runway: {cobertura_egresos:.1f} meses</div>
+                </div>
+                <div class="asset-kpi-note">Saldo operacional disponible</div>
+            </div>
+            <div class="asset-kpi" style="--accent:#B7791F;--soft:#fffaf0;--halo:#fceec8;--border:#eadfbd;--badge-bg:#f3f4f6;--badge-fg:#334155;">
+                <div class="asset-kpi-icon">▣</div>
+                <div>
+                    <div class="asset-kpi-title">Inversión Total (CAPEX)</div>
+                    <div class="asset-kpi-value">{fmt_clp_largo(CAPEX)}</div>
+                    <div class="asset-kpi-badge">{cobertura_capex:.1%} recuperado</div>
+                </div>
+                <div class="asset-kpi-note">Total invertido en el proyecto</div>
+            </div>
+            <div class="asset-kpi" style="--accent:#1D4ED8;--soft:#f6f9ff;--halo:#e0ebff;--border:#d4e1f6;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
+                <div class="asset-kpi-icon">↗</div>
+                <div>
+                    <div class="asset-kpi-title">Margen Neto</div>
+                    <div class="asset-kpi-value">{margen_neto:.1%}</div>
+                    <div class="asset-kpi-badge">Sobre ingresos acumulados</div>
+                </div>
+                <div class="asset-kpi-note">Resultado operativo / ingresos</div>
+            </div>
+            <div class="asset-kpi" style="--accent:#6D28D9;--soft:#fbf8ff;--halo:#eadcff;--border:#e0d3f5;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
+                <div class="asset-kpi-icon">▬</div>
+                <div>
+                    <div class="asset-kpi-title">Caja / Egreso Prom.</div>
+                    <div class="asset-kpi-value">{cobertura_egresos:.2f}x</div>
+                    <div class="asset-kpi-badge">Cobertura mensual</div>
+                </div>
+                <div class="asset-kpi-note">Caja relativa al egreso promedio</div>
+            </div>
+        </div>
+        <div class="asset-status" style="--estado:{estado_color};">
+            <div>
+                <div class="asset-status-title">Estado del Activo</div>
+                <div class="asset-status-pill">{estado_txt}</div>
+            </div>
+            <div class="asset-status-item">
+                <div class="asset-status-label"><span class="asset-dot" style="--dot:{'#DC2626' if cobertura_egresos < 1 else '#059669'};"></span>Caja {'insuficiente' if cobertura_egresos < 1 else 'saludable'}</div>
+                <div class="asset-status-sub">{runway_txt}</div>
+            </div>
+            <div class="asset-status-item">
+                <div class="asset-status-label"><span class="asset-dot" style="--dot:{'#DC2626' if margen_neto < 0.05 else '#059669'};"></span>Margen {'bajo' if margen_neto < 0.05 else 'saludable'}</div>
+                <div class="asset-status-sub">{margen_neto:.1%} sobre ingresos</div>
+            </div>
+            <div class="asset-status-item">
+                <div class="asset-status-label"><span class="asset-dot" style="--dot:{'#F59E0B' if cobertura_capex < 1 else '#059669'};"></span>{'Alta exposición CAPEX' if cobertura_capex < 1 else 'CAPEX recuperado'}</div>
+                <div class="asset-status-sub">{cobertura_capex:.1%} de recuperación</div>
+            </div>
+            <div class="asset-status-item">
+                <div class="asset-status-label">Recomendación principal</div>
+                <div class="asset-status-sub">{'Revisar canon, cobranza y postergar CAPEX no crítico' if health_score < 70 else 'Mantener control de caja y ocupación'}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    chart_left, chart_right = st.columns([1, 1.25])
+    with chart_left:
+        def build_home_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
+            if modo == "Contable":
+                periodo_col = "Periodo_ref_contable"
+            else:
+                periodo_col = "Periodo_ref"
+
+            df_cmp = df_src.dropna(subset=["Monto"]).copy()
+            df_cmp = df_cmp[df_cmp["CC_norm"].isin(["INGRESO", "EGRESO"])]
+            df_cmp = df_cmp[df_cmp["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+            df_cmp = df_cmp.dropna(subset=[periodo_col])
+            df_cmp["Periodo"] = pd.to_datetime(df_cmp[periodo_col], errors="coerce")
+            df_cmp = df_cmp.dropna(subset=["Periodo"])
+            if df_cmp.empty:
+                return pd.DataFrame(columns=["Periodo", modo])
+
+            agg_cmp = (
+                df_cmp.groupby(["Periodo", "CC_norm"], as_index=False)["Monto"]
+                .sum()
+                .sort_values("Periodo")
+            )
+            ingresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+            egresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+            base_cmp = pd.DataFrame({"Periodo": sorted(agg_cmp["Periodo"].dropna().unique())})
+            base_cmp["Periodo"] = pd.to_datetime(base_cmp["Periodo"], errors="coerce")
+            base_cmp = base_cmp.merge(ingresos_cmp[["Periodo", "Ingresos"]], on="Periodo", how="left")
+            base_cmp = base_cmp.merge(egresos_cmp[["Periodo", "Egresos"]], on="Periodo", how="left")
+            base_cmp = base_cmp.fillna(0).sort_values("Periodo")
+            base_cmp[modo] = base_cmp["Ingresos"] - base_cmp["Egresos"].abs()
+            return base_cmp[["Periodo", modo]]
+
+        neto_home_fin = build_home_neto_comparativo(df_f, "Financiero")
+        neto_home_con = build_home_neto_comparativo(df_f, "Contable")
+        neto_home_cmp = neto_home_fin.merge(neto_home_con, on="Periodo", how="outer").sort_values("Periodo").fillna(0)
+
+        fig_flow = go.Figure()
+        if not neto_home_cmp.empty:
+            fig_flow.add_trace(
+                go.Scatter(
+                    x=neto_home_cmp["Periodo"],
+                    y=neto_home_cmp["Financiero"],
+                    mode="lines+markers",
+                    name="Neto financiero",
+                    line=dict(color="#1D4ED8", width=3.1, shape="spline"),
+                    marker=dict(size=7, color="#1D4ED8", line=dict(color="#FFFFFF", width=1.4)),
+                    hovertemplate="<b>%{x|%b %Y}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
+                )
+            )
+            fig_flow.add_trace(
+                go.Scatter(
+                    x=neto_home_cmp["Periodo"],
+                    y=neto_home_cmp["Contable"],
+                    mode="lines+markers",
+                    name="Neto contable",
+                    line=dict(color="#B7791F", width=2.9, dash="dot", shape="spline"),
+                    marker=dict(size=7, color="#B7791F", line=dict(color="#FFFFFF", width=1.4)),
+                    hovertemplate="<b>%{x|%b %Y}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
+                )
+            )
+        fig_flow.add_hline(y=0, line_width=1, line_color="#CBD5E1")
+        if not neto_home_cmp.empty:
+            max_home_periodo = pd.to_datetime(neto_home_cmp["Periodo"]).max()
+            min_home_periodo = pd.to_datetime(neto_home_cmp["Periodo"]).min()
+            start_home_12m = max(max_home_periodo - pd.DateOffset(months=11), min_home_periodo)
+            home_x_range = [start_home_12m, max_home_periodo]
+        else:
+            home_x_range = None
+        fig_flow.update_layout(
+            title=dict(
+                text="Neto financiero vs neto contable",
+                x=0.02,
+                y=0.98,
+                xanchor="left",
+                font=dict(size=16, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+            ),
+            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
+            template="plotly_white",
+            height=240,
+            margin=dict(l=10, r=10, t=58, b=20),
+            paper_bgcolor="#FFFFFF",
+            plot_bgcolor="#FFFFFF",
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.01,
+                xanchor="left",
+                x=0.02,
+                font=dict(size=10, color="#334155"),
+                bgcolor="rgba(255,255,255,0)",
+            ),
+            hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
+            hovermode="x unified",
+        )
+        fig_flow.update_yaxes(
+            title_text="Neto CLP",
+            tickprefix="$",
+            separatethousands=True,
+            gridcolor="#E5EAF2",
+            zeroline=False,
+            title_font=dict(size=11, color="#64748B"),
+            tickfont=dict(size=10, color="#64748B"),
+        )
+        fig_flow.update_xaxes(
+            title_text="Mes",
+            tickformat="%b %Y",
+            title_font=dict(size=11, color="#64748B"),
+            tickfont=dict(size=10, color="#64748B"),
+            range=home_x_range,
+            rangeslider=dict(
+                visible=True,
+                thickness=0.035,
+                bgcolor="#F1F5F9",
+                bordercolor="#E2E8F0",
+                borderwidth=1,
+            ),
+        )
+        st.plotly_chart(
+            fig_flow,
+            use_container_width=True,
+            config={"displaylogo": False},
+            key="vision_general_neto_fin_cont",
+        )
+
+    with chart_right:
+        if df_canon_home.empty:
+            st.info("No hay datos de canon anual para mostrar.")
+        else:
+            fig_canon_home = make_subplots(specs=[[{"secondary_y": True}]])
+            fig_canon_home.add_trace(
+                go.Bar(
+                    x=df_canon_home["Año"],
+                    y=df_canon_home["Canon anual"],
+                    name="Canon anual",
+                    marker=dict(color="#9DB9B5", line=dict(color="rgba(255,255,255,0.9)", width=1)),
+                    hovertemplate="<b>Año %{x}</b><br>Canon: $%{y:,.0f}<extra></extra>",
+                ),
+                secondary_y=False,
+            )
+            fig_canon_home.add_trace(
+                go.Scatter(
+                    x=df_canon_home["Año"],
+                    y=df_canon_home["MA3"],
+                    name="Promedio móvil (MA-3)",
+                    mode="lines+markers",
+                    line=dict(color="#0B1F3A", width=3.0, shape="spline"),
+                    marker=dict(size=7, color="#0B1F3A", line=dict(color="#FFFFFF", width=1.4)),
+                ),
+                secondary_y=False,
+            )
+            fig_canon_home.add_trace(
+                go.Scatter(
+                    x=df_canon_home["Año"],
+                    y=df_canon_home["YoY"],
+                    name="Variación YoY",
+                    mode="lines+markers",
+                    line=dict(color="#D97706", width=2.3, dash="dot", shape="spline"),
+                    marker=dict(size=6, color="#D97706", line=dict(color="#FFFFFF", width=1.2)),
+                ),
+                secondary_y=True,
+            )
+            fig_canon_home.update_layout(
+                title=dict(
+                    text="Ingresos por Canon de Arriendo - Evolución Anual",
+                    x=0.02,
+                    y=0.98,
+                    xanchor="left",
+                    font=dict(size=16, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                ),
+                font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
+                template="plotly_white",
+                height=240,
+                margin=dict(l=10, r=42, t=58, b=20),
+                paper_bgcolor="#FFFFFF",
+                plot_bgcolor="#FFFFFF",
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.01,
+                    xanchor="left",
+                    x=0.08,
+                    font=dict(size=10, color="#334155"),
+                    bgcolor="rgba(255,255,255,0)",
+                ),
+                hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
+            )
+            fig_canon_home.update_yaxes(
+                title_text="Canon (CLP)",
+                tickprefix="$",
+                separatethousands=True,
+                gridcolor="#E5EAF2",
+                zeroline=False,
+                title_font=dict(size=11, color="#64748B"),
+                tickfont=dict(size=10, color="#64748B"),
+                secondary_y=False,
+            )
+            fig_canon_home.update_yaxes(
+                title_text="YoY",
+                tickformat=".0%",
+                showgrid=False,
+                zeroline=False,
+                title_font=dict(size=11, color="#64748B"),
+                tickfont=dict(size=10, color="#64748B"),
+                secondary_y=True,
+            )
+            fig_canon_home.update_xaxes(title_text="Año", dtick=1, title_font=dict(size=11, color="#64748B"), tickfont=dict(size=10, color="#64748B"))
+            st.plotly_chart(
+                fig_canon_home,
+                use_container_width=True,
+                config={"displaylogo": False},
+                key="vision_general_canon_anual",
+            )
+
+    bottom_a, bottom_b, bottom_c = st.columns([1.05, 1.2, 1.1])
+    resumen_rows = [
+        ("Ingresos canon arriendo", "Acumulado histórico", fmt_clp_largo(ingresos_canon)),
+        ("Total ingresos", "Flujo acumulado", fmt_clp_largo(ingresos_kpi)),
+        ("Total egresos", "Compromisos pagados", fmt_clp_largo(egresos_kpi)),
+        ("Cuentas por cobrar", "Neto de abonos", fmt_clp_largo(cuentas_por_cobrar_neto)),
+        ("Egresos por pagar", "Pendientes de salida", fmt_clp_largo(total_egresos_por_pagar)),
+    ]
+    with bottom_a:
+        rows_html = "".join(
+            (
+                f'<div class="asset-summary-row">'
+                f'<div><div class="asset-summary-label">{i}</div><div class="asset-summary-sub">{d}</div></div>'
+                f'<div class="asset-summary-value">{v}</div>'
+                f'</div>'
+            )
+            for i, d, v in resumen_rows
+        )
+        st.markdown(
+            f"""
+            <div class="asset-card">
+                <div class="asset-card-title">Resumen Ejecutivo</div>
+                <div class="asset-summary-list">{rows_html}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with bottom_b:
+        trend_color = "#DC2626" if canon_yoy < 0 else "#059669"
+        st.markdown(
+            f"""
+            <div class="asset-card">
+                <div class="asset-card-title">Análisis de Tendencia</div>
+                <div class="trend-grid">
+                    <div class="trend-mini" style="--trend:{trend_color};--soft:{'#fff7f7' if canon_yoy < 0 else '#f6fffb'};">
+                        <div class="trend-mini-title">Crecimiento Ingresos</div>
+                        <div class="trend-mini-value">{canon_yoy:+.1%}</div>
+                        <div class="trend-mini-sub">Canon anual último año</div>
+                    </div>
+                    <div class="trend-mini" style="--trend:{'#DC2626' if margen_neto < 0 else '#059669'};--soft:{'#fff7f7' if margen_neto < 0 else '#f6fffb'};">
+                        <div class="trend-mini-title">Margen Neto Promedio</div>
+                        <div class="trend-mini-value">{margen_neto:.1%}</div>
+                        <div class="trend-mini-sub">Sobre ingresos acumulados</div>
+                    </div>
+                    <div class="trend-mini" style="--trend:{'#DC2626' if cobertura_egresos < 1 else '#059669'};--soft:{'#fff7f7' if cobertura_egresos < 1 else '#f6fffb'};">
+                        <div class="trend-mini-title">Cobertura de Caja</div>
+                        <div class="trend-mini-value">{cobertura_egresos:.2f}x</div>
+                        <div class="trend-mini-sub">Caja / egreso promedio</div>
+                    </div>
+                </div>
+                <div class="asset-callout">La tendencia se calcula con canon anual, margen acumulado y cobertura de caja disponible. Se recomienda revisar cobranza y egresos si el estado está bajo 70 puntos.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with bottom_c:
+        st.markdown(
+            '<div class="asset-card-title" style="margin:0 0 4px 0;">Diagnóstico del Activo</div>',
+            unsafe_allow_html=True,
+        )
+        fig_gauge = go.Figure(
+            go.Indicator(
+                mode="gauge+number",
+                value=health_score,
+                number={"suffix": "/100", "font": {"size": 30, "color": "#081735"}},
+                gauge={
+                    "axis": {"range": [0, 100], "visible": False},
+                    "bar": {"color": estado_color, "thickness": 0.26},
+                    "bgcolor": "#EEF2F7",
+                    "borderwidth": 0,
+                    "steps": [
+                        {"range": [0, 45], "color": "#FEE2E2"},
+                        {"range": [45, 70], "color": "#FEF3C7"},
+                        {"range": [70, 100], "color": "#DCFCE7"},
+                    ],
+                },
+                domain={"x": [0.02, 0.62], "y": [0.05, 0.95]},
+            )
+        )
+        fig_gauge.update_layout(
+            height=150,
+            margin=dict(l=0, r=0, t=4, b=0),
+            paper_bgcolor="#FFFFFF",
+        )
+        st.plotly_chart(
+            fig_gauge,
+            use_container_width=True,
+            config={"displaylogo": False, "displayModeBar": False},
+            key="vision_general_diagnostico",
+        )
+        st.markdown(
+            f"""
+            <div class="asset-diagnosis-list">
+                <div><span class="asset-dot" style="--dot:#DC2626;"></span>Riesgo Alto<br><span>{1 if health_score < 45 else 0} factor crítico</span></div>
+                <div><span class="asset-dot" style="--dot:#F59E0B;"></span>Atención Media<br><span>{1 if 45 <= health_score < 70 else 0} factor a monitorear</span></div>
+                <div><span class="asset-dot" style="--dot:#059669;"></span>Saludable<br><span>{1 if health_score >= 70 else 0} factor positivo</span></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        "<div style='margin-top:12px;text-align:center;color:#64748b;font-size:12px;font-weight:600;'>Fuente: Google Sheets (CSV) - Agrupaciones dinámicas y visualizaciones interactivas</div>",
+        unsafe_allow_html=True,
+    )
+    st.stop()
 
     st.markdown(
         section_heading(
@@ -2822,6 +3666,10 @@ if active_section == "🏠 Visión general":
 if active_section == "⚠️ Riesgos & cobranzas":
               # ---------- Resumen por Responsable (NO PAGADO vs Abonos) ----------
     st.markdown(
+        tab_header("Riesgos & cobranzas", "Monitoreo de cobranza, deuda y concentración de montos"),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
         section_heading("📋", "Cuentas por Cobrar / Pagar", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
     )
@@ -2878,7 +3726,72 @@ if active_section == "⚠️ Riesgos & cobranzas":
 
     # ---------- KPIs en formato “card” ----------
     total_deuda_neta = tabla["Deuda"].sum() if not tabla.empty else 0
-    col_kpi1, col_kpi2, col_kpi3, col_kpi4, col_kpi5 = st.columns([1, 1, 1, 1, 0.001])
+    st.markdown(
+        """
+        <style>
+        .risk-kpi-card {
+            min-height:92px;
+            border-radius:10px;
+            border:1px solid var(--border);
+            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+            padding:11px 12px 10px 12px;
+            display:grid;
+            grid-template-columns:34px 1fr;
+            gap:8px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+        }
+        .risk-kpi-icon {
+            width:30px;
+            height:30px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--halo);
+            color:var(--accent);
+            font-size:15px;
+            font-weight:950;
+        }
+        .risk-kpi-title {
+            color:#0f1f3d;
+            font-size:10.5px;
+            line-height:1.12;
+            font-weight:900;
+            margin-bottom:5px;
+            text-transform:uppercase;
+            letter-spacing:.01em;
+        }
+        .risk-kpi-value {
+            color:var(--accent);
+            font-size:20px;
+            line-height:1.05;
+            font-weight:950;
+            letter-spacing:-0.025em;
+            white-space:nowrap;
+        }
+        .risk-kpi-badge {
+            display:inline-block;
+            margin-top:4px;
+            padding:3px 6px;
+            border-radius:5px;
+            background:var(--badge-bg);
+            color:var(--badge-fg);
+            font-size:9px;
+            font-weight:900;
+        }
+        .risk-kpi-note {
+            grid-column:2;
+            color:#475569;
+            font-size:9.5px;
+            line-height:1.25;
+            font-weight:650;
+            margin-top:1px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
 
     kpi_titulo_deuda = (
         "DEUDA AL FIN DEL EJERCICIO"
@@ -2889,61 +3802,86 @@ if active_section == "⚠️ Riesgos & cobranzas":
     bci_color = "#10B981" if balance_kpi >= 0 else "#EF4444"
     pos_neta_color = "#10B981" if posicion_neta >= 0 else "#EF4444"
 
+    def risk_kpi_card(title, value, note, icon, accent, soft, halo, border, badge, positive=True):
+        badge_bg = "#dcfce7" if positive else "#fee2e2"
+        badge_fg = "#166534" if positive else "#B91C1C"
+        return f"""
+        <div class="risk-kpi-card" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};--badge-bg:{badge_bg};--badge-fg:{badge_fg};">
+            <div class="risk-kpi-icon">{icon}</div>
+            <div>
+                <div class="risk-kpi-title">{title}</div>
+                <div class="risk-kpi-value">{value}</div>
+                <div class="risk-kpi-badge">{badge}</div>
+            </div>
+            <div class="risk-kpi-note">{note}</div>
+        </div>
+        """
+
     with col_kpi1:
         st.markdown(
-            card_finanza(
+            risk_kpi_card(
                 kpi_titulo_deuda,
                 f"${total_deuda_neta:,.0f}",
-                deuda_color,
-                subtitulo="Resultado neto de cobros menos abonos",
-                etiqueta="Cobranzas",
-                size="risk",
+                "Resultado neto de cobros menos abonos",
+                "↘" if total_deuda_neta < 0 else "↗",
+                "#DC2626" if total_deuda_neta < 0 else "#047857",
+                "#fff7f7" if total_deuda_neta < 0 else "#f6fffb",
+                "#fde2e2" if total_deuda_neta < 0 else "#d8f5e4",
+                "#f1caca" if total_deuda_neta < 0 else "#cfe9de",
+                "Cobranzas",
+                total_deuda_neta >= 0,
             ),
             unsafe_allow_html=True,
         )
 
     with col_kpi2:
         st.markdown(
-            card_finanza(
+            risk_kpi_card(
                 "CAJA BANCO BCI",
                 f"${balance_kpi:,.0f}",
-                bci_color,
-                subtitulo="Saldo operacional consolidado",
-                etiqueta="Liquidez",
-                size="risk",
+                "Saldo operacional consolidado",
+                "▰",
+                "#047857" if balance_kpi >= 0 else "#DC2626",
+                "#f6fffb" if balance_kpi >= 0 else "#fff7f7",
+                "#d8f5e4" if balance_kpi >= 0 else "#fde2e2",
+                "#cfe9de" if balance_kpi >= 0 else "#f1caca",
+                "Liquidez",
+                balance_kpi >= 0,
             ),
             unsafe_allow_html=True,
         )
 
     with col_kpi3:
         st.markdown(
-            card_finanza(
+            risk_kpi_card(
                 "POSICIÓN NETA (BCI - DEUDA)",
                 f"${posicion_neta:,.0f}",
-                pos_neta_color,
-                subtitulo="Caja Banco BCI menos deuda al fin del ejercicio",
-                etiqueta="Resumen",
-                size="risk",
+                "Caja Banco BCI menos deuda al fin del ejercicio",
+                "Σ",
+                "#047857" if posicion_neta >= 0 else "#DC2626",
+                "#f6fffb" if posicion_neta >= 0 else "#fff7f7",
+                "#d8f5e4" if posicion_neta >= 0 else "#fde2e2",
+                "#cfe9de" if posicion_neta >= 0 else "#f1caca",
+                "Resumen",
+                posicion_neta >= 0,
             ),
             unsafe_allow_html=True,
         )
 
     with col_kpi4:
         st.markdown(
-            card_finanza(
+            risk_kpi_card(
                 "AVANCE DE COBRANZA",
                 f"{pct_cobranza:.1%}",
-                "#A8A8A8",
-                subtitulo="Abonos registrados sobre cartera vencida acumulada",
-                etiqueta="Resumen",
-                size="risk",
+                "Abonos registrados sobre cartera vencida acumulada",
+                "%",
+                "#1D4ED8",
+                "#f6f9ff",
+                "#e0ebff",
+                "#d4e1f6",
+                "Resumen",
+                True,
             ),
-            unsafe_allow_html=True,
-        )
-
-    with col_kpi5:
-        st.markdown(
-            '<div class="kpi-card kpi-card-md" style="visibility:hidden;" aria-hidden="true"></div>',
             unsafe_allow_html=True,
         )
 
@@ -3633,6 +4571,10 @@ if active_section == "⚠️ Riesgos & cobranzas":
 # =========================================================
 if active_section == "🏢 Canon anual / mensual":
     st.markdown(
+        tab_header("Canon anual / mensual", "Evolución de canon, ocupación y valor por metro cuadrado"),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
         section_heading("🏢", "Canon mensual por Año y por Esp", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
     )
@@ -4211,6 +5153,768 @@ if active_section == "🏢 Canon anual / mensual":
     )
 
 # =========================================================
+# 💰 TAB: INGRESOS
+# =========================================================
+if active_section == "💰 Ingresos":
+    import plotly.graph_objects as go
+
+    st.markdown(
+        """
+        <style>
+        .kpi-card-top { display: none !important; }
+        .ie-title-row {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            margin:18px 0 14px 0;
+        }
+        .ie-title {
+            color:#081735;
+            font-size:28px;
+            font-weight:900;
+            letter-spacing:-0.025em;
+            line-height:1;
+        }
+        .ie-subtitle {
+            margin-top:7px;
+            color:#475569;
+            font-size:14px;
+            font-weight:600;
+        }
+        .ie-actions {
+            display:flex;
+            gap:8px;
+        }
+        .ie-action {
+            height:38px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:7px;
+            border:1px solid #dbe3ee;
+            background:#ffffff;
+            color:#0f1f3d;
+            padding:0 13px;
+            font-size:12px;
+            font-weight:800;
+            box-shadow:0 8px 18px rgba(15,23,42,0.04);
+        }
+        .ie-action-primary {
+            background:#0B3A86;
+            border-color:#0B3A86;
+            color:#ffffff;
+        }
+        .ie-filter-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:14px 16px;
+            margin: 0 0 14px 0;
+            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+        }
+        .ie-filter-card [data-testid="stRadio"] > label,
+        .ie-filter-card [data-testid="stSelectbox"] > label {
+            color:#0f1f3d !important;
+            font-size:12px !important;
+            font-weight:800 !important;
+            padding-bottom:4px !important;
+        }
+        main [data-testid="stRadio"] > label,
+        main [data-testid="stSelectbox"] > label {
+            color:#0f1f3d !important;
+            font-size:12px !important;
+            font-weight:800 !important;
+            padding-bottom:4px !important;
+        }
+        .ie-filter-card div[role="radiogroup"] {
+            display:grid !important;
+            grid-template-columns:1fr 1fr;
+            gap:0 !important;
+            min-height:36px;
+            border-radius:7px;
+            overflow:hidden;
+            background:#f1f5f9;
+            border:1px solid #e7edf5;
+        }
+        .ie-filter-card div[role="radiogroup"] > label {
+            margin:0 !important;
+            min-height:36px !important;
+            display:flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            border-radius:0 !important;
+            padding:0 12px !important;
+            border:0 !important;
+            background:transparent !important;
+        }
+        .ie-filter-card div[role="radiogroup"] > label > div:first-child {
+            display:none !important;
+        }
+        .ie-filter-card div[role="radiogroup"] > label:has(input:checked) {
+            background:#0B4DB3 !important;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+        }
+        .ie-filter-card div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
+            color:#0f1f3d !important;
+            font-size:12px !important;
+            font-weight:800 !important;
+        }
+        .ie-filter-card div[role="radiogroup"] > label:has(input:checked) [data-testid="stMarkdownContainer"] p {
+            color:#ffffff !important;
+        }
+        .ie-filter-card [data-baseweb="select"] > div {
+            min-height:36px !important;
+            border-radius:7px !important;
+            background:#f1f5f9 !important;
+            border-color:#e7edf5 !important;
+            box-shadow:none !important;
+        }
+        main div[role="radiogroup"] {
+            display:grid !important;
+            grid-template-columns:1fr 1fr;
+            gap:0 !important;
+            min-height:36px;
+            border-radius:7px;
+            overflow:hidden;
+            background:#f1f5f9;
+            border:1px solid #e7edf5;
+        }
+        main div[role="radiogroup"] > label {
+            margin:0 !important;
+            min-height:36px !important;
+            display:flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            border-radius:0 !important;
+            padding:0 12px !important;
+            border:0 !important;
+            background:transparent !important;
+        }
+        main div[role="radiogroup"] > label > div:first-child {
+            display:none !important;
+        }
+        main div[role="radiogroup"] > label:has(input:checked) {
+            background:#0B4DB3 !important;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+        }
+        main div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
+            color:#0f1f3d !important;
+            font-size:12px !important;
+            font-weight:800 !important;
+        }
+        main div[role="radiogroup"] > label:has(input:checked) [data-testid="stMarkdownContainer"] p {
+            color:#ffffff !important;
+        }
+        main [data-baseweb="select"] > div {
+            min-height:36px !important;
+            border-radius:7px !important;
+            background:#f1f5f9 !important;
+            border-color:#e7edf5 !important;
+            box-shadow:none !important;
+        }
+        .ing-kpi-card {
+            min-height:144px;
+            border-radius:10px;
+            padding:18px 18px 14px 18px;
+            border:1px solid var(--border);
+            background:linear-gradient(135deg, #ffffff 0%, var(--tint) 100%);
+            box-shadow:0 12px 28px rgba(15,23,42,0.045);
+        }
+        .ing-kpi-top {
+            display:flex;
+            align-items:center;
+            gap:12px;
+            margin-bottom:12px;
+        }
+        .ing-kpi-icon {
+            width:34px;
+            height:34px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--soft);
+            color:var(--accent);
+            font-size:17px;
+            font-weight:900;
+        }
+        .ing-kpi-title {
+            color:#071735;
+            font-size:12px;
+            font-weight:900;
+            letter-spacing:.02em;
+            text-transform:uppercase;
+        }
+        .ing-kpi-value {
+            color:var(--accent);
+            font-size:27px;
+            line-height:1.02;
+            font-weight:950;
+            letter-spacing:-0.035em;
+            margin-bottom:7px;
+            white-space:nowrap;
+        }
+        .ing-kpi-sub {
+            color:#516179;
+            font-size:11px;
+            font-weight:650;
+            margin-bottom:12px;
+        }
+        .ing-kpi-chip {
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            border-radius:6px;
+            padding:5px 8px;
+            background:var(--chip-bg);
+            color:var(--chip-fg);
+            font-size:10px;
+            font-weight:900;
+        }
+        .ie-analysis-card, .ie-bottom-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+        }
+        .ie-analysis-card {
+            padding:16px;
+            height:100%;
+        }
+        .ie-analysis-title, .ie-bottom-title {
+            color:#081735;
+            font-weight:900;
+        }
+        .ie-analysis-title {
+            font-size:16px;
+            margin-bottom:14px;
+        }
+        .ie-analysis-row {
+            display:grid;
+            grid-template-columns:42px 1fr auto;
+            gap:10px;
+            align-items:center;
+            border:1px solid #e5ebf3;
+            border-radius:9px;
+            padding:11px 12px;
+            margin-bottom:10px;
+            background:#fbfdff;
+        }
+        .ie-analysis-icon {
+            width:32px;
+            height:32px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--soft);
+            color:var(--accent);
+            font-weight:900;
+        }
+        .ie-analysis-label {
+            color:#0f1f3d;
+            font-size:12px;
+            font-weight:900;
+        }
+        .ie-analysis-sub {
+            margin-top:3px;
+            color:#64748b;
+            font-size:11px;
+            font-weight:650;
+        }
+        .ie-analysis-value {
+            color:#0f1f3d;
+            font-size:13px;
+            font-weight:900;
+            white-space:nowrap;
+        }
+        .ie-risk-pill {
+            display:inline-flex;
+            padding:5px 9px;
+            border-radius:6px;
+            background:#dcfce7;
+            color:#047857;
+            font-size:11px;
+            font-weight:900;
+        }
+        .ie-bottom-grid {
+            display:grid;
+            grid-template-columns:1.05fr 1fr 1.05fr;
+            gap:12px;
+            margin-top:12px;
+        }
+        .ie-bottom-card {
+            padding:14px;
+            min-height:220px;
+        }
+        .ie-bottom-title {
+            font-size:15px;
+            margin-bottom:10px;
+        }
+        .ie-summary-table {
+            width:100%;
+            border-collapse:collapse;
+            font-size:11px;
+            color:#0f1f3d;
+        }
+        .ie-summary-table th {
+            text-transform:uppercase;
+            letter-spacing:.04em;
+            font-size:9px;
+            color:#64748b;
+            text-align:left;
+            padding:7px 0;
+            border-bottom:1px solid #e5ebf3;
+        }
+        .ie-summary-table td {
+            padding:7px 0;
+            border-bottom:1px solid #edf2f7;
+            font-weight:700;
+        }
+        .ie-summary-table td:last-child, .ie-summary-table th:last-child {
+            text-align:right;
+        }
+        .ie-chart-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:16px 16px 6px 16px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+        }
+        .ie-chart-title {
+            color:#081735;
+            font-size:16px;
+            font-weight:900;
+            margin-bottom:4px;
+        }
+        .ie-donut-center {
+            text-align:center;
+            color:#081735;
+            font-weight:900;
+            margin-top:-108px;
+            pointer-events:none;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div class="ie-title-row">
+            <div>
+                <div class="ie-title">Ingresos</div>
+                <div class="ie-subtitle">Control de ingresos, canon, abonos y cobranza</div>
+            </div>
+            <div class="ie-actions">
+                <div class="ie-action">↗ Compartir</div>
+                <div class="ie-action">☆</div>
+                <div class="ie-action">⋯</div>
+                <div class="ie-action ie-action-primary">↓ Descargar reporte</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    df_ing_src = df_f.copy()
+    tipo_ing = "Financiero"
+
+    c_periodo, c_tipo, c_year, c_month, c_info = st.columns([1.05, 1.25, 1.25, 1.25, 1.8])
+    with c_periodo:
+        periodo_ing = st.radio("Período", ["Mensual", "Anual"], horizontal=True, key="periodo_ingresos")
+    with c_tipo:
+        tipo_ing = st.radio("Análisis", ["Financiero", "Contable"], horizontal=True, key="tipo_ingresos")
+
+    if tipo_ing == "Contable":
+        df_ing_src["Fecha_dt"] = df_ing_src["Fecha_dt_contable"]
+        df_ing_src["Año_sel"] = df_ing_src["Año_sel_contable"]
+        df_ing_src["Mes_sel"] = df_ing_src["Mes_sel_contable"]
+        df_ing_src["Periodo_ref"] = df_ing_src["Periodo_ref_contable"]
+
+    df_ing_src = df_ing_src.dropna(subset=["Monto"]).copy()
+    df_ing_src = df_ing_src[df_ing_src["CC_norm"].eq("INGRESO")].copy()
+    if not df_ing_src.empty and df_ing_src["Mes_sel"].isna().all():
+        df_ing_src["Año_sel"] = df_ing_src["Fecha_dt"].dt.year
+        df_ing_src["Mes_sel"] = df_ing_src["Fecha_dt"].dt.month
+
+    year_opts_ing = ["Todos"] + sorted(df_ing_src["Año_sel"].dropna().astype(int).unique().tolist())
+    with c_year:
+        sel_year_ing = st.selectbox("Año", year_opts_ing, key="year_ingresos")
+    with c_month:
+        month_opts_ing = ["Todos"] + list(range(1, 13))
+        sel_month_ing = st.selectbox("Mes", month_opts_ing, key="month_ingresos")
+    with c_info:
+        st.markdown(
+            """
+            <div style="background:#f3f6fb;border-radius:8px;padding:13px 14px;color:#0f1f3d;font-size:12px;font-weight:650;line-height:1.45;">
+                Se usan montos desde la columna F (Monto).<br>
+                Ingresos según columna CC.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    df_ing_periodo = df_ing_src.copy()
+    if sel_year_ing != "Todos":
+        df_ing_periodo = df_ing_periodo[df_ing_periodo["Año_sel"].eq(sel_year_ing)]
+    if sel_month_ing != "Todos" and periodo_ing == "Mensual":
+        df_ing_periodo = df_ing_periodo[df_ing_periodo["Mes_sel"].eq(sel_month_ing)]
+
+    if periodo_ing == "Mensual":
+        df_ing_periodo = df_ing_periodo.dropna(subset=["Periodo_ref"]).copy()
+        df_ing_periodo["Periodo"] = df_ing_periodo["Periodo_ref"]
+        df_ing_hist = df_ing_src.dropna(subset=["Periodo_ref"]).copy()
+        df_ing_hist["Periodo"] = df_ing_hist["Periodo_ref"]
+        tickformat_ing = "%b %Y"
+        label_periodo_ing = "Mes"
+    else:
+        df_ing_periodo = df_ing_periodo.dropna(subset=["Año_sel"]).copy()
+        df_ing_periodo["Periodo"] = pd.to_datetime(
+            dict(year=df_ing_periodo["Año_sel"].astype(int), month=1, day=1),
+            errors="coerce",
+        )
+        df_ing_hist = df_ing_src.dropna(subset=["Año_sel"]).copy()
+        df_ing_hist["Periodo"] = pd.to_datetime(
+            dict(year=df_ing_hist["Año_sel"].astype(int), month=1, day=1),
+            errors="coerce",
+        )
+        tickformat_ing = "%Y"
+        label_periodo_ing = "Año"
+
+    df_ing_periodo = df_ing_periodo.dropna(subset=["Periodo"])
+    df_ing_hist = df_ing_hist.dropna(subset=["Periodo"])
+
+    if df_ing_periodo.empty:
+        st.info(f"No se encuentran registros de ingresos para {periodo_ing.lower()} en análisis {tipo_ing.lower()}.")
+        st.stop()
+
+    canon_mask_ing = (
+        df_ing_periodo["CC1_text"].str.strip().str.lower().eq("arriendo")
+        & df_ing_periodo["Obs_text"].str.strip().str.lower().eq("canon mensual")
+    )
+    ingreso_total = float(df_ing_periodo["Monto"].sum())
+    canon_total_ing = float(df_ing_periodo.loc[canon_mask_ing, "Monto"].sum())
+    ingreso_pagado = float(df_ing_periodo.loc[df_ing_periodo["Sit_norm"].eq("PAGADO"), "Monto"].sum())
+    ingreso_no_pagado = float(df_ing_periodo.loc[df_ing_periodo["Sit_norm"].eq("NO PAGADO"), "Monto"].sum())
+    ingreso_abonos = float(df_ing_periodo.loc[df_ing_periodo["Sit_norm"].str.startswith("ABONO", na=False), "Monto"].sum())
+
+    agg_ing = (
+        df_ing_periodo.groupby("Periodo", as_index=False)["Monto"]
+        .sum()
+        .rename(columns={"Monto": "Ingresos"})
+        .sort_values("Periodo")
+    )
+    hist_ing = (
+        df_ing_hist.groupby("Periodo", as_index=False)["Monto"]
+        .sum()
+        .rename(columns={"Monto": "Ingresos históricos"})
+        .sort_values("Periodo")
+    )
+    hist_ing["Ingreso acumulado"] = hist_ing["Ingresos históricos"].cumsum()
+    chart_ing = agg_ing.merge(hist_ing[["Periodo", "Ingreso acumulado"]], on="Periodo", how="left")
+
+    ingreso_acum = float(chart_ing["Ingreso acumulado"].dropna().iloc[-1]) if chart_ing["Ingreso acumulado"].notna().any() else ingreso_total
+    cobranza_ratio = ingreso_pagado / ingreso_total if ingreso_total else 0.0
+    no_pagado_ratio = ingreso_no_pagado / ingreso_total if ingreso_total else 0.0
+
+    latest_ing = float(chart_ing["Ingresos"].iloc[-1]) if not chart_ing.empty else 0.0
+    prev_ing = float(chart_ing["Ingresos"].iloc[-2]) if len(chart_ing) > 1 else 0.0
+    delta_ing = (latest_ing - prev_ing) / abs(prev_ing) if prev_ing else 0.0
+
+    def ing_metric_card(title, value, subtitle, icon, accent, soft, tint, border, chip_text, chip_positive=True):
+        chip_bg = "#dcfce7" if chip_positive else "#fee2e2"
+        chip_fg = "#047857" if chip_positive else "#dc2626"
+        arrow = "▲" if chip_positive else "▼"
+        return f"""
+        <div class="ing-kpi-card" style="--accent:{accent};--soft:{soft};--tint:{tint};--border:{border};--chip-bg:{chip_bg};--chip-fg:{chip_fg};">
+            <div class="ing-kpi-top">
+                <div class="ing-kpi-icon">{icon}</div>
+                <div class="ing-kpi-title">{title}</div>
+            </div>
+            <div class="ing-kpi-value">{value}</div>
+            <div class="ing-kpi-sub">{subtitle}</div>
+            <div class="ing-kpi-chip">{arrow} {chip_text}</div>
+        </div>
+        """
+
+    k1, k2, k3, k4, k5 = st.columns(5)
+    with k1:
+        st.markdown(
+            ing_metric_card(
+                "TOTAL INGRESOS",
+                fmt_clp_largo(ingreso_total),
+                "Suma de ingresos del período",
+                "▥",
+                "#047857",
+                "#dcfce7",
+                "#f3fffb",
+                "#b7e4d5",
+                f"{delta_ing:.1%} vs período anterior",
+                delta_ing >= 0,
+            ),
+            unsafe_allow_html=True,
+        )
+    with k2:
+        st.markdown(
+            ing_metric_card(
+                "CANON ARRIENDO",
+                fmt_clp_largo(canon_total_ing),
+                "Canon mensual registrado",
+                "▣",
+                "#B7791F",
+                "#FEF3C7",
+                "#fffaf0",
+                "#f2d48a",
+                f"{(canon_total_ing / ingreso_total if ingreso_total else 0):.1%} de ingresos",
+                True,
+            ),
+            unsafe_allow_html=True,
+        )
+    with k3:
+        st.markdown(
+            ing_metric_card(
+                "INGRESOS PAGADOS",
+                fmt_clp_largo(ingreso_pagado),
+                "Ingresos con situación pagado",
+                "✓",
+                "#2563EB",
+                "#DBEAFE",
+                "#f5f9ff",
+                "#bfdbfe",
+                f"{cobranza_ratio:.1%} cobrados",
+                True,
+            ),
+            unsafe_allow_html=True,
+        )
+    with k4:
+        st.markdown(
+            ing_metric_card(
+                "NO PAGADO",
+                fmt_clp_largo(ingreso_no_pagado),
+                "Ingresos pendientes de cobro",
+                "!",
+                "#DC2626",
+                "#FEE2E2",
+                "#fff7f7",
+                "#fecaca",
+                f"{no_pagado_ratio:.1%} pendiente",
+                False,
+            ),
+            unsafe_allow_html=True,
+        )
+    with k5:
+        st.markdown(
+            ing_metric_card(
+                "ABONOS",
+                fmt_clp_largo(ingreso_abonos),
+                "Ingresos marcados como abono",
+                "≋",
+                "#7C3AED",
+                "#EDE9FE",
+                "#fbf8ff",
+                "#ddd6fe",
+                f"{(ingreso_abonos / ingreso_total if ingreso_total else 0):.1%} de ingresos",
+                True,
+            ),
+            unsafe_allow_html=True,
+        )
+
+    main_col_ing, side_col_ing = st.columns([2.25, 1.15])
+    with main_col_ing:
+        st.markdown(
+            f'<div class="ie-chart-card"><div class="ie-chart-title">Ingresos — {periodo_ing} · {tipo_ing}</div>',
+            unsafe_allow_html=True,
+        )
+        fig_ing = go.Figure()
+        fig_ing.add_trace(
+            go.Bar(
+                x=chart_ing["Periodo"],
+                y=chart_ing["Ingresos"],
+                name="Ingresos",
+                marker=dict(color=CHART_BAR_TEAL, line=dict(color=CHART_BAR_TEAL, width=1)),
+                hovertemplate="<b>%{x|" + tickformat_ing + "}</b><br>Ingresos: %{y:$,.0f}<extra></extra>",
+            )
+        )
+        fig_ing.add_trace(
+            go.Scatter(
+                x=chart_ing["Periodo"],
+                y=chart_ing["Ingreso acumulado"],
+                name="Ingreso acumulado",
+                yaxis="y2",
+                mode="lines+markers",
+                line=dict(color="#0F766E", width=3, dash="dot", shape="spline"),
+                marker=dict(size=7, color="#0F766E", line=dict(color="white", width=1.4)),
+                hovertemplate="<b>%{x|" + tickformat_ing + "}</b><br>Ingreso acumulado: %{y:$,.0f}<extra></extra>",
+            )
+        )
+        fig_ing.update_layout(
+            height=410,
+            margin=dict(l=10, r=20, t=36, b=20),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(248,250,252,0.86)",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(size=11)),
+            xaxis=dict(title=label_periodo_ing, tickformat=tickformat_ing, showgrid=False),
+            yaxis=dict(title="Monto (CLP)", tickprefix="$", separatethousands=True, gridcolor="#E2E8F0", zeroline=False),
+            yaxis2=dict(
+                title="Acumulado",
+                tickprefix="$",
+                separatethousands=True,
+                overlaying="y",
+                side="right",
+                showgrid=False,
+                zeroline=False,
+            ),
+            hovermode="x unified",
+        )
+        st.plotly_chart(fig_ing, use_container_width=True, config={"displaylogo": False})
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    top_obs_ing = (
+        df_ing_periodo.assign(Obs_clean=lambda d: d["Obs_text"].astype(str).str.strip().replace("", "Sin detalle"))
+        .groupby("Obs_clean")["Monto"]
+        .sum()
+        .sort_values(ascending=False)
+    )
+    top_resp_ing = (
+        df_ing_periodo.assign(Resp_clean=lambda d: d["Responsable_clean"].astype(str).str.strip().replace("", "Sin responsable"))
+        .groupby("Resp_clean")["Monto"]
+        .sum()
+        .sort_values(ascending=False)
+    )
+    with side_col_ing:
+        st.markdown(
+            f"""
+            <div class="ie-analysis-card">
+                <div class="ie-analysis-title">Análisis rápido del período</div>
+                <div class="ie-analysis-row" style="--soft:#dcfce7;--accent:#059669;">
+                    <div class="ie-analysis-icon">↑</div>
+                    <div>
+                        <div class="ie-analysis-label">Mayor fuente de ingresos</div>
+                        <div class="ie-analysis-sub">{top_obs_ing.index[0] if not top_obs_ing.empty else "Sin detalle"}</div>
+                    </div>
+                    <div class="ie-analysis-value">{fmt_clp_largo(float(top_obs_ing.iloc[0])) if not top_obs_ing.empty else "$0"}</div>
+                </div>
+                <div class="ie-analysis-row" style="--soft:#dbeafe;--accent:#2563eb;">
+                    <div class="ie-analysis-icon">•</div>
+                    <div>
+                        <div class="ie-analysis-label">Principal responsable</div>
+                        <div class="ie-analysis-sub">{top_resp_ing.index[0] if not top_resp_ing.empty else "Sin responsable"}</div>
+                    </div>
+                    <div class="ie-analysis-value">{fmt_clp_largo(float(top_resp_ing.iloc[0])) if not top_resp_ing.empty else "$0"}</div>
+                </div>
+                <div class="ie-analysis-row" style="--soft:#ede9fe;--accent:#7c3aed;">
+                    <div class="ie-analysis-icon">%</div>
+                    <div>
+                        <div class="ie-analysis-label">Cobranza del período</div>
+                        <div class="ie-analysis-sub">Pagado sobre ingresos</div>
+                    </div>
+                    <div class="ie-analysis-value">{cobranza_ratio:.1%}</div>
+                </div>
+                <div class="ie-analysis-row" style="--soft:#fee2e2;--accent:#dc2626;">
+                    <div class="ie-analysis-icon">!</div>
+                    <div>
+                        <div class="ie-analysis-label">Pendiente de cobro</div>
+                        <div class="ie-analysis-sub">No pagado sobre ingresos</div>
+                    </div>
+                    <div class="ie-analysis-value">{no_pagado_ratio:.1%}</div>
+                </div>
+                <div style="margin-top:12px;"><span class="ie-risk-pill">Seguimiento cobranza</span></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    bottom_1, bottom_2, bottom_3 = st.columns([1.05, 1, 1.05])
+    with bottom_1:
+        rows_ing = [
+            ("Total ingresos", "Suma de ingresos del período", ingreso_total, "100.0%"),
+            ("Canon arriendo", "Canon mensual registrado", canon_total_ing, f"{(canon_total_ing / ingreso_total if ingreso_total else 0):.1%}"),
+            ("Ingresos pagados", "Situación pagado", ingreso_pagado, f"{cobranza_ratio:.1%}"),
+            ("No pagado", "Pendiente de cobro", ingreso_no_pagado, f"{no_pagado_ratio:.1%}"),
+            ("Abonos", "Situación abono", ingreso_abonos, f"{(ingreso_abonos / ingreso_total if ingreso_total else 0):.1%}"),
+        ]
+        table_html = "".join(
+            f"<tr><td>{concepto}</td><td>{desc}</td><td>{fmt_clp_largo(valor)}</td><td>{pct}</td></tr>"
+            for concepto, desc, valor, pct in rows_ing
+        )
+        st.markdown(
+            f"""
+            <div class="ie-bottom-card">
+                <div class="ie-bottom-title">Resumen del período</div>
+                <table class="ie-summary-table">
+                    <thead><tr><th>Concepto</th><th>Descripción</th><th>Monto (CLP)</th><th>% ingresos</th></tr></thead>
+                    <tbody>{table_html}</tbody>
+                </table>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with bottom_2:
+        st.markdown('<div class="ie-bottom-card"><div class="ie-bottom-title">Evolución del ingreso acumulado</div>', unsafe_allow_html=True)
+        fig_acum_ing = go.Figure()
+        fig_acum_ing.add_trace(
+            go.Scatter(
+                x=hist_ing["Periodo"],
+                y=hist_ing["Ingreso acumulado"],
+                name="Ingreso acumulado",
+                mode="lines+markers",
+                line=dict(color="#0F766E", width=2.5, shape="spline"),
+                marker=dict(size=5, color="#0F766E"),
+                fill="tozeroy",
+                fillcolor="rgba(15,118,110,0.12)",
+            )
+        )
+        fig_acum_ing.update_layout(
+            height=185,
+            margin=dict(l=8, r=8, t=20, b=8),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(248,250,252,0.7)",
+            showlegend=False,
+            xaxis=dict(tickformat=tickformat_ing, showgrid=False),
+            yaxis=dict(tickprefix="$", separatethousands=True, gridcolor="#E2E8F0"),
+        )
+        st.plotly_chart(fig_acum_ing, use_container_width=True, config={"displaylogo": False, "displayModeBar": False})
+        st.markdown("</div>", unsafe_allow_html=True)
+    with bottom_3:
+        st.markdown('<div class="ie-bottom-card"><div class="ie-bottom-title">Composición de ingresos del período</div>', unsafe_allow_html=True)
+        comp_ing = (
+            df_ing_periodo.assign(CC1_clean=lambda d: d["CC1_text"].astype(str).str.strip().replace("", "Sin clasificar"))
+            .groupby("CC1_clean")["Monto"]
+            .sum()
+            .sort_values(ascending=False)
+            .head(5)
+        )
+        if comp_ing.empty:
+            st.info("Sin composición disponible.")
+        else:
+            fig_donut_ing = go.Figure(
+                go.Pie(
+                    labels=comp_ing.index,
+                    values=comp_ing.values,
+                    hole=0.58,
+                    marker=dict(colors=["#2F80ED", "#10B981", "#F59E0B", "#8B5CF6", "#94A3B8"]),
+                    textinfo="none",
+                )
+            )
+            fig_donut_ing.update_layout(
+                height=185,
+                margin=dict(l=0, r=0, t=6, b=0),
+                paper_bgcolor="rgba(0,0,0,0)",
+                legend=dict(orientation="v", x=1.02, y=0.5, font=dict(size=10)),
+                annotations=[
+                    dict(
+                        text=f"<b>{fmt_short(ingreso_total)}</b><br><span style='font-size:10px'>Total ingresos</span>",
+                        x=0.5,
+                        y=0.5,
+                        showarrow=False,
+                        font=dict(color="#081735", size=16),
+                    )
+                ],
+            )
+            st.plotly_chart(fig_donut_ing, use_container_width=True, config={"displaylogo": False, "displayModeBar": False})
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# =========================================================
 # 📈 TAB 5: INGRESOS & EGRESOS (Mensual / Anual)
 # =========================================================
 if active_section == "📈 Ingresos & egresos":
@@ -4220,25 +5924,323 @@ if active_section == "📈 Ingresos & egresos":
         .kpi-card-top {
             display: none !important;
         }
+        .ie-title-row {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            margin:18px 0 10px 0;
+        }
+        .ie-title {
+            color:#081735;
+            font-size:28px;
+            font-weight:900;
+            letter-spacing:-0.025em;
+            line-height:1;
+        }
+        .ie-subtitle {
+            margin-top:7px;
+            color:#475569;
+            font-size:14px;
+            font-weight:600;
+        }
+        .ie-actions {
+            display:flex;
+            gap:8px;
+        }
+        .ie-action {
+            height:38px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:7px;
+            border:1px solid #dbe3ee;
+            background:#ffffff;
+            color:#0f1f3d;
+            padding:0 13px;
+            font-size:12px;
+            font-weight:800;
+            box-shadow:0 8px 18px rgba(15,23,42,0.04);
+        }
+        .ie-action-primary {
+            background:#0B3A86;
+            border-color:#0B3A86;
+            color:#ffffff;
+        }
+        .ie-filter-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:8px 12px;
+            margin: 0 0 10px 0;
+            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+        }
+        .ie-kpi-card {
+            position:relative;
+            overflow:hidden;
+            min-height:132px;
+            border-radius:10px;
+            border:1px solid var(--border);
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.98) 0%, var(--soft) 100%);
+            padding:14px 14px 12px 14px;
+            box-shadow:0 16px 34px rgba(15,23,42,0.065);
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+        }
+        .ie-kpi-card::before {
+            content:"";
+            position:absolute;
+            inset:0 auto 0 0;
+            width:4px;
+            background:var(--accent);
+            opacity:.88;
+        }
+        .ie-kpi-head {
+            display:flex;
+            align-items:center;
+            gap:9px;
+            margin-bottom:9px;
+            padding-left:2px;
+        }
+        .ie-kpi-icon {
+            width:32px;
+            height:32px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--halo);
+            color:var(--accent);
+            font-size:15px;
+            font-weight:950;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.52);
+        }
+        .ie-kpi-title {
+            color:#071735;
+            font-size:11px;
+            font-weight:950;
+            letter-spacing:.055em;
+            text-transform:uppercase;
+            line-height:1.16;
+        }
+        .ie-kpi-value {
+            color:var(--accent);
+            font-size:24px;
+            line-height:1.02;
+            font-weight:950;
+            letter-spacing:-0.035em;
+            white-space:nowrap;
+        }
+        .ie-kpi-sub {
+            color:#516179;
+            font-size:10.5px;
+            line-height:1.35;
+            font-weight:700;
+            margin-top:6px;
+        }
+        .ie-kpi-meta {
+            margin-top:8px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            color:#64748b;
+            font-size:9.5px;
+            font-weight:800;
+        }
+        .ie-kpi-meta-value {
+            color:#0f1f3d;
+            font-weight:950;
+            white-space:nowrap;
+        }
+        .ie-kpi-badge {
+            display:inline-flex;
+            align-items:center;
+            width:max-content;
+            max-width:100%;
+            margin-top:9px;
+            padding:4px 7px;
+            border-radius:6px;
+            background:var(--badge-bg);
+            color:var(--badge-fg);
+            font-size:10px;
+            font-weight:900;
+            white-space:nowrap;
+        }
+        .ie-analysis-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:16px;
+            height:100%;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+        }
+        .ie-analysis-title {
+            color:#081735;
+            font-size:16px;
+            font-weight:900;
+            margin-bottom:14px;
+        }
+        .ie-analysis-row {
+            display:grid;
+            grid-template-columns:42px 1fr auto;
+            gap:10px;
+            align-items:center;
+            border:1px solid #e5ebf3;
+            border-radius:9px;
+            padding:11px 12px;
+            margin-bottom:10px;
+            background:#fbfdff;
+        }
+        .ie-analysis-icon {
+            width:32px;
+            height:32px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--soft);
+            color:var(--accent);
+            font-weight:900;
+        }
+        .ie-analysis-label {
+            color:#0f1f3d;
+            font-size:12px;
+            font-weight:900;
+        }
+        .ie-analysis-sub {
+            margin-top:3px;
+            color:#64748b;
+            font-size:11px;
+            font-weight:650;
+        }
+        .ie-analysis-value {
+            color:#0f1f3d;
+            font-size:13px;
+            font-weight:900;
+            white-space:nowrap;
+        }
+        .ie-risk-pill {
+            display:inline-flex;
+            padding:5px 9px;
+            border-radius:6px;
+            background:#fee2e2;
+            color:#B91C1C;
+            font-size:11px;
+            font-weight:900;
+        }
+        .ie-bottom-grid {
+            display:grid;
+            grid-template-columns:1.05fr 1fr 1.05fr;
+            gap:12px;
+            margin-top:12px;
+        }
+        .ie-bottom-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:14px;
+            min-height:220px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+        }
+        .ie-bottom-title {
+            color:#081735;
+            font-size:15px;
+            font-weight:900;
+            margin-bottom:10px;
+        }
+        .ie-summary-table {
+            width:100%;
+            border-collapse:collapse;
+            font-size:11px;
+        }
+        .ie-summary-table th {
+            text-align:left;
+            color:#64748b;
+            font-size:10px;
+            text-transform:uppercase;
+            border-bottom:1px solid #e5ebf3;
+            padding:5px 0;
+        }
+        .ie-summary-table td {
+            border-bottom:1px solid #eef2f7;
+            color:#0f1f3d;
+            font-weight:700;
+            padding:6px 0;
+        }
+        .ie-summary-table td:last-child {
+            text-align:right;
+            font-weight:900;
+        }
+        .ie-summary-list {
+            display:flex;
+            flex-direction:column;
+            gap:7px;
+        }
+        .ie-summary-row {
+            display:grid;
+            grid-template-columns:30px minmax(0, 1fr) auto;
+            gap:8px;
+            align-items:center;
+            border:1px solid #e5ebf3;
+            border-radius:9px;
+            padding:7px 9px;
+            background:#fbfdff;
+        }
+        .ie-summary-icon {
+            width:24px;
+            height:24px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--soft);
+            color:var(--accent);
+            font-size:12px;
+            font-weight:950;
+        }
+        .ie-summary-label {
+            color:#0f1f3d;
+            font-size:11px;
+            line-height:1.1;
+            font-weight:950;
+        }
+        .ie-summary-desc {
+            color:#64748b;
+            font-size:9.5px;
+            line-height:1.15;
+            font-weight:700;
+            margin-top:2px;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .ie-summary-value {
+            color:var(--accent);
+            font-size:11px;
+            font-weight:950;
+            text-align:right;
+            white-space:nowrap;
+        }
+        .ie-summary-pct {
+            color:#64748b;
+            font-size:9.5px;
+            font-weight:850;
+            margin-top:2px;
+        }
         </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        section_heading("📈", "Ingresos vs Egresos — Totales por período", weight_class="section-heading-title-soft"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        """
-        <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin: 8px 0 10px 0;
-            color: #FFFFFF;
-            font-size: 13px;
-            font-weight: 600;">
-            Desempeño financiero por período · Control de ingresos, egresos y resultado neto
+        <div class="ie-title-row">
+            <div>
+                <div class="ie-title">Ingresos & Egresos</div>
+                <div class="ie-subtitle">Control de ingresos, egresos y resultado neto</div>
+            </div>
+            <div class="ie-actions">
+                <div class="ie-action">↗ Compartir</div>
+                <div class="ie-action">☆</div>
+                <div class="ie-action">•••</div>
+                <div class="ie-action ie-action-primary">⇩ Descargar reporte</div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -4246,7 +6248,8 @@ if active_section == "📈 Ingresos & egresos":
 
     import plotly.graph_objects as go
 
-    c1, c2, c3 = st.columns([1, 1, 2])
+    st.markdown('<div class="ie-filter-card">', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns([1, 1, 1.1, 1.1])
     with c1:
         periodo = st.radio("Periodo", ["Mensual", "Anual"], horizontal=True, index=0, key="periodo_ing_eg")
     with c2:
@@ -4257,8 +6260,6 @@ if active_section == "📈 Ingresos & egresos":
             index=0,
             key="tipo_analisis_ing_eg",
         )
-    with c3:
-        st.caption("Se usan montos desde la columna F (Monto). Ingresos y egresos según columna CC.")
 
     df_ie = df_f.copy()
     fecha_dt_acum_col = "Fecha_dt"
@@ -4293,13 +6294,13 @@ if active_section == "📈 Ingresos & egresos":
     years = sorted(_df["Año_sel"].dropna().astype(int).unique().tolist())
     year_opts = ["Todos"] + years
 
-    c_year, c_month = st.columns([1, 1])
-    with c_year:
+    with c3:
         sel_year = st.selectbox("Año", year_opts, index=0, key="year_ing_eg")
-    with c_month:
+    with c4:
         month_opts = ["Todos"] + list(range(1, 13))
         sel_month = st.selectbox("Mes", month_opts, index=0, key="month_ing_eg",
                                  disabled=(periodo == "Anual"))
+    st.markdown("</div>", unsafe_allow_html=True)
 
     if sel_year != "Todos":
         df_ie_base_periodo = df_ie_base_periodo[df_ie_base_periodo["Año_sel"] == sel_year]
@@ -4406,33 +6407,116 @@ if active_section == "📈 Ingresos & egresos":
         total_neto_acumulado = float(base["Neto_acumulado"].iloc[-1])
         total_margen = (total_neto / total_ing) if total_ing else 0.0
 
+        def ie_metric_card(title, value, subtitle, icon, accent, soft, halo, border, badge_text, meta_label, meta_value, badge_positive=True):
+            badge_bg = "#dcfce7" if badge_positive else "#fee2e2"
+            badge_fg = "#047857" if badge_positive else "#b91c1c"
+            return f"""
+            <div class="ie-kpi-card" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};--badge-bg:{badge_bg};--badge-fg:{badge_fg};">
+                <div>
+                    <div class="ie-kpi-head">
+                        <div class="ie-kpi-icon">{icon}</div>
+                        <div class="ie-kpi-title">{title}</div>
+                    </div>
+                    <div class="ie-kpi-value">{value}</div>
+                    <div class="ie-kpi-sub">{subtitle}</div>
+                    <div class="ie-kpi-meta"><span>{meta_label}</span><span class="ie-kpi-meta-value">{meta_value}</span></div>
+                </div>
+                <div class="ie-kpi-badge">{badge_text}</div>
+            </div>
+            """
+
         k1, k2, k3, k4, k5 = st.columns(5)
         with k1:
             st.markdown(
-                card_finanza("TOTAL INGRESO", fmt_clp_largo(total_ing), CHART_TEAL, subtitulo="Suma de ingresos del período"),
+                ie_metric_card(
+                    "TOTAL INGRESO",
+                    fmt_clp_largo(total_ing),
+                    "Suma de ingresos del período",
+                    "↗",
+                    "#047857",
+                    "#f6fffb",
+                    "#d8f5e4",
+                    "#cfe9de",
+                    "Ingresos registrados",
+                    "Base margen",
+                    "100.0%",
+                    True,
+                ),
                 unsafe_allow_html=True,
             )
         with k2:
             st.markdown(
-                card_finanza("TOTAL EGRESO", fmt_clp_largo(total_egr), CHART_RED, subtitulo="Suma de egresos del período"),
+                ie_metric_card(
+                    "TOTAL EGRESO",
+                    fmt_clp_largo(total_egr),
+                    "Suma de egresos del período",
+                    "↘",
+                    "#DC2626",
+                    "#fff7f7",
+                    "#fde2e2",
+                    "#f1caca",
+                    "Egresos registrados",
+                    "Sobre ingresos",
+                    f"{(total_egr / total_ing if total_ing else 0):.1%}",
+                    False,
+                ),
                 unsafe_allow_html=True,
             )
         with k3:
             net_color = CHART_TEAL if total_neto >= 0 else CHART_RED
             st.markdown(
-                card_finanza("TOTAL NETO", fmt_clp_largo(total_neto), net_color, subtitulo="Ingresos menos egresos"),
+                ie_metric_card(
+                    "TOTAL NETO",
+                    fmt_clp_largo(total_neto),
+                    "Ingresos menos egresos",
+                    "＝",
+                    "#047857" if total_neto >= 0 else "#DC2626",
+                    "#f6fffb" if total_neto >= 0 else "#fff7f7",
+                    "#d8f5e4" if total_neto >= 0 else "#fde2e2",
+                    "#cfe9de" if total_neto >= 0 else "#f1caca",
+                    "Resultado operativo",
+                    "Margen",
+                    f"{total_margen:.1%}",
+                    total_neto >= 0,
+                ),
                 unsafe_allow_html=True,
             )
         with k4:
             net_acum_color = CHART_TEAL if total_neto_acumulado >= 0 else CHART_RED
             st.markdown(
-                card_finanza("NETO ACUMULADO", fmt_clp_largo(total_neto_acumulado), net_acum_color, subtitulo="Suma histórica del neto"),
+                ie_metric_card(
+                    "NETO ACUMULADO",
+                    fmt_clp_largo(total_neto_acumulado),
+                    "Suma histórica del neto",
+                    "Σ",
+                    "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626",
+                    "#f6f9ff" if total_neto_acumulado >= 0 else "#fff7f7",
+                    "#e0ebff" if total_neto_acumulado >= 0 else "#fde2e2",
+                    "#d4e1f6" if total_neto_acumulado >= 0 else "#f1caca",
+                    "Acumulado a la fecha",
+                    "Último neto",
+                    fmt_clp_largo(float(base["Neto"].iloc[-1])) if not base.empty else "$0",
+                    total_neto_acumulado >= 0,
+                ),
                 unsafe_allow_html=True,
             )
         with k5:
             margen_color = CHART_TEAL if total_margen >= 0 else CHART_RED
             st.markdown(
-                card_finanza("MARGEN", f"{total_margen:.1%}", margen_color, subtitulo="Neto dividido por ingresos"),
+                ie_metric_card(
+                    "MARGEN",
+                    f"{total_margen:.1%}",
+                    "Neto dividido por ingresos",
+                    "%",
+                    "#B7791F" if total_margen >= 0 else "#DC2626",
+                    "#fffaf0" if total_margen >= 0 else "#fff7f7",
+                    "#fceec8" if total_margen >= 0 else "#fde2e2",
+                    "#eadfbd" if total_margen >= 0 else "#f1caca",
+                    "Rentabilidad del período",
+                    "Fórmula",
+                    "Neto / ingresos",
+                    total_margen >= 0,
+                ),
                 unsafe_allow_html=True,
             )
 
@@ -4555,11 +6639,16 @@ if active_section == "📈 Ingresos & egresos":
                 text=f"Ingresos, egresos y resultado neto — {periodo} · {tipo_analisis}",
                 x=0.02,
                 xanchor="left",
-                font=dict(size=19, color="#0F2D52"),
+                font=dict(size=18, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+            ),
+            font=dict(
+                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                size=12,
+                color="#334155",
             ),
             template="plotly_white",
-            height=560,
-            margin=dict(l=24, r=34, t=84, b=34),
+            height=405,
+            margin=dict(l=16, r=22, t=58, b=22),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
@@ -4567,19 +6656,35 @@ if active_section == "📈 Ingresos & egresos":
                 xanchor="left",
                 x=0.01,
                 bgcolor="rgba(255,255,255,0)",
+                font=dict(size=11, color="#334155", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
                 itemclick=False,
                 itemdoubleclick=False,
+            ),
+            hoverlabel=dict(
+                bgcolor="#FFFFFF",
+                bordercolor="#CBD5E1",
+                font=dict(size=12, color="#0F172A", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             ),
             hovermode="x unified",
             paper_bgcolor="#F8FAFC",
             plot_bgcolor="#FFFFFF",
             bargap=0.24,
         )
+        xaxis_range_ie = None
+        if periodo == "Mensual" and not base.empty:
+            max_periodo_ie = pd.to_datetime(base["Periodo"]).max()
+            min_periodo_ie = pd.to_datetime(base["Periodo"]).min()
+            start_12m_ie = max(max_periodo_ie - pd.DateOffset(months=11), min_periodo_ie)
+            xaxis_range_ie = [start_12m_ie, max_periodo_ie]
+
         fig_ie.update_xaxes(
             title_text=label_x,
             showgrid=False,
             linecolor="rgba(15,45,82,0.25)",
             tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
+            title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+            tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+            range=xaxis_range_ie,
             rangeslider=dict(visible=(periodo == "Mensual"), thickness=0.06),
         )
         fig_ie.update_yaxes(
@@ -4590,6 +6695,8 @@ if active_section == "📈 Ingresos & egresos":
             tickprefix="$",
             separatethousands=True,
             linecolor="rgba(15,45,82,0.20)",
+            title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+            tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             secondary_y=False,
         )
         fig_ie.update_yaxes(
@@ -4597,6 +6704,8 @@ if active_section == "📈 Ingresos & egresos":
             tickformat=".0%",
             showgrid=False,
             zeroline=False,
+            title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+            tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             secondary_y=True,
         )
 
@@ -4636,9 +6745,176 @@ if active_section == "📈 Ingresos & egresos":
             config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
             post_script=legend_script,
         )
-        components.html(fig_ie_html, height=630, scrolling=False)
+        top_ingreso_periodo = (
+            _df[_df["CC_norm"] == "INGRESO"]
+            .groupby("Obs_text")["Monto"]
+            .sum()
+            .sort_values(ascending=False)
+        )
+        top_egreso_periodo = (
+            _df[_df["CC_norm"] == "EGRESO"]
+            .groupby("Obs_text")["Monto"]
+            .sum()
+            .abs()
+            .sort_values(ascending=False)
+        )
+        top_ingreso_label = str(top_ingreso_periodo.index[0]) if not top_ingreso_periodo.empty else "Sin registros"
+        top_egreso_label = str(top_egreso_periodo.index[0]) if not top_egreso_periodo.empty else "Sin registros"
+        top_ingreso_val = float(top_ingreso_periodo.iloc[0]) if not top_ingreso_periodo.empty else 0.0
+        top_egreso_val = float(top_egreso_periodo.iloc[0]) if not top_egreso_periodo.empty else 0.0
+        tendencia_txt = "El neto acumulado sigue en negativo." if total_neto_acumulado < 0 else "El neto acumulado se mantiene positivo."
+        tendencia_estado = "En riesgo" if total_neto_acumulado < 0 else "Saludable"
+        tendencia_bg = "#fee2e2" if total_neto_acumulado < 0 else "#dcfce7"
+        tendencia_fg = "#B91C1C" if total_neto_acumulado < 0 else "#166534"
 
-        st.caption("Egresos se muestran en valor absoluto para facilitar comparación visual.")
+        chart_col, analysis_col = st.columns([2.15, 1])
+        with chart_col:
+            components.html(fig_ie_html, height=425, scrolling=False)
+        with analysis_col:
+            st.markdown(
+                f"""
+                <div class="ie-analysis-card">
+                    <div class="ie-analysis-title">Análisis rápido del período</div>
+                    <div class="ie-analysis-row" style="--accent:#059669;--soft:#DCFCE7;">
+                        <div class="ie-analysis-icon">↑</div>
+                        <div>
+                            <div class="ie-analysis-label">Mayores ingresos</div>
+                            <div class="ie-analysis-sub">{top_ingreso_label}</div>
+                        </div>
+                        <div class="ie-analysis-value">{fmt_clp_largo(top_ingreso_val)}</div>
+                    </div>
+                    <div class="ie-analysis-row" style="--accent:#DC2626;--soft:#FEE2E2;">
+                        <div class="ie-analysis-icon">↓</div>
+                        <div>
+                            <div class="ie-analysis-label">Mayores egresos</div>
+                            <div class="ie-analysis-sub">{top_egreso_label}</div>
+                        </div>
+                        <div class="ie-analysis-value">-{fmt_clp_largo(top_egreso_val)}</div>
+                    </div>
+                    <div class="ie-analysis-row" style="--accent:#2563EB;--soft:#DBEAFE;">
+                        <div class="ie-analysis-icon">=</div>
+                        <div>
+                            <div class="ie-analysis-label">Resultado neto del período</div>
+                            <div class="ie-analysis-sub">{'Superávit' if total_neto >= 0 else 'Déficit'} operacional</div>
+                        </div>
+                        <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
+                    </div>
+                    <div class="ie-analysis-row" style="--accent:#B7791F;--soft:#FEF3C7;">
+                        <div class="ie-analysis-icon">⚑</div>
+                        <div>
+                            <div class="ie-analysis-label">Tendencia</div>
+                            <div class="ie-analysis-sub">{tendencia_txt}</div>
+                        </div>
+                        <div class="ie-risk-pill" style="background:{tendencia_bg};color:{tendencia_fg};">{tendencia_estado}</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        resumen_periodo_rows = [
+            ("↑", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(total_ing), "100.0%"),
+            ("↓", "#DC2626", "#FEE2E2", "Total egresos", "Suma de egresos del período", fmt_clp_largo(total_egr), f"{(total_egr / total_ing if total_ing else 0):.1%}"),
+            ("=", "#2563EB" if total_neto >= 0 else "#DC2626", "#DBEAFE" if total_neto >= 0 else "#FEE2E2", "Total neto", "Ingresos menos egresos", fmt_clp_largo(total_neto), f"{total_margen:.1%}"),
+            ("Σ", "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626", "#DBEAFE" if total_neto_acumulado >= 0 else "#FEE2E2", "Neto acumulado", "Suma histórica del neto", fmt_clp_largo(total_neto_acumulado), "-"),
+            ("%", "#B7791F" if total_margen >= 0 else "#DC2626", "#FEF3C7" if total_margen >= 0 else "#FEE2E2", "Margen neto", "Neto dividido por ingresos", f"{total_margen:.1%}", "-"),
+        ]
+        resumen_periodo_html = "".join(
+            (
+                f'<div class="ie-summary-row" style="--accent:{accent};--soft:{soft};">'
+                f'<div class="ie-summary-icon">{icon}</div>'
+                f'<div><div class="ie-summary-label">{label}</div><div class="ie-summary-desc">{desc}</div></div>'
+                f'<div class="ie-summary-value">{value}<div class="ie-summary-pct">{pct}</div></div>'
+                f'</div>'
+            )
+            for icon, accent, soft, label, desc, value, pct in resumen_periodo_rows
+        )
+
+        bottom_1, bottom_2, bottom_3 = st.columns([1.15, 1.1, 1.15])
+        with bottom_1:
+            st.markdown(
+                f"""
+                <div class="ie-bottom-card">
+                    <div class="ie-bottom-title">Resumen del período</div>
+                    <div class="ie-summary-list">{resumen_periodo_html}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with bottom_2:
+            fig_acum_small = go.Figure()
+            fig_acum_small.add_trace(
+                go.Scatter(
+                    x=base["Periodo"],
+                    y=base["Neto_acumulado"],
+                    mode="lines+markers",
+                    name="Neto acumulado",
+                    line=dict(color="#EF4444" if total_neto_acumulado < 0 else "#059669", width=2.4),
+                    marker=dict(size=5, color="#EF4444" if total_neto_acumulado < 0 else "#059669"),
+                    fill="tozeroy",
+                    fillcolor="rgba(239,68,68,0.10)" if total_neto_acumulado < 0 else "rgba(5,150,105,0.10)",
+                    hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado: $%{y:,.0f}<extra></extra>",
+                )
+            )
+            fig_acum_small.update_layout(
+                title=dict(text="Evolución del neto acumulado", x=0.02, font=dict(size=15, color="#081735")),
+                template="plotly_white",
+                height=310,
+                margin=dict(l=12, r=12, t=42, b=22),
+                paper_bgcolor="#FFFFFF",
+                plot_bgcolor="#FFFFFF",
+                showlegend=False,
+            )
+            fig_acum_small.update_xaxes(showgrid=False, tickformat=("%b %Y" if periodo == "Mensual" else "%Y"))
+            fig_acum_small.update_yaxes(tickprefix="$", separatethousands=True, gridcolor="#E5EAF2")
+            st.plotly_chart(
+                fig_acum_small,
+                use_container_width=True,
+                config={"displaylogo": False, "displayModeBar": False},
+                key="ing_eg_neto_acumulado_bottom",
+            )
+        with bottom_3:
+            egresos_comp = (
+                _df[_df["CC_norm"] == "EGRESO"]
+                .assign(CC1_clean=lambda d: d["CC1_text"].astype(str).str.strip().replace("", "Sin clasificar"))
+                .groupby("CC1_clean", as_index=False)["Monto"]
+                .sum()
+            )
+            egresos_comp["Monto_abs"] = egresos_comp["Monto"].abs()
+            egresos_comp = egresos_comp.sort_values("Monto_abs", ascending=False).head(5)
+            if egresos_comp.empty:
+                st.info("No hay egresos para componer en el período.")
+            else:
+                fig_donut = go.Figure(
+                    go.Pie(
+                        labels=egresos_comp["CC1_clean"],
+                        values=egresos_comp["Monto_abs"],
+                        hole=0.58,
+                        marker=dict(colors=["#3B82F6", "#EF4444", "#F59E0B", "#64748B", "#A78BFA"]),
+                        textinfo="none",
+                        hovertemplate="<b>%{label}</b><br>$%{value:,.0f}<br>%{percent}<extra></extra>",
+                    )
+                )
+                fig_donut.add_annotation(
+                    text=f"{fmt_short(total_egr)}<br><span style='font-size:11px'>Total egresos</span>",
+                    x=0.5,
+                    y=0.5,
+                    showarrow=False,
+                    font=dict(size=18, color="#081735"),
+                )
+                fig_donut.update_layout(
+                    title=dict(text="Composición de egresos del período", x=0.02, font=dict(size=15, color="#081735")),
+                    height=310,
+                    margin=dict(l=4, r=4, t=42, b=8),
+                    paper_bgcolor="#FFFFFF",
+                    legend=dict(orientation="v", x=0.74, y=0.5, font=dict(size=10)),
+                )
+                st.plotly_chart(
+                    fig_donut,
+                    use_container_width=True,
+                    config={"displaylogo": False, "displayModeBar": False},
+                    key="ing_eg_donut_egresos_bottom",
+                )
 
         def build_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
             if modo == "Contable":
@@ -5533,7 +7809,7 @@ if active_section == "⚡ Electricidad":
     title_col, btn_col = st.columns([6, 1])
     with title_col:
         st.markdown(
-            section_heading("⚡", "Electricidad — Liquidación por Bodega", weight_class="section-heading-title-soft"),
+            tab_header("Electricidad", "Liquidación por bodega e inputs de facturación"),
             unsafe_allow_html=True,
         )
         st.caption("Vista idéntica al Excel: inputs generales, boleta CGE, inputs por bodega y liquidación.")

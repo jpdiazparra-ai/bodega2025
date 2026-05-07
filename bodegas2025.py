@@ -2342,41 +2342,41 @@ if active_section == "🏠 Visión general":
         .asset-kpi-grid {
             display:grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap:8px;
-            margin: 3px 0 7px 0;
+            gap:10px;
+            margin: 16px 0 12px 0;
         }
         .asset-kpi {
-            min-height:78px;
+            min-height:132px;
             border-radius:10px;
             border:1px solid var(--border);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:8px 10px 8px 10px;
+            padding:16px 16px 14px 16px;
             display:grid;
-            grid-template-columns:34px 1fr;
-            gap:7px;
-            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            grid-template-columns:42px 1fr;
+            gap:10px;
+            box-shadow:0 10px 24px rgba(15,23,42,0.035);
         }
         .asset-kpi-icon {
-            width:30px;
-            height:30px;
+            width:36px;
+            height:36px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:16px;
+            font-size:17px;
             font-weight:900;
         }
         .asset-kpi-title {
             color:#0f1f3d;
-            font-size:10.5px;
-            font-weight:800;
-            margin-bottom:4px;
+            font-size:11px;
+            font-weight:900;
+            margin-bottom:8px;
         }
         .asset-kpi-value {
             color:var(--accent);
-            font-size:18px;
+            font-size:22px;
             line-height:1.05;
             font-weight:900;
             letter-spacing:-0.025em;
@@ -2384,54 +2384,55 @@ if active_section == "🏠 Visión general":
         }
         .asset-kpi-badge {
             display:inline-block;
-            margin-top:3px;
-            padding:2px 5px;
+            margin-top:10px;
+            padding:5px 8px;
             border-radius:5px;
             background:var(--badge-bg);
             color:var(--badge-fg);
-            font-size:9px;
-            font-weight:800;
+            font-size:10px;
+            font-weight:900;
         }
         .asset-kpi-note {
             grid-column:2;
             color:#475569;
-            font-size:9.5px;
-            font-weight:600;
-            margin-top:2px;
+            font-size:10.5px;
+            font-weight:700;
+            align-self:end;
+            margin-top:8px;
         }
         .asset-status {
             display:grid;
             grid-template-columns: 1.2fr 1fr 1fr 1fr 1.55fr;
-            gap:10px;
+            gap:14px;
             align-items:center;
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:7px 10px;
-            margin: 0 0 7px 0;
-            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+            padding:16px 18px;
+            margin: 0 0 14px 0;
+            box-shadow:0 8px 20px rgba(15,23,42,0.035);
         }
         .asset-status-title {
-            font-size:12px;
+            font-size:14px;
             color:#0f1f3d;
             font-weight:900;
-            margin-bottom:4px;
+            margin-bottom:9px;
         }
         .asset-status-pill {
             display:inline-flex;
             min-width:92px;
             justify-content:center;
-            padding:4px 10px;
+            padding:7px 18px;
             border-radius:8px;
             background:var(--estado);
             color:white;
-            font-size:10.5px;
+            font-size:11px;
             font-weight:900;
         }
         .asset-status-item {
             border-left:1px solid #e5ebf3;
-            padding-left:8px;
-            min-height:28px;
+            padding-left:14px;
+            min-height:44px;
         }
         .asset-dot {
             display:inline-block;
@@ -2443,28 +2444,28 @@ if active_section == "🏠 Visión general":
         }
         .asset-status-label {
             color:#0f1f3d;
-            font-size:10px;
-            font-weight:800;
+            font-size:11px;
+            font-weight:900;
         }
         .asset-status-sub {
-            margin-top:4px;
+            margin-top:9px;
             color:#475569;
-            font-size:9.5px;
-            font-weight:600;
+            font-size:10px;
+            font-weight:700;
         }
         .asset-card {
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:12px;
-            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            padding:16px;
+            box-shadow:0 10px 24px rgba(15,23,42,0.04);
             min-height:100%;
         }
         .asset-card-title {
             color:#081735;
-            font-size:15px;
+            font-size:17px;
             font-weight:900;
-            margin-bottom:10px;
+            margin-bottom:14px;
         }
         .asset-summary-list {
             display:flex;
@@ -2473,13 +2474,25 @@ if active_section == "🏠 Visión general":
         }
         .asset-summary-row {
             display:grid;
-            grid-template-columns:minmax(0, 1fr) auto;
+            grid-template-columns:34px minmax(0, 1fr) auto;
             gap:10px;
             align-items:center;
             border:1px solid #e5ebf3;
             border-radius:8px;
-            padding:8px 9px;
+            padding:8px 10px;
             background:#fbfdff;
+        }
+        .asset-summary-icon {
+            width:26px;
+            height:26px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--soft);
+            color:var(--accent);
+            font-size:12px;
+            font-weight:950;
         }
         .asset-summary-label {
             color:#0f1f3d;
@@ -2494,11 +2507,17 @@ if active_section == "🏠 Visión general":
             font-weight:700;
         }
         .asset-summary-value {
-            color:#081735;
+            color:var(--accent, #081735);
             font-size:11px;
             font-weight:950;
             text-align:right;
             white-space:nowrap;
+        }
+        .asset-summary-pct {
+            color:#0f2d52;
+            font-size:9.5px;
+            font-weight:850;
+            margin-top:3px;
         }
         .trend-grid {
             display:grid;
@@ -2546,8 +2565,8 @@ if active_section == "🏠 Visión general":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:12px;
-            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            padding:16px;
+            box-shadow:0 10px 24px rgba(15,23,42,0.04);
             min-height:100%;
         }
         .asset-diagnosis-grid {
@@ -2733,8 +2752,8 @@ if active_section == "🏠 Visión general":
             ),
             font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
             template="plotly_white",
-            height=240,
-            margin=dict(l=10, r=10, t=58, b=20),
+            height=275,
+            margin=dict(l=12, r=12, t=62, b=28),
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
             legend=dict(
@@ -2766,7 +2785,7 @@ if active_section == "🏠 Visión general":
             range=home_x_range,
             rangeslider=dict(
                 visible=True,
-                thickness=0.035,
+                thickness=0.045,
                 bgcolor="#F1F5F9",
                 bordercolor="#E2E8F0",
                 borderwidth=1,
@@ -2789,7 +2808,7 @@ if active_section == "🏠 Visión general":
                     x=df_canon_home["Año"],
                     y=df_canon_home["Canon anual"],
                     name="Canon anual",
-                    marker=dict(color="#9DB9B5", line=dict(color="rgba(255,255,255,0.9)", width=1)),
+                    marker=dict(color="#22C55E", line=dict(color="rgba(255,255,255,0.9)", width=1)),
                     hovertemplate="<b>Año %{x}</b><br>Canon: $%{y:,.0f}<extra></extra>",
                 ),
                 secondary_y=False,
@@ -2826,8 +2845,8 @@ if active_section == "🏠 Visión general":
                 ),
                 font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
                 template="plotly_white",
-                height=240,
-                margin=dict(l=10, r=42, t=58, b=20),
+                height=275,
+                margin=dict(l=12, r=46, t=62, b=28),
                 paper_bgcolor="#FFFFFF",
                 plot_bgcolor="#FFFFFF",
                 legend=dict(
@@ -2870,26 +2889,27 @@ if active_section == "🏠 Visión general":
 
     bottom_a, bottom_b, bottom_c = st.columns([1.05, 1.2, 1.1])
     resumen_rows = [
-        ("Ingresos canon arriendo", "Acumulado histórico", fmt_clp_largo(ingresos_canon)),
-        ("Total ingresos", "Flujo acumulado", fmt_clp_largo(ingresos_kpi)),
-        ("Total egresos", "Compromisos pagados", fmt_clp_largo(egresos_kpi)),
-        ("Cuentas por cobrar", "Neto de abonos", fmt_clp_largo(cuentas_por_cobrar_neto)),
-        ("Egresos por pagar", "Pendientes de salida", fmt_clp_largo(total_egresos_por_pagar)),
+        ("↗", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(ingresos_kpi), "100.0%"),
+        ("↘", "#DC2626", "#FEE2E2", "Total egresos", "Suma de egresos del período", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
+        ("=", "#DC2626" if utilidad_operativa < 0 else "#2563EB", "#FEE2E2" if utilidad_operativa < 0 else "#DBEAFE", "Total neto", "Ingresos menos egresos", fmt_clp_largo(utilidad_operativa), f"{margen_neto:.1%}"),
+        ("Σ", "#DC2626" if posicion_neta < 0 else "#1D4ED8", "#FEE2E2" if posicion_neta < 0 else "#DBEAFE", "Neto acumulado", "Suma histórica del neto", fmt_clp_largo(posicion_neta), "-"),
+        ("%", "#DC2626" if margen_neto < 0 else "#B7791F", "#FEE2E2" if margen_neto < 0 else "#FEF3C7", "Margen neto", "Neto dividido por ingresos", f"{margen_neto:.1%}", "-"),
     ]
     with bottom_a:
         rows_html = "".join(
             (
-                f'<div class="asset-summary-row">'
-                f'<div><div class="asset-summary-label">{i}</div><div class="asset-summary-sub">{d}</div></div>'
-                f'<div class="asset-summary-value">{v}</div>'
+                f'<div class="asset-summary-row" style="--accent:{accent};--soft:{soft};">'
+                f'<div class="asset-summary-icon">{icon}</div>'
+                f'<div><div class="asset-summary-label">{label}</div><div class="asset-summary-sub">{desc}</div></div>'
+                f'<div class="asset-summary-value">{value}<div class="asset-summary-pct">{pct}</div></div>'
                 f'</div>'
             )
-            for i, d, v in resumen_rows
+            for icon, accent, soft, label, desc, value, pct in resumen_rows
         )
         st.markdown(
             f"""
             <div class="asset-card">
-                <div class="asset-card-title">Resumen Ejecutivo</div>
+                <div class="asset-card-title">Resumen del período</div>
                 <div class="asset-summary-list">{rows_html}</div>
             </div>
             """,

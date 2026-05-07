@@ -2474,7 +2474,7 @@ if active_section == "🏠 Visión general":
             min-height:100%;
         }
         .asset-bottom-card {
-            height:276px;
+            height:326px;
             box-sizing:border-box;
             display:flex;
             flex-direction:column;
@@ -2488,7 +2488,7 @@ if active_section == "🏠 Visión general":
         .asset-summary-list {
             display:flex;
             flex-direction:column;
-            gap:4px;
+            gap:6px;
         }
         .asset-summary-row {
             display:grid;
@@ -2995,7 +2995,7 @@ if active_section == "🏠 Visión general":
         )
         components.html(
             f"""
-            <div style="height:276px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
+            <div style="height:326px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
                         padding:11px 13px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
                 <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
@@ -3021,7 +3021,7 @@ if active_section == "🏠 Visión general":
                 </div>
             </div>
             """,
-            height=280,
+            height=330,
             scrolling=False,
         )
 

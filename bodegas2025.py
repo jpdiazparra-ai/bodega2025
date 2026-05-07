@@ -319,6 +319,88 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
+components.html(
+    """
+    <script>
+    (function () {
+        const win = window.parent;
+        const doc = win.document;
+        const KEY = "bodegas_scroll_y";
+
+        function getScroller() {
+            return doc.querySelector("section.main")
+                || doc.querySelector('[data-testid="stAppViewContainer"]')
+                || doc.scrollingElement
+                || doc.documentElement;
+        }
+
+        function getScrollY() {
+            const scroller = getScroller();
+            if (scroller === doc.documentElement || scroller === doc.body || scroller === doc.scrollingElement) {
+                return win.scrollY || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+            }
+            return scroller.scrollTop || 0;
+        }
+
+        function setScrollY(y) {
+            const scroller = getScroller();
+            if (scroller === doc.documentElement || scroller === doc.body || scroller === doc.scrollingElement) {
+                win.scrollTo(0, y);
+            } else {
+                scroller.scrollTop = y;
+            }
+        }
+
+        function saveScroll() {
+            try {
+                win.sessionStorage.setItem(KEY, String(getScrollY()));
+            } catch (err) {}
+        }
+
+        function shouldSave(target) {
+            return Boolean(
+                target.closest('[data-testid="stSelectbox"]')
+                || target.closest('[data-testid="stMultiSelect"]')
+                || target.closest('[data-testid="stRadio"]')
+                || target.closest('[data-testid="stSlider"]')
+                || target.closest('[data-testid="stTextInput"]')
+                || target.closest('[data-testid="stNumberInput"]')
+                || target.closest('[data-testid="stDateInput"]')
+                || target.closest('[data-testid="stCheckbox"]')
+                || target.closest("input, textarea, select, button")
+            );
+        }
+
+        if (!win.__bodegasScrollKeeperInstalled) {
+            win.__bodegasScrollKeeperInstalled = true;
+            doc.addEventListener("pointerdown", function (event) {
+                if (shouldSave(event.target)) saveScroll();
+            }, true);
+            doc.addEventListener("change", saveScroll, true);
+            doc.addEventListener("keydown", function (event) {
+                if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+                    saveScroll();
+                }
+            }, true);
+        }
+
+        try {
+            const stored = win.sessionStorage.getItem(KEY);
+            if (stored !== null) {
+                const y = parseInt(stored, 10);
+                if (!Number.isNaN(y) && y > 0) {
+                    [40, 120, 260, 520, 900].forEach(function (delay) {
+                        win.setTimeout(function () { setScrollY(y); }, delay);
+                    });
+                }
+            }
+        } catch (err) {}
+    })();
+    </script>
+    """,
+    height=0,
+)
+
 
 
 # =========================

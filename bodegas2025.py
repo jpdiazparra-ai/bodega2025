@@ -2289,37 +2289,58 @@ if active_section == "🏠 Visión general":
     from plotly.subplots import make_subplots
 
     data_src = df_f.copy()
+    data_src["Periodo_ref"] = pd.to_datetime(data_src["Periodo_ref"], errors="coerce")
+
+    def _growth_12m(mask: pd.Series, abs_values: bool = False) -> tuple[float, float, float]:
+        df_month = data_src.loc[mask & data_src["Periodo_ref"].notna(), ["Periodo_ref", "Monto"]].copy()
+        df_month["Monto"] = pd.to_numeric(df_month["Monto"], errors="coerce")
+        df_month = df_month.dropna(subset=["Periodo_ref", "Monto"])
+        if df_month.empty:
+            return 0.0, 0.0, 0.0
+        df_month["Periodo_ref"] = df_month["Periodo_ref"].dt.to_period("M").dt.to_timestamp()
+        monthly = df_month.groupby("Periodo_ref")["Monto"].sum().sort_index()
+        if abs_values:
+            monthly = monthly.abs()
+        full_months = pd.date_range(monthly.index.min(), monthly.index.max(), freq="MS")
+        monthly = monthly.reindex(full_months, fill_value=0)
+        last_12m = float(monthly.iloc[-12:].sum())
+        prev_12m = float(monthly.iloc[-24:-12].sum()) if len(monthly) >= 24 else 0.0
+        growth = (last_12m / prev_12m - 1) if prev_12m else 0.0
+        return growth, last_12m, prev_12m
+
+    mask_ingresos_trend = data_src["CC_norm"].eq("INGRESO") & data_src["Sit_norm"].isin(["PAGADO", "ABONO"])
+    mask_egresos_trend = data_src["CC_norm"].eq("EGRESO") & data_src["Sit_norm"].eq("PAGADO")
     mask_canon_home = (
         data_src["CC_norm"].eq("INGRESO")
         & data_src["CC1_text"].str.strip().str.lower().eq("arriendo")
         & data_src["Obs_text"].str.strip().str.lower().eq("canon mensual")
     )
-    df_canon_home_month = data_src.loc[mask_canon_home, ["Periodo_ref", "Monto"]].copy()
-    df_canon_home_month["Periodo_ref"] = pd.to_datetime(df_canon_home_month["Periodo_ref"], errors="coerce")
-    df_canon_home_month["Monto"] = pd.to_numeric(df_canon_home_month["Monto"], errors="coerce")
-    df_canon_home_month = df_canon_home_month.dropna(subset=["Periodo_ref", "Monto"])
-    canon_12m_growth = 0.0
-    if not df_canon_home_month.empty:
-        df_canon_home_month["Periodo_ref"] = df_canon_home_month["Periodo_ref"].dt.to_period("M").dt.to_timestamp()
-        df_canon_home_month = (
-            df_canon_home_month.groupby("Periodo_ref", as_index=False)["Monto"]
+    ingresos_12m_growth, ingresos_ultimos_12m, _ = _growth_12m(mask_ingresos_trend)
+    canon_12m_growth, canon_ultimos_12m, _ = _growth_12m(mask_canon_home)
+    egresos_12m_growth, egresos_ultimos_12m, _ = _growth_12m(mask_egresos_trend, abs_values=True)
+
+    max_trend_period = data_src.loc[data_src["Periodo_ref"].notna(), "Periodo_ref"].max()
+    last_12m_start = max_trend_period - pd.DateOffset(months=11) if pd.notna(max_trend_period) else pd.NaT
+    last_12m_mask = data_src["Periodo_ref"].between(last_12m_start, max_trend_period) if pd.notna(last_12m_start) else pd.Series(False, index=data_src.index)
+    canon_last_12m = data_src.loc[last_12m_mask & mask_canon_home].copy()
+    top_concentration_txt = "sin concentración relevante"
+    if not canon_last_12m.empty and canon_ultimos_12m:
+        top_3_canon = (
+            canon_last_12m.groupby("Responsable_clean")["Monto"]
             .sum()
-            .sort_values("Periodo_ref")
-            .rename(columns={"Monto": "Canon mensual"})
+            .sort_values(ascending=False)
+            .head(3)
+            .sum()
         )
-        full_months = pd.date_range(
-            df_canon_home_month["Periodo_ref"].min(),
-            df_canon_home_month["Periodo_ref"].max(),
-            freq="MS",
-        )
-        canon_monthly_series = (
-            df_canon_home_month.set_index("Periodo_ref")["Canon mensual"]
-            .reindex(full_months, fill_value=0)
-        )
-        if len(canon_monthly_series) >= 24:
-            canon_ultimos_12m = float(canon_monthly_series.iloc[-12:].sum())
-            canon_12m_previos = float(canon_monthly_series.iloc[-24:-12].sum())
-            canon_12m_growth = (canon_ultimos_12m / canon_12m_previos - 1) if canon_12m_previos else 0.0
+        top_concentration_txt = f"top 3 arrendatarios concentran {top_3_canon / canon_ultimos_12m:.1%} del canon 12M"
+
+    egresos_last_12m = data_src.loc[last_12m_mask & data_src["CC_norm"].eq("EGRESO")].copy()
+    pressure_txt = "egresos sin presión destacada"
+    if not egresos_last_12m.empty:
+        egresos_last_12m["Monto_abs"] = pd.to_numeric(egresos_last_12m["Monto"], errors="coerce").abs()
+        pressure_by_cc1 = egresos_last_12m.groupby("CC1_text")["Monto_abs"].sum().sort_values(ascending=False)
+        if not pressure_by_cc1.empty and pressure_by_cc1.iloc[0] > 0:
+            pressure_txt = f"mayor presión: {escape(str(pressure_by_cc1.index[0]))} ({fmt_clp_largo(float(pressure_by_cc1.iloc[0]))})"
 
     df_canon_home = data_src.loc[mask_canon_home, ["Año", "Monto"]].copy()
     df_canon_home["Año"] = pd.to_numeric(df_canon_home["Año"], errors="coerce")
@@ -2960,29 +2981,31 @@ if active_section == "🏠 Visión general":
         )
 
     with bottom_b:
-        trend_color = "#DC2626" if canon_12m_growth < 0 else "#059669"
+        ingresos_trend_color = "#DC2626" if ingresos_12m_growth < 0 else "#059669"
+        canon_trend_color = "#DC2626" if canon_12m_growth < 0 else "#059669"
+        egresos_trend_color = "#DC2626" if egresos_12m_growth > 0 else "#059669"
         st.markdown(
             f"""
             <div class="asset-card asset-bottom-card">
                 <div class="asset-card-title">Análisis de Tendencia</div>
                 <div class="trend-grid">
-                    <div class="trend-mini" style="--trend:{trend_color};--soft:{'#fff7f7' if canon_12m_growth < 0 else '#f6fffb'};">
-                        <div class="trend-mini-title">Crecimiento Ingresos</div>
+                    <div class="trend-mini" style="--trend:{ingresos_trend_color};--soft:{'#fff7f7' if ingresos_12m_growth < 0 else '#f6fffb'};">
+                        <div class="trend-mini-title">Ingresos 12M</div>
+                        <div class="trend-mini-value">{ingresos_12m_growth:+.1%}</div>
+                        <div class="trend-mini-sub">Total ingresos vs 12 previos</div>
+                    </div>
+                    <div class="trend-mini" style="--trend:{canon_trend_color};--soft:{'#fff7f7' if canon_12m_growth < 0 else '#f6fffb'};">
+                        <div class="trend-mini-title">Canon 12M</div>
                         <div class="trend-mini-value">{canon_12m_growth:+.1%}</div>
-                        <div class="trend-mini-sub">Últimos 12 meses vs 12 previos</div>
+                        <div class="trend-mini-sub">Canon mensual vs 12 previos</div>
                     </div>
-                    <div class="trend-mini" style="--trend:{'#DC2626' if margen_neto < 0 else '#059669'};--soft:{'#fff7f7' if margen_neto < 0 else '#f6fffb'};">
-                        <div class="trend-mini-title">Margen Neto Promedio</div>
-                        <div class="trend-mini-value">{margen_neto:.1%}</div>
-                        <div class="trend-mini-sub">Sobre ingresos acumulados</div>
-                    </div>
-                    <div class="trend-mini" style="--trend:{'#DC2626' if cobertura_egresos < 1 else '#059669'};--soft:{'#fff7f7' if cobertura_egresos < 1 else '#f6fffb'};">
-                        <div class="trend-mini-title">Cobertura de Caja</div>
-                        <div class="trend-mini-value">{cobertura_egresos:.2f}x</div>
-                        <div class="trend-mini-sub">Caja / egreso promedio</div>
+                    <div class="trend-mini" style="--trend:{egresos_trend_color};--soft:{'#fff7f7' if egresos_12m_growth > 0 else '#f6fffb'};">
+                        <div class="trend-mini-title">Egresos 12M</div>
+                        <div class="trend-mini-value">{egresos_12m_growth:+.1%}</div>
+                        <div class="trend-mini-sub">Egresos pagados vs 12 previos</div>
                     </div>
                 </div>
-                <div class="asset-callout">La tendencia se calcula con canon anual, margen acumulado y cobertura de caja disponible. Se recomienda revisar cobranza y egresos si el estado está bajo 70 puntos.</div>
+                <div class="asset-callout">Lectura 12M: {top_concentration_txt}. {pressure_txt}. Base móvil sobre registros pagados y abonados.</div>
             </div>
             """,
             unsafe_allow_html=True,

@@ -2473,6 +2473,12 @@ if active_section == "🏠 Visión general":
             box-shadow:0 10px 24px rgba(15,23,42,0.04);
             min-height:100%;
         }
+        .asset-bottom-card {
+            height:218px;
+            box-sizing:border-box;
+            display:flex;
+            flex-direction:column;
+        }
         .asset-card-title {
             color:#081735;
             font-size:14px;
@@ -2482,7 +2488,7 @@ if active_section == "🏠 Visión general":
         .asset-summary-list {
             display:flex;
             flex-direction:column;
-            gap:5px;
+            gap:4px;
         }
         .asset-summary-row {
             display:grid;
@@ -2491,7 +2497,7 @@ if active_section == "🏠 Visión general":
             align-items:center;
             border:1px solid #e5ebf3;
             border-radius:8px;
-            padding:6px 8px;
+            padding:5px 8px;
             background:#fbfdff;
         }
         .asset-summary-icon {
@@ -2539,9 +2545,9 @@ if active_section == "🏠 Visión general":
         .trend-mini {
             border:1px solid #e2e8f0;
             border-radius:8px;
-            padding:8px;
+            padding:7px;
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            min-height:70px;
+            min-height:66px;
         }
         .trend-mini-title {
             color:#0f1f3d;
@@ -2568,8 +2574,8 @@ if active_section == "🏠 Visión general":
             background:#ecfdf3;
             border:1px solid #ccebd8;
             color:#14532d;
-            padding:6px 8px;
-            font-size:9px;
+            padding:5px 8px;
+            font-size:8.8px;
             line-height:1.35;
             font-weight:750;
         }
@@ -2764,8 +2770,8 @@ if active_section == "🏠 Visión general":
             ),
             font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
             template="plotly_white",
-            height=205,
-            margin=dict(l=10, r=10, t=48, b=18),
+            height=192,
+            margin=dict(l=10, r=10, t=46, b=14),
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
             legend=dict(
@@ -2857,8 +2863,8 @@ if active_section == "🏠 Visión general":
                 ),
                 font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
                 template="plotly_white",
-                height=205,
-                margin=dict(l=10, r=42, t=48, b=18),
+                height=192,
+                margin=dict(l=10, r=42, t=46, b=14),
                 paper_bgcolor="#FFFFFF",
                 plot_bgcolor="#FFFFFF",
                 legend=dict(
@@ -2920,7 +2926,7 @@ if active_section == "🏠 Visión general":
         )
         st.markdown(
             f"""
-            <div class="asset-card">
+            <div class="asset-card asset-bottom-card">
                 <div class="asset-card-title">Resumen del período</div>
                 <div class="asset-summary-list">{rows_html}</div>
             </div>
@@ -2932,7 +2938,7 @@ if active_section == "🏠 Visión general":
         trend_color = "#DC2626" if canon_yoy < 0 else "#059669"
         st.markdown(
             f"""
-            <div class="asset-card">
+            <div class="asset-card asset-bottom-card">
                 <div class="asset-card-title">Análisis de Tendencia</div>
                 <div class="trend-grid">
                     <div class="trend-mini" style="--trend:{trend_color};--soft:{'#fff7f7' if canon_yoy < 0 else '#f6fffb'};">
@@ -2978,7 +2984,7 @@ if active_section == "🏠 Visión general":
             )
         )
         fig_gauge.update_layout(
-            height=96,
+            height=88,
             margin=dict(l=0, r=0, t=0, b=0),
             paper_bgcolor="#FFFFFF",
         )
@@ -2989,11 +2995,11 @@ if active_section == "🏠 Visión general":
         )
         components.html(
             f"""
-            <div style="height:228px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
+            <div style="height:218px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
                         padding:11px 13px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
                 <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
-                <div style="height:96px;">{fig_gauge_html}</div>
+                <div style="height:88px;">{fig_gauge_html}</div>
                 <div style="margin-top:-4px;text-align:center;color:#475569;font-size:9px;font-weight:800;">Estado general</div>
                 <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:11px;">
                     <div style="display:grid;grid-template-columns:14px 1fr;gap:5px;align-items:start;">
@@ -3009,13 +3015,13 @@ if active_section == "🏠 Visión general":
                         <div style="font-size:9px;font-weight:900;color:#081735;">Estado Saludable<br><span style="display:inline-block;margin-top:4px;color:#31507a;font-weight:850;">70 - 100</span></div>
                     </div>
                 </div>
-                <div style="height:28px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
-                            justify-content:center;margin-top:12px;color:#0f2d52;font-size:10px;font-weight:900;">
+                <div style="height:26px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
+                            justify-content:center;margin-top:10px;color:#0f2d52;font-size:10px;font-weight:900;">
                     <span style="flex:1;text-align:center;">Ver recomendaciones</span><span style="padding-right:10px;">→</span>
                 </div>
             </div>
             """,
-            height=232,
+            height=222,
             scrolling=False,
         )
 

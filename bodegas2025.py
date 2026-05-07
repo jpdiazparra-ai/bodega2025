@@ -59,7 +59,16 @@ main {
 }
 .block-container {
     max-width: 1680px;
-    padding: 0.3rem 1rem 0.75rem 1rem !important;
+    padding: 0rem 1rem 0.5rem 1rem !important;
+}
+header[data-testid="stHeader"],
+div[data-testid="stToolbar"],
+#MainMenu,
+footer {
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    display: none !important;
 }
 /* Oculta contenido de la pestaña anterior durante los reruns de Streamlit. */
 [data-testid="stElementContainer"][data-stale="true"] {
@@ -2320,7 +2329,7 @@ if active_section == "🏠 Visión general":
         """
         <style>
         .tab-title-row {
-            margin:14px 0 10px 0;
+            margin:6px 0 8px 0;
         }
         .asset-toolbar {
             display:flex;
@@ -2345,41 +2354,41 @@ if active_section == "🏠 Visión general":
         .asset-kpi-grid {
             display:grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap:10px;
-            margin: 12px 0 10px 0;
+            gap:9px;
+            margin: 9px 0 8px 0;
         }
         .asset-kpi {
-            min-height:108px;
+            min-height:86px;
             border-radius:10px;
             border:1px solid var(--border);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:13px 14px 12px 14px;
+            padding:10px 11px 9px 11px;
             display:grid;
-            grid-template-columns:38px 1fr;
-            gap:9px;
+            grid-template-columns:32px 1fr;
+            gap:7px;
             box-shadow:0 10px 24px rgba(15,23,42,0.035);
         }
         .asset-kpi-icon {
-            width:32px;
-            height:32px;
+            width:28px;
+            height:28px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:17px;
+            font-size:14px;
             font-weight:900;
         }
         .asset-kpi-title {
             color:#0f1f3d;
-            font-size:11px;
+            font-size:10px;
             font-weight:900;
-            margin-bottom:5px;
+            margin-bottom:3px;
         }
         .asset-kpi-value {
             color:var(--accent);
-            font-size:20px;
+            font-size:18px;
             line-height:1.05;
             font-weight:900;
             letter-spacing:-0.025em;
@@ -2387,21 +2396,21 @@ if active_section == "🏠 Visión general":
         }
         .asset-kpi-badge {
             display:inline-block;
-            margin-top:7px;
-            padding:4px 7px;
+            margin-top:5px;
+            padding:3px 6px;
             border-radius:5px;
             background:var(--badge-bg);
             color:var(--badge-fg);
-            font-size:10px;
+            font-size:9px;
             font-weight:900;
         }
         .asset-kpi-note {
             grid-column:2;
             color:#475569;
-            font-size:10px;
+            font-size:9px;
             font-weight:700;
             align-self:end;
-            margin-top:5px;
+            margin-top:3px;
         }
         .asset-status {
             display:grid;
@@ -2411,31 +2420,31 @@ if active_section == "🏠 Visión general":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:12px 16px;
-            margin: 0 0 10px 0;
+            padding:9px 14px;
+            margin: 0 0 8px 0;
             box-shadow:0 8px 20px rgba(15,23,42,0.035);
         }
         .asset-status-title {
-            font-size:14px;
+            font-size:13px;
             color:#0f1f3d;
             font-weight:900;
-            margin-bottom:9px;
+            margin-bottom:6px;
         }
         .asset-status-pill {
             display:inline-flex;
             min-width:92px;
             justify-content:center;
-            padding:6px 16px;
+            padding:5px 14px;
             border-radius:8px;
             background:var(--estado);
             color:white;
-            font-size:11px;
+            font-size:10px;
             font-weight:900;
         }
         .asset-status-item {
             border-left:1px solid #e5ebf3;
-            padding-left:14px;
-            min-height:38px;
+            padding-left:12px;
+            min-height:32px;
         }
         .asset-dot {
             display:inline-block;
@@ -2447,120 +2456,120 @@ if active_section == "🏠 Visión general":
         }
         .asset-status-label {
             color:#0f1f3d;
-            font-size:11px;
+            font-size:10px;
             font-weight:900;
         }
         .asset-status-sub {
-            margin-top:6px;
+            margin-top:4px;
             color:#475569;
-            font-size:10px;
+            font-size:9px;
             font-weight:700;
         }
         .asset-card {
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:14px;
+            padding:11px;
             box-shadow:0 10px 24px rgba(15,23,42,0.04);
             min-height:100%;
         }
         .asset-card-title {
             color:#081735;
-            font-size:16px;
+            font-size:14px;
             font-weight:900;
-            margin-bottom:12px;
+            margin-bottom:9px;
         }
         .asset-summary-list {
             display:flex;
             flex-direction:column;
-            gap:7px;
+            gap:5px;
         }
         .asset-summary-row {
             display:grid;
-            grid-template-columns:34px minmax(0, 1fr) auto;
-            gap:10px;
+            grid-template-columns:30px minmax(0, 1fr) auto;
+            gap:8px;
             align-items:center;
             border:1px solid #e5ebf3;
             border-radius:8px;
-            padding:8px 10px;
+            padding:6px 8px;
             background:#fbfdff;
         }
         .asset-summary-icon {
-            width:26px;
-            height:26px;
+            width:23px;
+            height:23px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--soft);
             color:var(--accent);
-            font-size:12px;
+            font-size:11px;
             font-weight:950;
         }
         .asset-summary-label {
             color:#0f1f3d;
-            font-size:11px;
+            font-size:10px;
             line-height:1.15;
             font-weight:900;
         }
         .asset-summary-sub {
             margin-top:3px;
             color:#64748b;
-            font-size:9.5px;
+            font-size:8.8px;
             font-weight:700;
         }
         .asset-summary-value {
             color:var(--accent, #081735);
-            font-size:11px;
+            font-size:10px;
             font-weight:950;
             text-align:right;
             white-space:nowrap;
         }
         .asset-summary-pct {
             color:#0f2d52;
-            font-size:9.5px;
+            font-size:8.8px;
             font-weight:850;
             margin-top:3px;
         }
         .trend-grid {
             display:grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap:8px;
+            gap:6px;
         }
         .trend-mini {
             border:1px solid #e2e8f0;
             border-radius:8px;
-            padding:10px;
+            padding:8px;
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            min-height:86px;
+            min-height:70px;
         }
         .trend-mini-title {
             color:#0f1f3d;
-            font-size:10.5px;
+            font-size:9.5px;
             line-height:1.15;
             font-weight:900;
         }
         .trend-mini-value {
-            margin-top:8px;
-            font-size:20px;
+            margin-top:5px;
+            font-size:17px;
             line-height:1;
             font-weight:950;
             color:var(--trend);
         }
         .trend-mini-sub {
-            margin-top:6px;
+            margin-top:4px;
             color:#64748b;
-            font-size:10px;
+            font-size:9px;
             font-weight:700;
         }
         .asset-callout {
-            margin-top:10px;
+            margin-top:7px;
             border-radius:8px;
             background:#ecfdf3;
             border:1px solid #ccebd8;
             color:#14532d;
-            padding:8px 10px;
-            font-size:10px;
+            padding:6px 8px;
+            font-size:9px;
             line-height:1.35;
             font-weight:750;
         }
@@ -2755,8 +2764,8 @@ if active_section == "🏠 Visión general":
             ),
             font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
             template="plotly_white",
-            height=245,
-            margin=dict(l=12, r=12, t=56, b=24),
+            height=205,
+            margin=dict(l=10, r=10, t=48, b=18),
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
             legend=dict(
@@ -2788,7 +2797,7 @@ if active_section == "🏠 Visión general":
             range=home_x_range,
             rangeslider=dict(
                 visible=True,
-                thickness=0.038,
+                thickness=0.03,
                 bgcolor="#F1F5F9",
                 bordercolor="#E2E8F0",
                 borderwidth=1,
@@ -2848,8 +2857,8 @@ if active_section == "🏠 Visión general":
                 ),
                 font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
                 template="plotly_white",
-                height=245,
-                margin=dict(l=12, r=46, t=56, b=24),
+                height=205,
+                margin=dict(l=10, r=42, t=48, b=18),
                 paper_bgcolor="#FFFFFF",
                 plot_bgcolor="#FFFFFF",
                 legend=dict(
@@ -2953,7 +2962,7 @@ if active_section == "🏠 Visión general":
             go.Indicator(
                 mode="gauge+number",
                 value=health_score,
-                number={"suffix": "/100", "font": {"size": 31, "color": "#081735"}},
+                number={"suffix": "/100", "font": {"size": 24, "color": "#081735"}},
                 gauge={
                     "axis": {"range": [0, 100], "visible": False},
                     "bar": {"color": "#F97316", "thickness": 0.22},
@@ -2969,7 +2978,7 @@ if active_section == "🏠 Visión general":
             )
         )
         fig_gauge.update_layout(
-            height=136,
+            height=96,
             margin=dict(l=0, r=0, t=0, b=0),
             paper_bgcolor="#FFFFFF",
         )
@@ -2980,38 +2989,38 @@ if active_section == "🏠 Visión general":
         )
         components.html(
             f"""
-            <div style="height:292px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
-                        padding:14px 16px;box-sizing:border-box;box-shadow:0 10px 24px rgba(15,23,42,0.04);
+            <div style="height:228px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
+                        padding:11px 13px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
-                <div style="font-size:18px;font-weight:950;line-height:1.1;margin-bottom:4px;">Diagnóstico del Activo</div>
-                <div style="height:136px;">{fig_gauge_html}</div>
-                <div style="margin-top:-6px;text-align:center;color:#475569;font-size:11px;font-weight:800;">Estado general</div>
-                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px;">
-                    <div style="display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;">
-                        <span style="width:11px;height:11px;border-radius:999px;background:#DC2626;margin-top:3px;"></span>
-                        <div style="font-size:11px;font-weight:900;color:#081735;">Riesgo Alto<br><span style="display:inline-block;margin-top:6px;color:#31507a;font-weight:850;">0 - 40</span></div>
+                <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
+                <div style="height:96px;">{fig_gauge_html}</div>
+                <div style="margin-top:-4px;text-align:center;color:#475569;font-size:9px;font-weight:800;">Estado general</div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:11px;">
+                    <div style="display:grid;grid-template-columns:14px 1fr;gap:5px;align-items:start;">
+                        <span style="width:9px;height:9px;border-radius:999px;background:#DC2626;margin-top:3px;"></span>
+                        <div style="font-size:9px;font-weight:900;color:#081735;">Riesgo Alto<br><span style="display:inline-block;margin-top:4px;color:#31507a;font-weight:850;">0 - 40</span></div>
                     </div>
-                    <div style="display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;">
-                        <span style="width:11px;height:11px;border-radius:999px;background:#F59E0B;margin-top:3px;"></span>
-                        <div style="font-size:11px;font-weight:900;color:#081735;">Riesgo Medio<br><span style="display:inline-block;margin-top:6px;color:#31507a;font-weight:850;">40 - 70</span></div>
+                    <div style="display:grid;grid-template-columns:14px 1fr;gap:5px;align-items:start;">
+                        <span style="width:9px;height:9px;border-radius:999px;background:#F59E0B;margin-top:3px;"></span>
+                        <div style="font-size:9px;font-weight:900;color:#081735;">Riesgo Medio<br><span style="display:inline-block;margin-top:4px;color:#31507a;font-weight:850;">40 - 70</span></div>
                     </div>
-                    <div style="display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;">
-                        <span style="width:11px;height:11px;border-radius:999px;background:#059669;margin-top:3px;"></span>
-                        <div style="font-size:11px;font-weight:900;color:#081735;">Estado Saludable<br><span style="display:inline-block;margin-top:6px;color:#31507a;font-weight:850;">70 - 100</span></div>
+                    <div style="display:grid;grid-template-columns:14px 1fr;gap:5px;align-items:start;">
+                        <span style="width:9px;height:9px;border-radius:999px;background:#059669;margin-top:3px;"></span>
+                        <div style="font-size:9px;font-weight:900;color:#081735;">Estado Saludable<br><span style="display:inline-block;margin-top:4px;color:#31507a;font-weight:850;">70 - 100</span></div>
                     </div>
                 </div>
-                <div style="height:34px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
-                            justify-content:center;margin-top:18px;color:#0f2d52;font-size:12px;font-weight:900;">
-                    <span style="flex:1;text-align:center;">Ver recomendaciones</span><span style="padding-right:14px;">→</span>
+                <div style="height:28px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
+                            justify-content:center;margin-top:12px;color:#0f2d52;font-size:10px;font-weight:900;">
+                    <span style="flex:1;text-align:center;">Ver recomendaciones</span><span style="padding-right:10px;">→</span>
                 </div>
             </div>
             """,
-            height=300,
+            height=232,
             scrolling=False,
         )
 
     st.markdown(
-        "<div style='margin-top:12px;text-align:center;color:#64748b;font-size:12px;font-weight:600;'>Fuente: Google Sheets (CSV) - Agrupaciones dinámicas y visualizaciones interactivas</div>",
+        "<div style='margin-top:6px;text-align:center;color:#64748b;font-size:10px;font-weight:600;'>Fuente: Google Sheets (CSV) - Agrupaciones dinámicas y visualizaciones interactivas</div>",
         unsafe_allow_html=True,
     )
     st.stop()

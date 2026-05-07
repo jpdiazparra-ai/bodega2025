@@ -5970,13 +5970,13 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:17px 22px 18px 22px;
-            margin: 0 0 18px 0;
+            padding:12px 16px 13px 16px;
+            margin: 0 0 12px 0;
             box-shadow:0 12px 28px rgba(15,23,42,0.045);
         }
         .ie-filter-card [data-testid="column"] {
             border-right:1px solid #e5ebf3;
-            padding-right:26px;
+            padding-right:18px;
         }
         .ie-filter-card [data-testid="column"]:last-child {
             border-right:0;
@@ -5986,12 +5986,12 @@ if active_section == "📈 Ingresos & egresos":
             gap:0 !important;
         }
         .ie-kpi-card {
-            min-height:134px;
+            min-height:92px;
             border-radius:9px;
             border:1px solid var(--border);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:18px 18px 15px 18px;
-            box-shadow:0 14px 30px rgba(15,23,42,0.055);
+            padding:10px 12px 9px 12px;
+            box-shadow:0 10px 24px rgba(15,23,42,0.045);
             display:flex;
             flex-direction:column;
             justify-content:space-between;
@@ -5999,24 +5999,25 @@ if active_section == "📈 Ingresos & egresos":
         .ie-kpi-head {
             display:flex;
             align-items:center;
-            gap:14px;
-            margin-bottom:12px;
+            gap:9px;
+            margin-bottom:7px;
         }
         .ie-kpi-icon {
-            width:38px;
-            height:38px;
+            width:30px;
+            height:30px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:20px;
+            font-size:15px;
             font-weight:950;
+            flex:0 0 auto;
         }
         .ie-kpi-title {
             color:#071735;
-            font-size:12px;
+            font-size:10.5px;
             font-weight:950;
             letter-spacing:.018em;
             text-transform:uppercase;
@@ -6024,7 +6025,7 @@ if active_section == "📈 Ingresos & egresos":
         }
         .ie-kpi-value {
             color:var(--accent);
-            font-size:29px;
+            font-size:21px;
             line-height:1.02;
             font-weight:950;
             letter-spacing:-0.035em;
@@ -6032,22 +6033,22 @@ if active_section == "📈 Ingresos & egresos":
         }
         .ie-kpi-sub {
             color:#516179;
-            font-size:12px;
-            line-height:1.35;
+            font-size:10px;
+            line-height:1.2;
             font-weight:700;
-            margin-top:10px;
+            margin-top:5px;
         }
         .ie-kpi-badge {
             display:inline-flex;
             align-items:center;
             width:max-content;
             max-width:100%;
-            margin-top:14px;
-            padding:7px 10px;
+            margin-top:8px;
+            padding:4px 7px;
             border-radius:5px;
             background:var(--badge-bg);
             color:var(--badge-fg);
-            font-size:11px;
+            font-size:9.5px;
             font-weight:900;
             white-space:nowrap;
         }
@@ -6055,37 +6056,37 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:19px 18px;
+            padding:14px;
             height:100%;
             box-shadow:0 12px 28px rgba(15,23,42,0.05);
         }
         .ie-analysis-title {
             color:#081735;
-            font-size:18px;
+            font-size:16px;
             font-weight:950;
-            margin-bottom:18px;
+            margin-bottom:12px;
         }
         .ie-analysis-row {
             display:grid;
-            grid-template-columns:48px 1fr auto;
-            gap:13px;
+            grid-template-columns:38px 1fr auto;
+            gap:10px;
             align-items:center;
             border:1px solid #e5ebf3;
             border-radius:8px;
-            padding:14px 15px;
-            margin-bottom:13px;
+            padding:10px 11px;
+            margin-bottom:9px;
             background:#fbfdff;
         }
         .ie-analysis-icon {
-            width:40px;
-            height:40px;
+            width:30px;
+            height:30px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--soft);
             color:var(--accent);
-            font-size:18px;
+            font-size:14px;
             font-weight:900;
         }
         .ie-analysis-label {
@@ -6096,22 +6097,22 @@ if active_section == "📈 Ingresos & egresos":
         .ie-analysis-sub {
             margin-top:3px;
             color:#64748b;
-            font-size:11.5px;
+            font-size:10.5px;
             font-weight:650;
         }
         .ie-analysis-value {
             color:#0f1f3d;
-            font-size:13.5px;
+            font-size:12px;
             font-weight:900;
             white-space:nowrap;
         }
         .ie-risk-pill {
             display:inline-flex;
-            padding:5px 9px;
+            padding:4px 7px;
             border-radius:6px;
             background:#fee2e2;
             color:#B91C1C;
-            font-size:11px;
+            font-size:10px;
             font-weight:900;
         }
         .ie-bottom-grid {
@@ -6286,15 +6287,15 @@ if active_section == "📈 Ingresos & egresos":
             font-weight:650;
             margin-top:8px;
         }
-        .ie-filter-card [data-testid="stSelectbox"] > label,
-        .ie-filter-card [data-testid="stRadio"] > label {
+        main [data-testid="stSelectbox"] > label,
+        main [data-testid="stRadio"] > label {
             color:#0f1f3d !important;
             font-size:12px !important;
             line-height:1.1 !important;
             font-weight:900 !important;
             padding-bottom:6px !important;
         }
-        .ie-filter-card div[role="radiogroup"] {
+        main div[role="radiogroup"] {
             display:grid !important;
             grid-template-columns:repeat(2, minmax(0, 1fr));
             gap:0 !important;
@@ -6305,7 +6306,7 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #e5ebf3 !important;
             box-shadow:inset 0 1px 0 rgba(255,255,255,0.65) !important;
         }
-        .ie-filter-card div[role="radiogroup"] > label {
+        main div[role="radiogroup"] > label {
             min-height:38px !important;
             margin:0 !important;
             padding:0 12px !important;
@@ -6319,20 +6320,20 @@ if active_section == "📈 Ingresos & egresos":
             font-weight:850 !important;
             transition:all .16s ease !important;
         }
-        .ie-filter-card div[role="radiogroup"] > label > div:first-child {
+        main div[role="radiogroup"] > label > div:first-child {
             display:none !important;
         }
-        .ie-filter-card div[role="radiogroup"] > label:has(input:checked) {
+        main div[role="radiogroup"] > label:has(input:checked) {
             background:#0B4DB3 !important;
             color:#ffffff !important;
             box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28), 0 8px 18px rgba(11,77,179,0.12) !important;
         }
-        .ie-filter-card div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
+        main div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
             color:inherit !important;
             font-size:12px !important;
             font-weight:850 !important;
         }
-        .ie-filter-card [data-baseweb="select"] > div {
+        main [data-baseweb="select"] > div {
             min-height:38px !important;
             border-radius:7px !important;
             border-color:#e5ebf3 !important;
@@ -6371,7 +6372,6 @@ if active_section == "📈 Ingresos & egresos":
 
     import plotly.graph_objects as go
 
-    st.markdown('<div class="ie-filter-card">', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns([1.25, 1.45, 1.55, 1.55])
     with c1:
         periodo = st.radio("Periodo", ["Mensual", "Anual"], horizontal=True, index=0, key="periodo_ing_eg")
@@ -6423,7 +6423,6 @@ if active_section == "📈 Ingresos & egresos":
         month_opts = ["Todos"] + list(range(1, 13))
         sel_month = st.selectbox("Mes", month_opts, index=0, key="month_ing_eg",
                                  disabled=(periodo == "Anual"))
-    st.markdown("</div>", unsafe_allow_html=True)
 
     if sel_year != "Todos":
         df_ie_base_periodo = df_ie_base_periodo[df_ie_base_periodo["Año_sel"] == sel_year]
@@ -6745,12 +6744,12 @@ if active_section == "📈 Ingresos & egresos":
                 color="#334155",
             ),
             template="plotly_white",
-            height=438,
-            margin=dict(l=18, r=26, t=78, b=42),
+            height=382,
+            margin=dict(l=18, r=24, t=62, b=34),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=1.005,
+                y=1.015,
                 xanchor="left",
                 x=0.02,
                 bgcolor="rgba(255,255,255,0)",
@@ -6870,12 +6869,12 @@ if active_section == "📈 Ingresos & egresos":
             components.html(
                 f"""
                 <div style="border:1px solid #dbe3ee;border-radius:12px;background:#fff;
-                            padding:10px 12px 8px 12px;box-shadow:0 14px 34px rgba(15,23,42,0.055);
+                            padding:8px 10px 6px 10px;box-shadow:0 12px 28px rgba(15,23,42,0.05);
                             box-sizing:border-box;">
                     {fig_ie_html}
                 </div>
                 """,
-                height=486,
+                height=424,
                 scrolling=False,
             )
         with analysis_col:

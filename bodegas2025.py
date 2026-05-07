@@ -327,33 +327,44 @@ components.html(
         const doc = win.document;
         const KEY = "bodegas_scroll_y";
 
-        function getScroller() {
-            return doc.querySelector("section.main")
-                || doc.querySelector('[data-testid="stAppViewContainer"]')
-                || doc.scrollingElement
-                || doc.documentElement;
+        function scrollCandidates() {
+            return [
+                win,
+                doc.scrollingElement,
+                doc.documentElement,
+                doc.body,
+                doc.querySelector("section.main"),
+                doc.querySelector("section.main > div"),
+                doc.querySelector('[data-testid="stAppViewContainer"]'),
+                doc.querySelector('[data-testid="stAppViewContainer"] > div')
+            ].filter(Boolean);
         }
 
         function getScrollY() {
-            const scroller = getScroller();
-            if (scroller === doc.documentElement || scroller === doc.body || scroller === doc.scrollingElement) {
-                return win.scrollY || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
-            }
-            return scroller.scrollTop || 0;
+            return Math.max.apply(null, scrollCandidates().map(function (node) {
+                if (node === win) return win.scrollY || 0;
+                return node.scrollTop || 0;
+            }));
         }
 
         function setScrollY(y) {
-            const scroller = getScroller();
-            if (scroller === doc.documentElement || scroller === doc.body || scroller === doc.scrollingElement) {
-                win.scrollTo(0, y);
-            } else {
-                scroller.scrollTop = y;
-            }
+            scrollCandidates().forEach(function (node) {
+                try {
+                    if (node === win) {
+                        win.scrollTo(0, y);
+                    } else {
+                        node.scrollTop = y;
+                    }
+                } catch (err) {}
+            });
         }
 
-        function saveScroll() {
+        function saveScroll(force) {
             try {
-                win.sessionStorage.setItem(KEY, String(getScrollY()));
+                const y = getScrollY();
+                if (force || y > 8) {
+                    win.sessionStorage.setItem(KEY, String(y));
+                }
             } catch (err) {}
         }
 
@@ -373,13 +384,24 @@ components.html(
 
         if (!win.__bodegasScrollKeeperInstalled) {
             win.__bodegasScrollKeeperInstalled = true;
+            let scrollTimer = null;
+            function scheduleScrollSave() {
+                win.clearTimeout(scrollTimer);
+                scrollTimer = win.setTimeout(function () { saveScroll(false); }, 80);
+            }
+            win.addEventListener("scroll", scheduleScrollSave, true);
+            scrollCandidates().forEach(function (node) {
+                if (node !== win && node.addEventListener) {
+                    node.addEventListener("scroll", scheduleScrollSave, true);
+                }
+            });
             doc.addEventListener("pointerdown", function (event) {
-                if (shouldSave(event.target)) saveScroll();
+                if (shouldSave(event.target)) saveScroll(true);
             }, true);
-            doc.addEventListener("change", saveScroll, true);
+            doc.addEventListener("change", function () { saveScroll(true); }, true);
             doc.addEventListener("keydown", function (event) {
                 if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
-                    saveScroll();
+                    saveScroll(true);
                 }
             }, true);
         }

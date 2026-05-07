@@ -61,6 +61,17 @@ main {
     max-width: 1680px;
     padding: 0.3rem 1rem 0.75rem 1rem !important;
 }
+/* Oculta contenido de la pestaña anterior durante los reruns de Streamlit. */
+[data-testid="stElementContainer"][data-stale="true"] {
+    display: none !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
 section[data-testid="stSidebar"] {
     width: 252px !important;
     min-width: 252px !important;

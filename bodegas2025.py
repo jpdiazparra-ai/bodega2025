@@ -328,7 +328,7 @@ components.html(
         const KEY = "bodegas_scroll_y";
 
         function scrollCandidates() {
-            return [
+            const fixed = [
                 win,
                 doc.scrollingElement,
                 doc.documentElement,
@@ -338,6 +338,14 @@ components.html(
                 doc.querySelector('[data-testid="stAppViewContainer"]'),
                 doc.querySelector('[data-testid="stAppViewContainer"] > div')
             ].filter(Boolean);
+            const dynamic = Array.from(doc.querySelectorAll("body *")).filter(function (node) {
+                try {
+                    return node.scrollHeight > node.clientHeight + 4;
+                } catch (err) {
+                    return false;
+                }
+            });
+            return Array.from(new Set(fixed.concat(dynamic)));
         }
 
         function getScrollY() {
@@ -390,14 +398,13 @@ components.html(
                 scrollTimer = win.setTimeout(function () { saveScroll(false); }, 80);
             }
             win.addEventListener("scroll", scheduleScrollSave, true);
-            scrollCandidates().forEach(function (node) {
-                if (node !== win && node.addEventListener) {
-                    node.addEventListener("scroll", scheduleScrollSave, true);
-                }
-            });
+            doc.addEventListener("scroll", scheduleScrollSave, true);
             doc.addEventListener("pointerdown", function (event) {
                 if (shouldSave(event.target)) saveScroll(true);
             }, true);
+            doc.addEventListener("mousedown", function () { saveScroll(false); }, true);
+            doc.addEventListener("click", function () { saveScroll(false); }, true);
+            doc.addEventListener("focusin", function () { saveScroll(false); }, true);
             doc.addEventListener("change", function () { saveScroll(true); }, true);
             doc.addEventListener("keydown", function (event) {
                 if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
@@ -411,7 +418,7 @@ components.html(
             if (stored !== null) {
                 const y = parseInt(stored, 10);
                 if (!Number.isNaN(y) && y > 0) {
-                    [40, 120, 260, 520, 900].forEach(function (delay) {
+                    [40, 120, 260, 520, 900, 1400, 2200].forEach(function (delay) {
                         win.setTimeout(function () { setScrollY(y); }, delay);
                     });
                 }

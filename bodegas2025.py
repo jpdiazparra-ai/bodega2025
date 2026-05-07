@@ -5975,37 +5975,25 @@ if active_section == "📈 Ingresos & egresos":
             box-shadow:0 10px 24px rgba(15,23,42,0.04);
         }
         .ie-kpi-card {
-            position:relative;
-            overflow:hidden;
-            min-height:132px;
+            min-height:118px;
             border-radius:10px;
             border:1px solid var(--border);
-            background:
-                linear-gradient(135deg, rgba(255,255,255,0.98) 0%, var(--soft) 100%);
-            padding:14px 14px 12px 14px;
-            box-shadow:0 16px 34px rgba(15,23,42,0.065);
+            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+            padding:13px 14px 11px 14px;
+            box-shadow:0 14px 30px rgba(15,23,42,0.055);
             display:flex;
             flex-direction:column;
             justify-content:space-between;
-        }
-        .ie-kpi-card::before {
-            content:"";
-            position:absolute;
-            inset:0 auto 0 0;
-            width:4px;
-            background:var(--accent);
-            opacity:.88;
         }
         .ie-kpi-head {
             display:flex;
             align-items:center;
             gap:9px;
-            margin-bottom:9px;
-            padding-left:2px;
+            margin-bottom:8px;
         }
         .ie-kpi-icon {
-            width:32px;
-            height:32px;
+            width:30px;
+            height:30px;
             border-radius:999px;
             display:flex;
             align-items:center;
@@ -6014,19 +6002,18 @@ if active_section == "📈 Ingresos & egresos":
             color:var(--accent);
             font-size:15px;
             font-weight:950;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.52);
         }
         .ie-kpi-title {
             color:#071735;
-            font-size:11px;
+            font-size:12px;
             font-weight:950;
-            letter-spacing:.055em;
+            letter-spacing:.018em;
             text-transform:uppercase;
             line-height:1.16;
         }
         .ie-kpi-value {
             color:var(--accent);
-            font-size:24px;
+            font-size:23px;
             line-height:1.02;
             font-weight:950;
             letter-spacing:-0.035em;
@@ -6037,29 +6024,14 @@ if active_section == "📈 Ingresos & egresos":
             font-size:10.5px;
             line-height:1.35;
             font-weight:700;
-            margin-top:6px;
-        }
-        .ie-kpi-meta {
-            margin-top:8px;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:8px;
-            color:#64748b;
-            font-size:9.5px;
-            font-weight:800;
-        }
-        .ie-kpi-meta-value {
-            color:#0f1f3d;
-            font-weight:950;
-            white-space:nowrap;
+            margin-top:5px;
         }
         .ie-kpi-badge {
             display:inline-flex;
             align-items:center;
             width:max-content;
             max-width:100%;
-            margin-top:9px;
+            margin-top:8px;
             padding:4px 7px;
             border-radius:6px;
             background:var(--badge-bg);
@@ -6407,7 +6379,7 @@ if active_section == "📈 Ingresos & egresos":
         total_neto_acumulado = float(base["Neto_acumulado"].iloc[-1])
         total_margen = (total_neto / total_ing) if total_ing else 0.0
 
-        def ie_metric_card(title, value, subtitle, icon, accent, soft, halo, border, badge_text, meta_label, meta_value, badge_positive=True):
+        def ie_metric_card(title, value, subtitle, icon, accent, soft, halo, border, badge_text, badge_positive=True):
             badge_bg = "#dcfce7" if badge_positive else "#fee2e2"
             badge_fg = "#047857" if badge_positive else "#b91c1c"
             return f"""
@@ -6419,7 +6391,6 @@ if active_section == "📈 Ingresos & egresos":
                     </div>
                     <div class="ie-kpi-value">{value}</div>
                     <div class="ie-kpi-sub">{subtitle}</div>
-                    <div class="ie-kpi-meta"><span>{meta_label}</span><span class="ie-kpi-meta-value">{meta_value}</span></div>
                 </div>
                 <div class="ie-kpi-badge">{badge_text}</div>
             </div>
@@ -6438,8 +6409,6 @@ if active_section == "📈 Ingresos & egresos":
                     "#d8f5e4",
                     "#cfe9de",
                     "Ingresos registrados",
-                    "Base margen",
-                    "100.0%",
                     True,
                 ),
                 unsafe_allow_html=True,
@@ -6456,8 +6425,6 @@ if active_section == "📈 Ingresos & egresos":
                     "#fde2e2",
                     "#f1caca",
                     "Egresos registrados",
-                    "Sobre ingresos",
-                    f"{(total_egr / total_ing if total_ing else 0):.1%}",
                     False,
                 ),
                 unsafe_allow_html=True,
@@ -6475,8 +6442,6 @@ if active_section == "📈 Ingresos & egresos":
                     "#d8f5e4" if total_neto >= 0 else "#fde2e2",
                     "#cfe9de" if total_neto >= 0 else "#f1caca",
                     "Resultado operativo",
-                    "Margen",
-                    f"{total_margen:.1%}",
                     total_neto >= 0,
                 ),
                 unsafe_allow_html=True,
@@ -6494,8 +6459,6 @@ if active_section == "📈 Ingresos & egresos":
                     "#e0ebff" if total_neto_acumulado >= 0 else "#fde2e2",
                     "#d4e1f6" if total_neto_acumulado >= 0 else "#f1caca",
                     "Acumulado a la fecha",
-                    "Último neto",
-                    fmt_clp_largo(float(base["Neto"].iloc[-1])) if not base.empty else "$0",
                     total_neto_acumulado >= 0,
                 ),
                 unsafe_allow_html=True,
@@ -6513,8 +6476,6 @@ if active_section == "📈 Ingresos & egresos":
                     "#fceec8" if total_margen >= 0 else "#fde2e2",
                     "#eadfbd" if total_margen >= 0 else "#f1caca",
                     "Rentabilidad del período",
-                    "Fórmula",
-                    "Neto / ingresos",
                     total_margen >= 0,
                 ),
                 unsafe_allow_html=True,

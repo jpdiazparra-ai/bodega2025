@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import base64
+import json
+import re
 from matplotlib.colors import LinearSegmentedColormap
 from pathlib import Path
 from io import BytesIO
@@ -13,6 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
 from xml.sax.saxutils import escape
+from streamlit.delta_generator import DeltaGenerator
 
 # =========================
 # Configuración base
@@ -319,116 +322,95 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-components.html(
-    """
-    <script>
-    (function () {
-        const win = window.parent;
-        const doc = win.document;
-        const KEY = "bodegas_scroll_y";
+def _anchor_id_for_widget(widget_name: str, label: object, key: object) -> str:
+    source = str(key if key is not None else label)
+    clean = re.sub(r"[^a-zA-Z0-9_-]+", "-", source).strip("-").lower()
+    return f"bodega-anchor-{widget_name}-{clean or 'control'}"
 
-        function scrollCandidates() {
-            const fixed = [
-                win,
-                doc.scrollingElement,
-                doc.documentElement,
-                doc.body,
-                doc.querySelector("section.main"),
-                doc.querySelector("section.main > div"),
-                doc.querySelector('[data-testid="stAppViewContainer"]'),
-                doc.querySelector('[data-testid="stAppViewContainer"] > div')
-            ].filter(Boolean);
-            const dynamic = Array.from(doc.querySelectorAll("body *")).filter(function (node) {
-                try {
-                    return node.scrollHeight > node.clientHeight + 4;
-                } catch (err) {
-                    return false;
-                }
-            });
-            return Array.from(new Set(fixed.concat(dynamic)));
-        }
 
-        function getScrollY() {
-            return Math.max.apply(null, scrollCandidates().map(function (node) {
-                if (node === win) return win.scrollY || 0;
-                return node.scrollTop || 0;
-            }));
-        }
+def _mark_widget_anchor(anchor_id: str) -> None:
+    st.session_state["_bodega_scroll_anchor"] = anchor_id
 
-        function setScrollY(y) {
-            scrollCandidates().forEach(function (node) {
-                try {
-                    if (node === win) {
-                        win.scrollTo(0, y);
-                    } else {
-                        node.scrollTop = y;
-                    }
-                } catch (err) {}
-            });
-        }
 
-        function saveScroll(force) {
-            try {
-                const y = getScrollY();
-                if (force || y > 8) {
-                    win.sessionStorage.setItem(KEY, String(y));
-                }
-            } catch (err) {}
-        }
+def _install_widget_anchor_scroll() -> None:
+    if getattr(st, "_bodegas_anchor_scroll_installed", False):
+        return
 
-        function shouldSave(target) {
-            return Boolean(
-                target.closest('[data-testid="stSelectbox"]')
-                || target.closest('[data-testid="stMultiSelect"]')
-                || target.closest('[data-testid="stRadio"]')
-                || target.closest('[data-testid="stSlider"]')
-                || target.closest('[data-testid="stTextInput"]')
-                || target.closest('[data-testid="stNumberInput"]')
-                || target.closest('[data-testid="stDateInput"]')
-                || target.closest('[data-testid="stCheckbox"]')
-                || target.closest("input, textarea, select, button")
-            );
-        }
+    widget_names = (
+        "selectbox",
+        "radio",
+        "multiselect",
+        "slider",
+        "text_input",
+        "number_input",
+        "date_input",
+        "checkbox",
+    )
 
-        if (!win.__bodegasScrollKeeperInstalled) {
-            win.__bodegasScrollKeeperInstalled = true;
-            let scrollTimer = null;
-            function scheduleScrollSave() {
-                win.clearTimeout(scrollTimer);
-                scrollTimer = win.setTimeout(function () { saveScroll(false); }, 80);
-            }
-            win.addEventListener("scroll", scheduleScrollSave, true);
-            doc.addEventListener("scroll", scheduleScrollSave, true);
-            doc.addEventListener("pointerdown", function (event) {
-                if (shouldSave(event.target)) saveScroll(true);
-            }, true);
-            doc.addEventListener("mousedown", function () { saveScroll(false); }, true);
-            doc.addEventListener("click", function () { saveScroll(false); }, true);
-            doc.addEventListener("focusin", function () { saveScroll(false); }, true);
-            doc.addEventListener("change", function () { saveScroll(true); }, true);
-            doc.addEventListener("keydown", function (event) {
-                if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
-                    saveScroll(true);
-                }
-            }, true);
-        }
+    def make_wrapper(widget_name: str, original):
+        def wrapped(self, label, *args, **kwargs):
+            key = kwargs.get("key")
+            if key is None:
+                return original(self, label, *args, **kwargs)
 
-        try {
-            const stored = win.sessionStorage.getItem(KEY);
-            if (stored !== null) {
-                const y = parseInt(stored, 10);
-                if (!Number.isNaN(y) && y > 0) {
-                    [40, 120, 260, 520, 900, 1400, 2200].forEach(function (delay) {
-                        win.setTimeout(function () { setScrollY(y); }, delay);
-                    });
-                }
-            }
-        } catch (err) {}
-    })();
-    </script>
-    """,
-    height=0,
-)
+            anchor_id = _anchor_id_for_widget(widget_name, label, key)
+            self.markdown(
+                f'<span id="{anchor_id}" class="bodega-widget-anchor" '
+                'style="display:block;position:relative;top:-8px;height:0;width:0;"></span>',
+                unsafe_allow_html=True,
+            )
+
+            user_callback = kwargs.get("on_change")
+            user_args = kwargs.pop("args", ())
+            user_kwargs = kwargs.pop("kwargs", {})
+
+            def combined_callback():
+                _mark_widget_anchor(anchor_id)
+                if user_callback is not None:
+                    user_callback(*user_args, **user_kwargs)
+
+            kwargs["on_change"] = combined_callback
+            return original(self, label, *args, **kwargs)
+
+        return wrapped
+
+    for widget_name in widget_names:
+        original = getattr(DeltaGenerator, widget_name, None)
+        if original is not None and not getattr(original, "_bodega_wrapped", False):
+            wrapped = make_wrapper(widget_name, original)
+            wrapped._bodega_wrapped = True
+            setattr(DeltaGenerator, widget_name, wrapped)
+
+    st._bodegas_anchor_scroll_installed = True
+
+
+_install_widget_anchor_scroll()
+
+target_anchor = st.session_state.pop("_bodega_scroll_anchor", "")
+if target_anchor:
+    components.html(
+        f"""
+        <script>
+        (function () {{
+            const win = window.parent;
+            const doc = win.document;
+            const targetId = {json.dumps(target_anchor)};
+
+            function scrollToTarget() {{
+                const target = doc.getElementById(targetId);
+                if (!target) return false;
+                target.scrollIntoView({{behavior: "auto", block: "start", inline: "nearest"}});
+                return true;
+            }}
+
+            [40, 120, 260, 520, 900, 1400, 2200, 3200].forEach(function (delay) {{
+                win.setTimeout(scrollToTarget, delay);
+            }});
+        }})();
+        </script>
+        """,
+        height=0,
+    )
 
 
 

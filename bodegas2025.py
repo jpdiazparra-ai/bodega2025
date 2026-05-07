@@ -2362,10 +2362,19 @@ if active_section == "🏠 Visión general":
         canon_ultimo = 0.0
 
     health_score = 100
-    health_score -= 28 if posicion_neta < 0 else 0
-    health_score -= 22 if margen_neto < 0 else 0
-    health_score -= 22 if cobertura_egresos < 1 else 0
-    health_score -= 18 if cobertura_capex < 1 else 0
+    diagnosis_penalties = []
+    if posicion_neta < 0:
+        health_score -= 28
+        diagnosis_penalties.append(("Posición neta negativa", "-28 pts"))
+    if margen_neto < 0:
+        health_score -= 22
+        diagnosis_penalties.append(("Margen neto negativo", "-22 pts"))
+    if cobertura_egresos < 1:
+        health_score -= 22
+        diagnosis_penalties.append(("Cobertura caja < 1 mes", "-22 pts"))
+    if cobertura_capex < 1:
+        health_score -= 18
+        diagnosis_penalties.append(("CAPEX recuperado < 100%", "-18 pts"))
     health_score = int(max(0, min(100, health_score)))
     estado_txt = "RIESGO" if health_score < 45 else ("ATENCIÓN" if health_score < 70 else "SALUDABLE")
     estado_color = "#DC2626" if health_score < 45 else ("#F59E0B" if health_score < 70 else "#059669")
@@ -3012,6 +3021,35 @@ if active_section == "🏠 Visión general":
         )
 
     with bottom_c:
+        diagnosis_detail_rows = [
+            ("Puntaje inicial", "100/100"),
+            ("CAPEX total", fmt_clp_largo(CAPEX)),
+            ("Ingresos canon acumulados", fmt_clp_largo(ingresos_canon)),
+            ("Recuperación CAPEX", f"{cobertura_capex:.1%}"),
+            ("Caja disponible", fmt_clp_largo(balance_kpi)),
+            ("Egreso mensual promedio", fmt_clp_largo(egreso_mensual_promedio)),
+            ("Cobertura caja / egreso prom.", f"{cobertura_egresos:.2f}x"),
+            ("Ingresos KPI", fmt_clp_largo(ingresos_kpi)),
+            ("Egresos KPI pagados", fmt_clp_largo(egresos_kpi)),
+            ("Resultado operativo", fmt_clp_largo(utilidad_operativa)),
+            ("Margen neto", f"{margen_neto:.1%}"),
+            ("No pagado ingresos", fmt_clp_largo(no_pagado_total)),
+            ("Abonos ingresos", fmt_clp_largo(abonos_total)),
+            ("Cuentas por cobrar neto", fmt_clp_largo(cuentas_por_cobrar_neto)),
+            ("Egresos por pagar", fmt_clp_largo(total_egresos_por_pagar)),
+            ("Deuda fin ejercicio", fmt_clp_largo(deuda_fin_ejercicio)),
+            ("Posición neta", fmt_clp_largo(posicion_neta)),
+        ]
+        diagnosis_detail_html = "".join(
+            f'<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #e5ebf3;padding:3px 0;">'
+            f'<span>{label}</span><strong>{value}</strong></div>'
+            for label, value in diagnosis_detail_rows
+        )
+        diagnosis_penalty_html = "".join(
+            f'<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0;color:#B42318;">'
+            f'<span>{label}</span><strong>{points}</strong></div>'
+            for label, points in diagnosis_penalties
+        ) or '<div style="color:#059669;font-weight:900;">Sin penalizaciones activas</div>'
         fig_gauge = go.Figure(
             go.Indicator(
                 mode="gauge+number",
@@ -3045,7 +3083,12 @@ if active_section == "🏠 Visión general":
             f"""
             <div style="height:326px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
                         padding:11px 13px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
+                        position:relative;
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
+                <style>
+                    summary::-webkit-details-marker {{ display:none; }}
+                    summary::marker {{ content:""; }}
+                </style>
                 <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
                 <div style="height:122px;">{fig_gauge_html}</div>
                 <div style="margin-top:-4px;text-align:center;color:#475569;font-size:9px;font-weight:800;">Estado general</div>
@@ -3063,10 +3106,20 @@ if active_section == "🏠 Visión general":
                         <div style="font-size:9px;font-weight:900;color:#081735;">Estado Saludable<br><span style="display:inline-block;margin-top:4px;color:#31507a;font-weight:850;">70 - 100</span></div>
                     </div>
                 </div>
-                <div style="height:26px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
-                            justify-content:center;margin-top:10px;color:#0f2d52;font-size:10px;font-weight:900;">
-                    <span style="flex:1;text-align:center;">Ver recomendaciones</span><span style="padding-right:10px;">→</span>
-                </div>
+                <details style="position:absolute;left:13px;right:13px;bottom:11px;">
+                    <summary style="height:26px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
+                                justify-content:center;color:#0f2d52;font-size:10px;font-weight:900;cursor:pointer;background:#ffffff;">
+                        <span style="flex:1;text-align:center;">Ver recomendaciones</span><span style="padding-right:10px;">→</span>
+                    </summary>
+                    <div style="position:absolute;left:0;right:0;bottom:34px;height:238px;overflow:auto;
+                                border:1px solid #cbd5e1;border-radius:8px;background:#ffffff;padding:9px 10px;
+                                box-shadow:0 16px 36px rgba(15,23,42,0.16);font-size:8.8px;line-height:1.25;z-index:20;">
+                        <div style="font-size:10px;font-weight:950;margin-bottom:6px;color:#081735;">Detalle del diagnóstico ({health_score}/100)</div>
+                        {diagnosis_detail_html}
+                        <div style="font-size:9.5px;font-weight:950;margin:7px 0 3px;color:#081735;">Penalizaciones aplicadas</div>
+                        {diagnosis_penalty_html}
+                    </div>
+                </details>
             </div>
             """,
             height=330,

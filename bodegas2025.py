@@ -5928,27 +5928,27 @@ if active_section == "📈 Ingresos & egresos":
             display:flex;
             justify-content:space-between;
             align-items:flex-start;
-            margin:18px 0 10px 0;
+            margin:18px 0 18px 0;
         }
         .ie-title {
             color:#081735;
-            font-size:28px;
-            font-weight:900;
+            font-size:30px;
+            font-weight:950;
             letter-spacing:-0.025em;
             line-height:1;
         }
         .ie-subtitle {
-            margin-top:7px;
-            color:#475569;
+            margin-top:10px;
+            color:#0f2d52;
             font-size:14px;
-            font-weight:600;
+            font-weight:800;
         }
         .ie-actions {
             display:flex;
-            gap:8px;
+            gap:10px;
         }
         .ie-action {
-            height:38px;
+            height:46px;
             display:flex;
             align-items:center;
             justify-content:center;
@@ -5956,9 +5956,9 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #dbe3ee;
             background:#ffffff;
             color:#0f1f3d;
-            padding:0 13px;
+            padding:0 16px;
             font-size:12px;
-            font-weight:800;
+            font-weight:900;
             box-shadow:0 8px 18px rgba(15,23,42,0.04);
         }
         .ie-action-primary {
@@ -5968,26 +5968,26 @@ if active_section == "📈 Ingresos & egresos":
         }
         .ie-filter-card {
             border:1px solid #dbe3ee;
-            border-radius:10px;
+            border-radius:9px;
             background:#ffffff;
-            padding:12px 14px 10px 14px;
-            margin: 0 0 14px 0;
+            padding:16px 18px 12px 18px;
+            margin: 0 0 18px 0;
             box-shadow:0 12px 28px rgba(15,23,42,0.045);
         }
         .ie-filter-card [data-testid="column"] {
             border-right:1px solid #e5ebf3;
-            padding-right:18px;
+            padding-right:24px;
         }
         .ie-filter-card [data-testid="column"]:last-child {
             border-right:0;
             padding-right:0;
         }
         .ie-kpi-card {
-            min-height:118px;
-            border-radius:10px;
+            min-height:134px;
+            border-radius:9px;
             border:1px solid var(--border);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:13px 14px 11px 14px;
+            padding:18px 18px 15px 18px;
             box-shadow:0 14px 30px rgba(15,23,42,0.055);
             display:flex;
             flex-direction:column;
@@ -5996,19 +5996,19 @@ if active_section == "📈 Ingresos & egresos":
         .ie-kpi-head {
             display:flex;
             align-items:center;
-            gap:9px;
-            margin-bottom:8px;
+            gap:14px;
+            margin-bottom:12px;
         }
         .ie-kpi-icon {
-            width:30px;
-            height:30px;
+            width:38px;
+            height:38px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:15px;
+            font-size:20px;
             font-weight:950;
         }
         .ie-kpi-title {
@@ -6021,7 +6021,7 @@ if active_section == "📈 Ingresos & egresos":
         }
         .ie-kpi-value {
             color:var(--accent);
-            font-size:23px;
+            font-size:29px;
             line-height:1.02;
             font-weight:950;
             letter-spacing:-0.035em;
@@ -6029,22 +6029,22 @@ if active_section == "📈 Ingresos & egresos":
         }
         .ie-kpi-sub {
             color:#516179;
-            font-size:10.5px;
+            font-size:12px;
             line-height:1.35;
             font-weight:700;
-            margin-top:5px;
+            margin-top:10px;
         }
         .ie-kpi-badge {
             display:inline-flex;
             align-items:center;
             width:max-content;
             max-width:100%;
-            margin-top:8px;
-            padding:4px 7px;
-            border-radius:6px;
+            margin-top:14px;
+            padding:7px 10px;
+            border-radius:5px;
             background:var(--badge-bg);
             color:var(--badge-fg);
-            font-size:10px;
+            font-size:11px;
             font-weight:900;
             white-space:nowrap;
         }
@@ -6052,36 +6052,37 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:16px;
+            padding:19px 18px;
             height:100%;
             box-shadow:0 12px 28px rgba(15,23,42,0.05);
         }
         .ie-analysis-title {
             color:#081735;
-            font-size:16px;
-            font-weight:900;
-            margin-bottom:14px;
+            font-size:18px;
+            font-weight:950;
+            margin-bottom:18px;
         }
         .ie-analysis-row {
             display:grid;
-            grid-template-columns:42px 1fr auto;
-            gap:10px;
+            grid-template-columns:48px 1fr auto;
+            gap:13px;
             align-items:center;
             border:1px solid #e5ebf3;
-            border-radius:9px;
-            padding:11px 12px;
-            margin-bottom:10px;
+            border-radius:8px;
+            padding:14px 15px;
+            margin-bottom:13px;
             background:#fbfdff;
         }
         .ie-analysis-icon {
-            width:32px;
-            height:32px;
+            width:40px;
+            height:40px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--soft);
             color:var(--accent);
+            font-size:18px;
             font-weight:900;
         }
         .ie-analysis-label {
@@ -6092,12 +6093,12 @@ if active_section == "📈 Ingresos & egresos":
         .ie-analysis-sub {
             margin-top:3px;
             color:#64748b;
-            font-size:11px;
+            font-size:11.5px;
             font-weight:650;
         }
         .ie-analysis-value {
             color:#0f1f3d;
-            font-size:13px;
+            font-size:13.5px;
             font-weight:900;
             white-space:nowrap;
         }
@@ -6295,20 +6296,20 @@ if active_section == "📈 Ingresos & egresos":
             padding-bottom:5px !important;
         }
         main div[role="radiogroup"] {
-            display:grid !important;
-            grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-            gap:0 !important;
-            border:1px solid #e5ebf3 !important;
-            background:#f1f5f9 !important;
+            display:flex !important;
+            gap:18px !important;
+            border:0 !important;
+            background:transparent !important;
             border-radius:8px !important;
-            padding:3px !important;
-            min-height:38px !important;
+            padding:0 !important;
+            min-height:46px !important;
         }
         main div[role="radiogroup"] > label {
-            min-height:30px !important;
+            min-height:42px !important;
             margin:0 !important;
-            padding:0 14px !important;
-            border-radius:6px !important;
+            padding:0 16px !important;
+            border-radius:7px !important;
+            border:1px solid transparent !important;
             display:flex !important;
             align-items:center !important;
             justify-content:center !important;
@@ -6317,27 +6318,31 @@ if active_section == "📈 Ingresos & egresos":
             font-weight:850 !important;
             transition:all .16s ease !important;
         }
-        main div[role="radiogroup"] > label > div:first-child {
-            display:none !important;
-        }
         main div[role="radiogroup"] > label:has(input:checked) {
-            background:#0B4DB3 !important;
-            color:#ffffff !important;
-            box-shadow:0 8px 18px rgba(11,77,179,0.20) !important;
+            background:#ffffff !important;
+            border-color:#9EC5FE !important;
+            color:#0B3A86 !important;
+            box-shadow:0 8px 18px rgba(11,77,179,0.08) !important;
         }
         main [data-baseweb="select"] > div {
-            min-height:38px !important;
-            border-radius:8px !important;
+            min-height:46px !important;
+            border-radius:7px !important;
             border-color:#dbe3ee !important;
-            background:#f1f5f9 !important;
+            background:#ffffff !important;
             box-shadow:0 8px 18px rgba(15,23,42,0.035) !important;
         }
-        .ie-main-chart-card {
+        .ie-guide-note {
+            display:flex;
+            gap:10px;
+            align-items:center;
             border:1px solid #dbe3ee;
-            border-radius:12px;
-            background:#ffffff;
-            padding:16px 18px 12px 18px;
-            box-shadow:0 14px 34px rgba(15,23,42,0.055);
+            border-radius:8px;
+            background:#f8fafc;
+            color:#334155;
+            font-size:12px;
+            font-weight:650;
+            padding:11px 13px;
+            margin:14px 0 16px 0;
         }
         </style>
         <div class="ie-title-row">
@@ -6359,7 +6364,7 @@ if active_section == "📈 Ingresos & egresos":
     import plotly.graph_objects as go
 
     st.markdown('<div class="ie-filter-card">', unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns([1, 1, 1.1, 1.1])
+    c1, c2, c3, c4 = st.columns([1.25, 1.45, 1.55, 1.55])
     with c1:
         periodo = st.radio("Periodo", ["Mensual", "Anual"], horizontal=True, index=0, key="periodo_ing_eg")
     with c2:
@@ -6609,10 +6614,10 @@ if active_section == "📈 Ingresos & egresos":
                     f"{total_margen:.1%}",
                     "Neto dividido por ingresos",
                     "%",
-                    "#B7791F" if total_margen >= 0 else "#DC2626",
-                    "#fffaf0" if total_margen >= 0 else "#fff7f7",
-                    "#fceec8" if total_margen >= 0 else "#fde2e2",
-                    "#eadfbd" if total_margen >= 0 else "#f1caca",
+                    "#7E22CE",
+                    "#fbf7ff",
+                    "#f3e8ff",
+                    "#ead7ff",
                     "Rentabilidad del período",
                     total_margen >= 0,
                 ),
@@ -6682,10 +6687,10 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Neto"],
                 mode="lines+markers",
                 name="Neto",
-                line=dict(color="#1F2A44", width=2.1, shape="spline"),
+                line=dict(color="#0B3A86", width=2.1, shape="spline"),
                 marker=dict(
                     size=6.5,
-                    color=base["Neto_color"],
+                    color="#DC2626",
                     line=dict(color="#FFFFFF", width=1.35),
                 ),
                 hoverinfo="skip",
@@ -6732,8 +6737,8 @@ if active_section == "📈 Ingresos & egresos":
                 color="#334155",
             ),
             template="plotly_white",
-            height=395,
-            margin=dict(l=18, r=24, t=76, b=40),
+            height=438,
+            margin=dict(l=18, r=26, t=78, b=42),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
@@ -6753,7 +6758,7 @@ if active_section == "📈 Ingresos & egresos":
             hovermode="x unified",
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
-            bargap=0.18,
+            bargap=0.20,
         )
 
         fig_ie.update_xaxes(
@@ -6764,7 +6769,11 @@ if active_section == "📈 Ingresos & egresos":
             title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             rangeslider=dict(
-                visible=False,
+                visible=(periodo == "Mensual"),
+                thickness=0.08,
+                bgcolor="#F1F5F9",
+                bordercolor="#E2E8F0",
+                borderwidth=1,
             ),
         )
         fig_ie.update_yaxes(
@@ -6848,17 +6857,17 @@ if active_section == "📈 Ingresos & egresos":
         tendencia_bg = "#fee2e2" if total_neto_acumulado < 0 else "#dcfce7"
         tendencia_fg = "#B91C1C" if total_neto_acumulado < 0 else "#166534"
 
-        chart_col, analysis_col = st.columns([2.15, 1])
+        chart_col, analysis_col = st.columns([2.35, 1])
         with chart_col:
             components.html(
                 f"""
                 <div style="border:1px solid #dbe3ee;border-radius:12px;background:#fff;
-                            padding:6px 10px 4px 10px;box-shadow:0 14px 34px rgba(15,23,42,0.055);
+                            padding:10px 12px 8px 12px;box-shadow:0 14px 34px rgba(15,23,42,0.055);
                             box-sizing:border-box;">
                     {fig_ie_html}
                 </div>
                 """,
-                height=420,
+                height=486,
                 scrolling=False,
             )
         with analysis_col:
@@ -6902,6 +6911,15 @@ if active_section == "📈 Ingresos & egresos":
                 """,
                 unsafe_allow_html=True,
             )
+        st.markdown(
+            """
+            <div class="ie-guide-note">
+                <span>ⓘ</span>
+                <div>Colores guía: Ingresos (verde) · Egresos (rojo) · Neto (azul) · Neto acumulado (azul punteado) · Margen neto (naranja punteado).</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         resumen_periodo_rows = [
             ("↑", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(total_ing), "100.0%"),

@@ -3779,41 +3779,43 @@ if active_section == "⚠️ Riesgos & cobranzas":
     st.markdown(
         """
         <style>
+        .tab-title-row { margin:14px 0 10px 0; }
+        .section-heading-wrap { margin:14px 0 10px 0; }
         .risk-kpi-card {
-            min-height:92px;
+            min-height:74px;
             border-radius:10px;
             border:1px solid var(--border);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:11px 12px 10px 12px;
+            padding:9px 10px 8px 10px;
             display:grid;
-            grid-template-columns:34px 1fr;
-            gap:8px;
-            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            grid-template-columns:30px 1fr;
+            gap:7px;
+            box-shadow:0 8px 18px rgba(15,23,42,0.035);
         }
         .risk-kpi-icon {
-            width:30px;
-            height:30px;
+            width:26px;
+            height:26px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:15px;
+            font-size:13px;
             font-weight:950;
         }
         .risk-kpi-title {
             color:#0f1f3d;
-            font-size:10.5px;
+            font-size:9.5px;
             line-height:1.12;
             font-weight:900;
-            margin-bottom:5px;
+            margin-bottom:3px;
             text-transform:uppercase;
             letter-spacing:.01em;
         }
         .risk-kpi-value {
             color:var(--accent);
-            font-size:20px;
+            font-size:17px;
             line-height:1.05;
             font-weight:950;
             letter-spacing:-0.025em;
@@ -3821,19 +3823,19 @@ if active_section == "⚠️ Riesgos & cobranzas":
         }
         .risk-kpi-badge {
             display:inline-block;
-            margin-top:4px;
-            padding:3px 6px;
+            margin-top:3px;
+            padding:2px 5px;
             border-radius:5px;
             background:var(--badge-bg);
             color:var(--badge-fg);
-            font-size:9px;
+            font-size:8.5px;
             font-weight:900;
         }
         .risk-kpi-note {
             grid-column:2;
             color:#475569;
-            font-size:9.5px;
-            line-height:1.25;
+            font-size:8.8px;
+            line-height:1.18;
             font-weight:650;
             margin-top:1px;
         }
@@ -3940,10 +3942,10 @@ if active_section == "⚠️ Riesgos & cobranzas":
         <div style="
             background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
             border-radius: 10px;
-            padding: 10px 14px;
-            margin: 6px 0 10px 0;
+            padding: 8px 12px;
+            margin: 5px 0 8px 0;
             color: #FFFFFF;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;">
             Estado de cuentas por cobrar/pagar · Resumen por responsable
         </div>
@@ -4229,10 +4231,10 @@ if active_section == "⚠️ Riesgos & cobranzas":
         <div style="
             background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
             border-radius: 10px;
-            padding: 10px 14px;
-            margin: 6px 0 10px 0;
+            padding: 8px 12px;
+            margin: 5px 0 8px 0;
             color: #FFFFFF;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;">
             Estado de cobro arrendatarios · Periodo: {periodo_lbl}
         </div>
@@ -4292,10 +4294,10 @@ if active_section == "⚠️ Riesgos & cobranzas":
         <div style="
             background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
             border-radius: 10px;
-            padding: 10px 14px;
-            margin: 10px 0 8px 0;
+            padding: 8px 12px;
+            margin: 8px 0 6px 0;
             color: #FFFFFF;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;">
             Composición de cobro por espacio · Espacio: {esp_lbl_chart} · Responsable: {resp_lbl_chart}
         </div>
@@ -4447,8 +4449,8 @@ if active_section == "⚠️ Riesgos & cobranzas":
     fig_cancel.update_layout(
         barmode="stack",
         template="plotly_white",
-        height=430 if single_month_one_space else (340 if single_space_view else 500),
-        margin=dict(l=20, r=20, t=140, b=20),
+        height=330 if single_month_one_space else (280 if single_space_view else 380),
+        margin=dict(l=20, r=20, t=92, b=18),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -7390,11 +7392,11 @@ if active_section == "📈 Ingresos & egresos":
             justify-content:space-between;
             align-items:flex-start;
             gap:16px;
-            margin:14px 0 12px 0;
+            margin:8px 0 8px 0;
         }
         .risk-pro-title {
             color:#081735;
-            font-size:27px;
+            font-size:22px;
             line-height:1.05;
             font-weight:950;
             letter-spacing:-0.025em;
@@ -7412,7 +7414,7 @@ if active_section == "📈 Ingresos & egresos":
             align-items:center;
         }
         .risk-pro-action {
-            min-height:38px;
+            min-height:32px;
             display:flex;
             align-items:center;
             justify-content:center;
@@ -7420,10 +7422,10 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #dbe3ee;
             background:#ffffff;
             color:#0f1f3d;
-            padding:0 14px;
-            font-size:12px;
+            padding:0 11px;
+            font-size:11px;
             font-weight:850;
-            box-shadow:0 10px 22px rgba(15,23,42,0.045);
+            box-shadow:0 8px 16px rgba(15,23,42,0.035);
         }
         .risk-pro-action-primary {
             background:#0B3A86;
@@ -7432,72 +7434,72 @@ if active_section == "📈 Ingresos & egresos":
         }
         .risk-filter-card {
             border:1px solid #dbe3ee;
-            border-radius:12px;
+            border-radius:10px;
             background:#ffffff;
-            padding:16px 18px 12px 18px;
-            margin:0 0 16px 0;
-            box-shadow:0 14px 34px rgba(15,23,42,0.05);
+            padding:10px 14px 8px 14px;
+            margin:0 0 10px 0;
+            box-shadow:0 8px 18px rgba(15,23,42,0.035);
         }
         .risk-filter-title {
             color:#081735;
-            font-size:18px;
+            font-size:14px;
             font-weight:950;
-            margin-bottom:10px;
+            margin-bottom:6px;
         }
         .risk-pro-kpi {
-            min-height:118px;
+            min-height:78px;
             border:1px solid var(--border);
             border-radius:10px;
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:15px 16px;
+            padding:9px 10px;
             display:grid;
-            grid-template-columns:48px 1fr;
-            gap:12px;
-            box-shadow:0 14px 32px rgba(15,23,42,0.055);
+            grid-template-columns:32px 1fr;
+            gap:8px;
+            box-shadow:0 8px 18px rgba(15,23,42,0.035);
         }
         .risk-pro-kpi-icon {
-            width:44px;
-            height:44px;
+            width:28px;
+            height:28px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:21px;
+            font-size:14px;
             font-weight:950;
         }
         .risk-pro-kpi-title {
             color:#0f1f3d;
-            font-size:12px;
+            font-size:9.5px;
             line-height:1.15;
             font-weight:950;
             text-transform:uppercase;
             letter-spacing:.012em;
         }
         .risk-pro-kpi-value {
-            margin-top:8px;
+            margin-top:4px;
             color:var(--accent);
-            font-size:25px;
+            font-size:17px;
             line-height:1;
             font-weight:950;
             letter-spacing:-0.03em;
             white-space:nowrap;
         }
         .risk-pro-kpi-note {
-            margin-top:9px;
+            margin-top:4px;
             color:#64748b;
-            font-size:11px;
-            line-height:1.3;
+            font-size:9px;
+            line-height:1.2;
             font-weight:750;
         }
         .risk-chart-card {
             border:1px solid #dbe3ee;
-            border-radius:12px;
+            border-radius:10px;
             background:#ffffff;
-            padding:16px 18px 14px 18px;
-            margin-top:16px;
-            box-shadow:0 14px 34px rgba(15,23,42,0.055);
+            padding:10px 12px 10px 12px;
+            margin-top:8px;
+            box-shadow:0 8px 18px rgba(15,23,42,0.035);
         }
         .risk-note-card {
             display:flex;
@@ -7556,7 +7558,7 @@ if active_section == "📈 Ingresos & egresos":
             "Top N",
             min_value=5,
             max_value=30,
-            value=16,
+            value=12,
             step=1,
             key="topn_pro",
         )
@@ -7825,8 +7827,8 @@ if active_section == "📈 Ingresos & egresos":
                 font=dict(size=17, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             ),
             template="plotly_white",
-            height=max(520, 40 * len(base_dim) + 180),
-            margin=dict(l=28, r=46, t=86, b=42),
+            height=max(360, 26 * len(base_dim) + 130),
+            margin=dict(l=24, r=40, t=62, b=32),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",

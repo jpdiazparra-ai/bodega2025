@@ -5968,19 +5968,22 @@ if active_section == "📈 Ingresos & egresos":
         }
         .ie-filter-card {
             border:1px solid #dbe3ee;
-            border-radius:9px;
+            border-radius:10px;
             background:#ffffff;
-            padding:16px 18px 12px 18px;
+            padding:17px 22px 18px 22px;
             margin: 0 0 18px 0;
             box-shadow:0 12px 28px rgba(15,23,42,0.045);
         }
         .ie-filter-card [data-testid="column"] {
             border-right:1px solid #e5ebf3;
-            padding-right:24px;
+            padding-right:26px;
         }
         .ie-filter-card [data-testid="column"]:last-child {
             border-right:0;
             padding-right:0;
+        }
+        .ie-filter-card [data-testid="stVerticalBlock"] {
+            gap:0 !important;
         }
         .ie-kpi-card {
             min-height:134px;
@@ -6283,53 +6286,61 @@ if active_section == "📈 Ingresos & egresos":
             font-weight:650;
             margin-top:8px;
         }
-        main [data-testid="stSelectbox"] > label {
-            color:#334155 !important;
-            font-size:11px !important;
-            font-weight:850 !important;
-            padding-bottom:4px !important;
+        .ie-filter-card [data-testid="stSelectbox"] > label,
+        .ie-filter-card [data-testid="stRadio"] > label {
+            color:#0f1f3d !important;
+            font-size:12px !important;
+            line-height:1.1 !important;
+            font-weight:900 !important;
+            padding-bottom:6px !important;
         }
-        main [data-testid="stRadio"] > label {
-            color:#334155 !important;
-            font-size:11px !important;
-            font-weight:850 !important;
-            padding-bottom:5px !important;
-        }
-        main div[role="radiogroup"] {
-            display:flex !important;
-            gap:18px !important;
-            border:0 !important;
-            background:transparent !important;
-            border-radius:8px !important;
-            padding:0 !important;
-            min-height:46px !important;
-        }
-        main div[role="radiogroup"] > label {
-            min-height:42px !important;
-            margin:0 !important;
-            padding:0 16px !important;
+        .ie-filter-card div[role="radiogroup"] {
+            display:grid !important;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:0 !important;
+            min-height:38px !important;
             border-radius:7px !important;
-            border:1px solid transparent !important;
+            overflow:hidden !important;
+            background:#f8fafc !important;
+            border:1px solid #e5ebf3 !important;
+            box-shadow:inset 0 1px 0 rgba(255,255,255,0.65) !important;
+        }
+        .ie-filter-card div[role="radiogroup"] > label {
+            min-height:38px !important;
+            margin:0 !important;
+            padding:0 12px !important;
+            border:0 !important;
+            border-radius:0 !important;
             display:flex !important;
             align-items:center !important;
             justify-content:center !important;
-            color:#334155 !important;
+            color:#0f1f3d !important;
             font-size:12px !important;
             font-weight:850 !important;
             transition:all .16s ease !important;
         }
-        main div[role="radiogroup"] > label:has(input:checked) {
-            background:#ffffff !important;
-            border-color:#9EC5FE !important;
-            color:#0B3A86 !important;
-            box-shadow:0 8px 18px rgba(11,77,179,0.08) !important;
+        .ie-filter-card div[role="radiogroup"] > label > div:first-child {
+            display:none !important;
         }
-        main [data-baseweb="select"] > div {
-            min-height:46px !important;
+        .ie-filter-card div[role="radiogroup"] > label:has(input:checked) {
+            background:#0B4DB3 !important;
+            color:#ffffff !important;
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28), 0 8px 18px rgba(11,77,179,0.12) !important;
+        }
+        .ie-filter-card div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
+            color:inherit !important;
+            font-size:12px !important;
+            font-weight:850 !important;
+        }
+        .ie-filter-card [data-baseweb="select"] > div {
+            min-height:38px !important;
             border-radius:7px !important;
-            border-color:#dbe3ee !important;
-            background:#ffffff !important;
-            box-shadow:0 8px 18px rgba(15,23,42,0.035) !important;
+            border-color:#e5ebf3 !important;
+            background:#f8fafc !important;
+            box-shadow:none !important;
+            color:#0f1f3d !important;
+            font-size:12px !important;
+            font-weight:850 !important;
         }
         .ie-guide-note {
             display:flex;
@@ -6345,16 +6356,13 @@ if active_section == "📈 Ingresos & egresos":
             margin:14px 0 16px 0;
         }
         </style>
-        <div class="ie-title-row">
-            <div>
-                <div class="ie-title">Ingresos & Egresos</div>
-                <div class="ie-subtitle">Control de ingresos, egresos y resultado neto</div>
-            </div>
-            <div class="ie-actions">
-                <div class="ie-action">↗ Compartir</div>
-                <div class="ie-action">☆</div>
-                <div class="ie-action">•••</div>
-                <div class="ie-action ie-action-primary">⇩ Descargar reporte</div>
+        <div class="tab-title-row">
+            <div><div class="tab-title-main">Ingresos & Egresos</div><div class="tab-title-sub">Control de ingresos, egresos y resultado neto</div></div>
+            <div class="tab-actions">
+                <div class="tab-action">↗ Compartir</div>
+                <div class="tab-action">☆</div>
+                <div class="tab-action">•••</div>
+                <div class="tab-action tab-action-primary">⇩ Descargar reporte</div>
             </div>
         </div>
         """,

@@ -2474,7 +2474,7 @@ if active_section == "🏠 Visión general":
             min-height:100%;
         }
         .asset-bottom-card {
-            height:244px;
+            height:276px;
             box-sizing:border-box;
             display:flex;
             flex-direction:column;
@@ -2984,7 +2984,7 @@ if active_section == "🏠 Visión general":
             )
         )
         fig_gauge.update_layout(
-            height=104,
+            height=122,
             margin=dict(l=0, r=0, t=0, b=0),
             paper_bgcolor="#FFFFFF",
         )
@@ -2995,11 +2995,11 @@ if active_section == "🏠 Visión general":
         )
         components.html(
             f"""
-            <div style="height:244px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
+            <div style="height:276px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
                         padding:11px 13px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
                 <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
-                <div style="height:104px;">{fig_gauge_html}</div>
+                <div style="height:122px;">{fig_gauge_html}</div>
                 <div style="margin-top:-4px;text-align:center;color:#475569;font-size:9px;font-weight:800;">Estado general</div>
                 <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:11px;">
                     <div style="display:grid;grid-template-columns:14px 1fr;gap:5px;align-items:start;">
@@ -3021,14 +3021,10 @@ if active_section == "🏠 Visión general":
                 </div>
             </div>
             """,
-            height=248,
+            height=280,
             scrolling=False,
         )
 
-    st.markdown(
-        "<div style='margin-top:6px;text-align:center;color:#64748b;font-size:10px;font-weight:600;'>Fuente: Google Sheets (CSV) - Agrupaciones dinámicas y visualizaciones interactivas</div>",
-        unsafe_allow_html=True,
-    )
     st.stop()
 
     st.markdown(

@@ -2949,49 +2949,65 @@ if active_section == "🏠 Visión general":
         )
 
     with bottom_c:
-        st.markdown(
-            '<div class="asset-card-title" style="margin:0 0 4px 0;">Diagnóstico del Activo</div>',
-            unsafe_allow_html=True,
-        )
         fig_gauge = go.Figure(
             go.Indicator(
                 mode="gauge+number",
                 value=health_score,
-                number={"suffix": "/100", "font": {"size": 30, "color": "#081735"}},
+                number={"suffix": "/100", "font": {"size": 31, "color": "#081735"}},
                 gauge={
                     "axis": {"range": [0, 100], "visible": False},
-                    "bar": {"color": estado_color, "thickness": 0.26},
-                    "bgcolor": "#EEF2F7",
+                    "bar": {"color": "#F97316", "thickness": 0.22},
+                    "bgcolor": "#F1F5F9",
                     "borderwidth": 0,
                     "steps": [
-                        {"range": [0, 45], "color": "#FEE2E2"},
-                        {"range": [45, 70], "color": "#FEF3C7"},
+                        {"range": [0, 40], "color": "#FEE2E2"},
+                        {"range": [40, 70], "color": "#FEF3C7"},
                         {"range": [70, 100], "color": "#DCFCE7"},
                     ],
                 },
-                domain={"x": [0.02, 0.62], "y": [0.05, 0.95]},
+                domain={"x": [0.12, 0.88], "y": [0.02, 0.98]},
             )
         )
         fig_gauge.update_layout(
-            height=150,
-            margin=dict(l=0, r=0, t=4, b=0),
+            height=136,
+            margin=dict(l=0, r=0, t=0, b=0),
             paper_bgcolor="#FFFFFF",
         )
-        st.plotly_chart(
-            fig_gauge,
-            use_container_width=True,
+        fig_gauge_html = fig_gauge.to_html(
+            full_html=False,
+            include_plotlyjs=True,
             config={"displaylogo": False, "displayModeBar": False},
-            key="vision_general_diagnostico",
         )
-        st.markdown(
+        components.html(
             f"""
-            <div class="asset-diagnosis-list">
-                <div><span class="asset-dot" style="--dot:#DC2626;"></span>Riesgo Alto<br><span>{1 if health_score < 45 else 0} factor crítico</span></div>
-                <div><span class="asset-dot" style="--dot:#F59E0B;"></span>Atención Media<br><span>{1 if 45 <= health_score < 70 else 0} factor a monitorear</span></div>
-                <div><span class="asset-dot" style="--dot:#059669;"></span>Saludable<br><span>{1 if health_score >= 70 else 0} factor positivo</span></div>
+            <div style="height:292px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
+                        padding:14px 16px;box-sizing:border-box;box-shadow:0 10px 24px rgba(15,23,42,0.04);
+                        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
+                <div style="font-size:18px;font-weight:950;line-height:1.1;margin-bottom:4px;">Diagnóstico del Activo</div>
+                <div style="height:136px;">{fig_gauge_html}</div>
+                <div style="margin-top:-6px;text-align:center;color:#475569;font-size:11px;font-weight:800;">Estado general</div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px;">
+                    <div style="display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;">
+                        <span style="width:11px;height:11px;border-radius:999px;background:#DC2626;margin-top:3px;"></span>
+                        <div style="font-size:11px;font-weight:900;color:#081735;">Riesgo Alto<br><span style="display:inline-block;margin-top:6px;color:#31507a;font-weight:850;">0 - 40</span></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;">
+                        <span style="width:11px;height:11px;border-radius:999px;background:#F59E0B;margin-top:3px;"></span>
+                        <div style="font-size:11px;font-weight:900;color:#081735;">Riesgo Medio<br><span style="display:inline-block;margin-top:6px;color:#31507a;font-weight:850;">40 - 70</span></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;">
+                        <span style="width:11px;height:11px;border-radius:999px;background:#059669;margin-top:3px;"></span>
+                        <div style="font-size:11px;font-weight:900;color:#081735;">Estado Saludable<br><span style="display:inline-block;margin-top:6px;color:#31507a;font-weight:850;">70 - 100</span></div>
+                    </div>
+                </div>
+                <div style="height:34px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
+                            justify-content:center;margin-top:18px;color:#0f2d52;font-size:12px;font-weight:900;">
+                    <span style="flex:1;text-align:center;">Ver recomendaciones</span><span style="padding-right:14px;">→</span>
+                </div>
             </div>
             """,
-            unsafe_allow_html=True,
+            height=300,
+            scrolling=False,
         )
 
     st.markdown(

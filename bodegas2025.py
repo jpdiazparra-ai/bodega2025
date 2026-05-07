@@ -6891,8 +6891,8 @@ if active_section == "📈 Ingresos & egresos":
         with chart_col:
             components.html(
                 f"""
-                <div style="border:1px solid #dbe3ee;border-radius:12px;background:#fff;
-                            padding:8px 10px 6px 10px;box-shadow:0 12px 28px rgba(15,23,42,0.05);
+                <div style="border:1px solid #dbe3ee;border-radius:10px;background:#fff;
+                            padding:8px 10px 6px 10px;box-shadow:none;
                             box-sizing:border-box;">
                     {fig_ie_html}
                 </div>

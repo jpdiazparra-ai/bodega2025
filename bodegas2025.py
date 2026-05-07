@@ -2294,6 +2294,33 @@ if active_section == "🏠 Visión general":
         & data_src["CC1_text"].str.strip().str.lower().eq("arriendo")
         & data_src["Obs_text"].str.strip().str.lower().eq("canon mensual")
     )
+    df_canon_home_month = data_src.loc[mask_canon_home, ["Periodo_ref", "Monto"]].copy()
+    df_canon_home_month["Periodo_ref"] = pd.to_datetime(df_canon_home_month["Periodo_ref"], errors="coerce")
+    df_canon_home_month["Monto"] = pd.to_numeric(df_canon_home_month["Monto"], errors="coerce")
+    df_canon_home_month = df_canon_home_month.dropna(subset=["Periodo_ref", "Monto"])
+    canon_12m_growth = 0.0
+    if not df_canon_home_month.empty:
+        df_canon_home_month["Periodo_ref"] = df_canon_home_month["Periodo_ref"].dt.to_period("M").dt.to_timestamp()
+        df_canon_home_month = (
+            df_canon_home_month.groupby("Periodo_ref", as_index=False)["Monto"]
+            .sum()
+            .sort_values("Periodo_ref")
+            .rename(columns={"Monto": "Canon mensual"})
+        )
+        full_months = pd.date_range(
+            df_canon_home_month["Periodo_ref"].min(),
+            df_canon_home_month["Periodo_ref"].max(),
+            freq="MS",
+        )
+        canon_monthly_series = (
+            df_canon_home_month.set_index("Periodo_ref")["Canon mensual"]
+            .reindex(full_months, fill_value=0)
+        )
+        if len(canon_monthly_series) >= 24:
+            canon_ultimos_12m = float(canon_monthly_series.iloc[-12:].sum())
+            canon_12m_previos = float(canon_monthly_series.iloc[-24:-12].sum())
+            canon_12m_growth = (canon_ultimos_12m / canon_12m_previos - 1) if canon_12m_previos else 0.0
+
     df_canon_home = data_src.loc[mask_canon_home, ["Año", "Monto"]].copy()
     df_canon_home["Año"] = pd.to_numeric(df_canon_home["Año"], errors="coerce")
     df_canon_home["Monto"] = pd.to_numeric(df_canon_home["Monto"], errors="coerce")
@@ -2309,11 +2336,9 @@ if active_section == "🏠 Visión general":
         df_canon_home["YoY"] = df_canon_home["Canon anual"].pct_change().replace([np.inf, -np.inf], 0).fillna(0)
         df_canon_home["Acumulado"] = df_canon_home["Canon anual"].cumsum()
         canon_ultimo = float(df_canon_home["Canon anual"].iloc[-1])
-        canon_yoy = float(df_canon_home["YoY"].iloc[-1])
     else:
         df_canon_home = pd.DataFrame(columns=["Año", "Canon anual", "MA3", "YoY", "Acumulado"])
         canon_ultimo = 0.0
-        canon_yoy = 0.0
 
     health_score = 100
     health_score -= 28 if posicion_neta < 0 else 0
@@ -2935,16 +2960,16 @@ if active_section == "🏠 Visión general":
         )
 
     with bottom_b:
-        trend_color = "#DC2626" if canon_yoy < 0 else "#059669"
+        trend_color = "#DC2626" if canon_12m_growth < 0 else "#059669"
         st.markdown(
             f"""
             <div class="asset-card asset-bottom-card">
                 <div class="asset-card-title">Análisis de Tendencia</div>
                 <div class="trend-grid">
-                    <div class="trend-mini" style="--trend:{trend_color};--soft:{'#fff7f7' if canon_yoy < 0 else '#f6fffb'};">
+                    <div class="trend-mini" style="--trend:{trend_color};--soft:{'#fff7f7' if canon_12m_growth < 0 else '#f6fffb'};">
                         <div class="trend-mini-title">Crecimiento Ingresos</div>
-                        <div class="trend-mini-value">{canon_yoy:+.1%}</div>
-                        <div class="trend-mini-sub">Canon anual último año</div>
+                        <div class="trend-mini-value">{canon_12m_growth:+.1%}</div>
+                        <div class="trend-mini-sub">Últimos 12 meses vs 12 previos</div>
                     </div>
                     <div class="trend-mini" style="--trend:{'#DC2626' if margen_neto < 0 else '#059669'};--soft:{'#fff7f7' if margen_neto < 0 else '#f6fffb'};">
                         <div class="trend-mini-title">Margen Neto Promedio</div>

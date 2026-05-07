@@ -6654,8 +6654,8 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Ingresos"],
                 name="Ingresos",
                 marker=dict(
-                    color=CHART_BAR_TEAL,
-                    line=dict(color=CHART_BAR_TEAL, width=1),
+                    color="rgba(120, 166, 159, 0.86)",
+                    line=dict(color="rgba(120, 166, 159, 0.86)", width=0),
                 ),
                 hoverinfo="skip",
                 offsetgroup="flujo",
@@ -6668,8 +6668,8 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Egresos_plot"],
                 name="Egresos",
                 marker=dict(
-                    color=CHART_BAR_RED,
-                    line=dict(color=CHART_BAR_RED, width=1),
+                    color="rgba(239, 82, 76, 0.86)",
+                    line=dict(color="rgba(239, 82, 76, 0.86)", width=0),
                 ),
                 hoverinfo="skip",
                 offsetgroup="flujo",
@@ -6682,11 +6682,11 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Neto"],
                 mode="lines+markers",
                 name="Neto",
-                line=dict(color=CHART_DARK, width=3.2, shape="spline"),
+                line=dict(color="#1F2A44", width=2.1, shape="spline"),
                 marker=dict(
-                    size=8,
+                    size=6.5,
                     color=base["Neto_color"],
-                    line=dict(color="#FFFFFF", width=1.5),
+                    line=dict(color="#FFFFFF", width=1.35),
                 ),
                 hoverinfo="skip",
             ),
@@ -6698,8 +6698,8 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Neto_acumulado"],
                 mode="lines+markers",
                 name="Neto acumulado",
-                line=dict(color="#0F2D52", width=2.6, dash="dash", shape="spline"),
-                marker=dict(size=7, color="#0F2D52", line=dict(color="#FFFFFF", width=1.2)),
+                line=dict(color="#0B234A", width=2.0, dash="dash", shape="spline"),
+                marker=dict(size=5.8, color="#0B234A", line=dict(color="#FFFFFF", width=1.15)),
                 hoverinfo="skip",
             ),
             secondary_y=False,
@@ -6710,36 +6710,21 @@ if active_section == "📈 Ingresos & egresos":
                 y=base["Margen"],
                 mode="lines",
                 name="Margen neto",
-                line=dict(color=CHART_GOLD, width=2.2, dash="dot"),
+                line=dict(color="#F5A623", width=2.0, dash="dot"),
                 hoverinfo="skip",
             ),
             secondary_y=True,
         )
 
         fig_ie.add_hline(y=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75, secondary_y=False)
-        if not base.empty:
-            ultimo = base.iloc[-1]
-            fig_ie.add_annotation(
-                x=ultimo["Periodo"],
-                y=ultimo["Neto"],
-                text=f"Neto ${ultimo['Neto']:,.0f}",
-                showarrow=True,
-                arrowhead=2,
-                ax=36,
-                ay=-34 if ultimo["Neto"] >= 0 else 34,
-                bgcolor="rgba(255,255,255,0.92)",
-                bordercolor="#CBD5E1",
-                borderwidth=1,
-                font=dict(size=11, color="#0F172A"),
-            )
 
         fig_ie.update_layout(
             title=dict(
-                text=f"Ingresos, egresos y resultado neto — {periodo} · {tipo_analisis}",
+                text=f"Ingresos, egresos y resultado neto — {periodo} · {tipo_analisis} &nbsp; ⓘ",
                 x=0.02,
                 xanchor="left",
                 y=0.985,
-                font=dict(size=18, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                font=dict(size=16, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             ),
             font=dict(
                 family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -6747,8 +6732,8 @@ if active_section == "📈 Ingresos & egresos":
                 color="#334155",
             ),
             template="plotly_white",
-            height=438,
-            margin=dict(l=18, r=22, t=78, b=28),
+            height=395,
+            margin=dict(l=18, r=24, t=76, b=40),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
@@ -6756,7 +6741,7 @@ if active_section == "📈 Ingresos & egresos":
                 xanchor="left",
                 x=0.02,
                 bgcolor="rgba(255,255,255,0)",
-                font=dict(size=11, color="#334155", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                font=dict(size=10.5, color="#334155", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
                 itemclick=False,
                 itemdoubleclick=False,
             ),
@@ -6768,29 +6753,18 @@ if active_section == "📈 Ingresos & egresos":
             hovermode="x unified",
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
-            bargap=0.22,
+            bargap=0.18,
         )
-        xaxis_range_ie = None
-        if periodo == "Mensual" and not base.empty:
-            max_periodo_ie = pd.to_datetime(base["Periodo"]).max()
-            min_periodo_ie = pd.to_datetime(base["Periodo"]).min()
-            start_12m_ie = max(max_periodo_ie - pd.DateOffset(months=11), min_periodo_ie)
-            xaxis_range_ie = [start_12m_ie, max_periodo_ie]
 
         fig_ie.update_xaxes(
-            title_text=label_x,
+            title_text=("Periodo" if periodo == "Mensual" else label_x),
             showgrid=False,
             linecolor="#CBD5E1",
             tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
             title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            range=xaxis_range_ie,
             rangeslider=dict(
-                visible=(periodo == "Mensual"),
-                thickness=0.075,
-                bgcolor="#F1F5F9",
-                bordercolor="#E2E8F0",
-                borderwidth=1,
+                visible=False,
             ),
         )
         fig_ie.update_yaxes(
@@ -6810,6 +6784,7 @@ if active_section == "📈 Ingresos & egresos":
             tickformat=".0%",
             showgrid=False,
             zeroline=False,
+            range=[-1, 1],
             title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             secondary_y=True,
@@ -6878,12 +6853,12 @@ if active_section == "📈 Ingresos & egresos":
             components.html(
                 f"""
                 <div style="border:1px solid #dbe3ee;border-radius:12px;background:#fff;
-                            padding:10px 12px 8px 12px;box-shadow:0 14px 34px rgba(15,23,42,0.055);
+                            padding:6px 10px 4px 10px;box-shadow:0 14px 34px rgba(15,23,42,0.055);
                             box-sizing:border-box;">
                     {fig_ie_html}
                 </div>
                 """,
-                height=472,
+                height=420,
                 scrolling=False,
             )
         with analysis_col:
@@ -7319,26 +7294,153 @@ if active_section == "📈 Ingresos & egresos":
 
     st.markdown("---")
     st.markdown(
-        section_heading("⚠️", "Riesgos de cobro y concentración de montos", weight_class="section-heading-title-soft"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
         """
-        <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin: 8px 0 10px 0;
-            color: #FFFFFF;
-            font-size: 13px;
-            font-weight: 600;">
-            Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza
+        <style>
+        .risk-pro-title-row {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:16px;
+            margin:14px 0 12px 0;
+        }
+        .risk-pro-title {
+            color:#081735;
+            font-size:27px;
+            line-height:1.05;
+            font-weight:950;
+            letter-spacing:-0.025em;
+        }
+        .risk-pro-subtitle {
+            margin-top:7px;
+            color:#475569;
+            font-size:14px;
+            line-height:1.25;
+            font-weight:650;
+        }
+        .risk-pro-actions {
+            display:flex;
+            gap:9px;
+            align-items:center;
+        }
+        .risk-pro-action {
+            min-height:38px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:8px;
+            border:1px solid #dbe3ee;
+            background:#ffffff;
+            color:#0f1f3d;
+            padding:0 14px;
+            font-size:12px;
+            font-weight:850;
+            box-shadow:0 10px 22px rgba(15,23,42,0.045);
+        }
+        .risk-pro-action-primary {
+            background:#0B3A86;
+            border-color:#0B3A86;
+            color:#ffffff;
+        }
+        .risk-filter-card {
+            border:1px solid #dbe3ee;
+            border-radius:12px;
+            background:#ffffff;
+            padding:16px 18px 12px 18px;
+            margin:0 0 16px 0;
+            box-shadow:0 14px 34px rgba(15,23,42,0.05);
+        }
+        .risk-filter-title {
+            color:#081735;
+            font-size:18px;
+            font-weight:950;
+            margin-bottom:10px;
+        }
+        .risk-pro-kpi {
+            min-height:118px;
+            border:1px solid var(--border);
+            border-radius:10px;
+            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+            padding:15px 16px;
+            display:grid;
+            grid-template-columns:48px 1fr;
+            gap:12px;
+            box-shadow:0 14px 32px rgba(15,23,42,0.055);
+        }
+        .risk-pro-kpi-icon {
+            width:44px;
+            height:44px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--halo);
+            color:var(--accent);
+            font-size:21px;
+            font-weight:950;
+        }
+        .risk-pro-kpi-title {
+            color:#0f1f3d;
+            font-size:12px;
+            line-height:1.15;
+            font-weight:950;
+            text-transform:uppercase;
+            letter-spacing:.012em;
+        }
+        .risk-pro-kpi-value {
+            margin-top:8px;
+            color:var(--accent);
+            font-size:25px;
+            line-height:1;
+            font-weight:950;
+            letter-spacing:-0.03em;
+            white-space:nowrap;
+        }
+        .risk-pro-kpi-note {
+            margin-top:9px;
+            color:#64748b;
+            font-size:11px;
+            line-height:1.3;
+            font-weight:750;
+        }
+        .risk-chart-card {
+            border:1px solid #dbe3ee;
+            border-radius:12px;
+            background:#ffffff;
+            padding:16px 18px 14px 18px;
+            margin-top:16px;
+            box-shadow:0 14px 34px rgba(15,23,42,0.055);
+        }
+        .risk-note-card {
+            display:flex;
+            gap:9px;
+            align-items:flex-start;
+            border:1px solid #dbeafe;
+            background:#eff6ff;
+            color:#334155;
+            border-radius:8px;
+            padding:10px 12px;
+            font-size:12px;
+            font-weight:650;
+            margin-top:8px;
+        }
+        </style>
+        <div class="risk-pro-title-row">
+            <div>
+                <div class="risk-pro-title">⚠️ Riesgos de cobro y concentración de montos</div>
+                <div class="risk-pro-subtitle">Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza</div>
+            </div>
+            <div class="risk-pro-actions">
+                <div class="risk-pro-action">↗ Compartir</div>
+                <div class="risk-pro-action">☆</div>
+                <div class="risk-pro-action">•••</div>
+                <div class="risk-pro-action risk-pro-action-primary">⇩ Descargar reporte</div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
     st.markdown(
-        section_heading("📈", "Filtro por centro de costo / situación", weight_class="section-heading-title-soft"),
+        '<div class="risk-filter-card"><div class="risk-filter-title">Filtro por centro de costo / situación</div>',
         unsafe_allow_html=True,
     )
 
@@ -7369,6 +7471,7 @@ if active_section == "📈 Ingresos & egresos":
             step=1,
             key="topn_pro",
         )
+    st.markdown("</div>", unsafe_allow_html=True)
 
     df_riesgos = df_ie_base_periodo.dropna(subset=["Monto"]).copy()
     df_riesgos[dim] = df_riesgos[dim].astype(str).str.strip()
@@ -7422,7 +7525,9 @@ if active_section == "📈 Ingresos & egresos":
         base_dim["Impacto_abs"] = base_dim["Ingresos"].abs() + base_dim["Egresos_abs"]
         impacto_total = base_dim["Impacto_abs"].sum()
         base_dim["Concentración"] = np.where(impacto_total != 0, base_dim["Impacto_abs"] / impacto_total, 0.0)
-        base_dim["Neto_color"] = np.where(base_dim["Neto"] >= 0, CHART_TEAL, CHART_RED)
+        base_dim["Neto_color"] = np.where(base_dim["Neto"] >= 0, "#7EA9A2", "#EF524C")
+        base_dim["Neto_pos"] = base_dim["Neto"].clip(lower=0)
+        base_dim["Neto_neg"] = base_dim["Neto"].clip(upper=0)
         base_dim["Tooltip"] = (
             "Ingresos: $" + base_dim["Ingresos"].map(lambda v: f"{v:,.0f}")
             + "<br>Egresos: $" + base_dim["Egresos_abs"].map(lambda v: f"{v:,.0f}")
@@ -7430,17 +7535,135 @@ if active_section == "📈 Ingresos & egresos":
             + "<br>Transacciones: " + base_dim["N° Transacciones"].fillna(0).astype(int).astype(str)
             + "<br>Concentración: " + base_dim["Concentración"].map(lambda v: f"{v:.1%}")
         )
+        total_neto_pos = float(base_dim["Neto_pos"].sum())
+        total_neto_neg = float(base_dim["Neto_neg"].sum())
+        total_neto_dim = float(base_dim["Neto"].sum())
+        total_tx_dim = int(base_dim["N° Transacciones"].fillna(0).sum())
+        neto_base_pct = abs(total_neto_pos) + abs(total_neto_neg)
+        periodo_card = (
+            pd.to_datetime(base["Periodo"]).max().strftime("%b %Y")
+            if "base" in locals() and not base.empty and periodo == "Mensual"
+            else periodo_filtro_lbl
+        )
+
+        def risk_pro_kpi(title, value, note, icon, accent, soft, halo, border):
+            return f"""
+            <div class="risk-pro-kpi" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};">
+                <div class="risk-pro-kpi-icon">{icon}</div>
+                <div>
+                    <div class="risk-pro-kpi-title">{title}</div>
+                    <div class="risk-pro-kpi-value">{value}</div>
+                    <div class="risk-pro-kpi-note">{note}</div>
+                </div>
+            </div>
+            """
+
+        rk1, rk2, rk3, rk4, rk5 = st.columns(5)
+        with rk1:
+            st.markdown(
+                risk_pro_kpi(
+                    "TOTAL INGRESOS (NETO)",
+                    fmt_clp_largo(total_neto_pos),
+                    f"{(total_neto_pos / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
+                    "↑",
+                    "#16A34A",
+                    "#f6fffb",
+                    "#dcfce7",
+                    "#cfe9de",
+                ),
+                unsafe_allow_html=True,
+            )
+        with rk2:
+            st.markdown(
+                risk_pro_kpi(
+                    "TOTAL EGRESOS (NETO)",
+                    fmt_clp_largo(total_neto_neg),
+                    f"{(abs(total_neto_neg) / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
+                    "↓",
+                    "#EF4444",
+                    "#fff7f7",
+                    "#fee2e2",
+                    "#f1caca",
+                ),
+                unsafe_allow_html=True,
+            )
+        with rk3:
+            st.markdown(
+                risk_pro_kpi(
+                    "NETO TOTAL",
+                    fmt_clp_largo(total_neto_dim),
+                    f"{(total_neto_dim / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
+                    "=",
+                    "#2563EB" if total_neto_dim >= 0 else "#EF4444",
+                    "#f6f9ff" if total_neto_dim >= 0 else "#fff7f7",
+                    "#dbeafe" if total_neto_dim >= 0 else "#fee2e2",
+                    "#d4e1f6" if total_neto_dim >= 0 else "#f1caca",
+                ),
+                unsafe_allow_html=True,
+            )
+        with rk4:
+            st.markdown(
+                risk_pro_kpi(
+                    "N° TRANSACCIONES",
+                    f"{total_tx_dim:,.0f}",
+                    "Registros en el período",
+                    "▥",
+                    "#0f2d52",
+                    "#ffffff",
+                    "#f1f5f9",
+                    "#e5ebf3",
+                ),
+                unsafe_allow_html=True,
+            )
+        with rk5:
+            st.markdown(
+                risk_pro_kpi(
+                    "PERÍODO",
+                    periodo_card,
+                    periodo_filtro_lbl,
+                    "▣",
+                    "#0f2d52",
+                    "#ffffff",
+                    "#f1f5f9",
+                    "#e5ebf3",
+                ),
+                unsafe_allow_html=True,
+            )
 
         if order_by == "Total CLP":
             base_dim = base_dim.sort_values("Impacto_abs", ascending=True)
         else:
             base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
 
+        view_metric_risk = st.radio(
+            "Vista",
+            ["Monto (CLP)", "% del neto"],
+            horizontal=True,
+            index=0,
+            key="risk_view_metric_pro",
+            label_visibility="collapsed",
+        )
+        if view_metric_risk == "% del neto":
+            denom_risk = neto_base_pct if neto_base_pct else 1.0
+            base_dim["X_pos"] = base_dim["Neto_pos"] / denom_risk
+            base_dim["X_neg"] = base_dim["Neto_neg"] / denom_risk
+            base_dim["X_neto"] = base_dim["Neto"] / denom_risk
+            x_title_risk = "% del neto"
+            x_tickformat_risk = ".0%"
+            x_tickprefix_risk = None
+        else:
+            base_dim["X_pos"] = base_dim["Neto_pos"]
+            base_dim["X_neg"] = base_dim["Neto_neg"]
+            base_dim["X_neto"] = base_dim["Neto"]
+            x_title_risk = "Monto CLP"
+            x_tickformat_risk = None
+            x_tickprefix_risk = "$"
+
         fig_top = go.Figure()
 
         fig_top.add_trace(
             go.Scatter(
-                x=base_dim["Neto"],
+                x=base_dim["X_neto"],
                 y=base_dim[dim],
                 mode="markers",
                 name="Resumen",
@@ -7453,34 +7676,34 @@ if active_section == "📈 Ingresos & egresos":
 
         fig_top.add_trace(
             go.Bar(
-                x=base_dim["Ingresos"],
+                x=base_dim["X_pos"],
                 y=base_dim[dim],
                 orientation="h",
-                name="Ingresos",
-                marker=dict(color=CHART_BAR_TEAL, line=dict(color=CHART_BAR_TEAL, width=1)),
+                name="Netos positivos (ingresos > egresos)",
+                marker=dict(color="rgba(126,169,162,0.88)", line=dict(color="rgba(126,169,162,0.88)", width=0)),
                 hoverinfo="skip",
             )
         )
         fig_top.add_trace(
             go.Bar(
-                x=-base_dim["Egresos_abs"],
+                x=base_dim["X_neg"],
                 y=base_dim[dim],
                 orientation="h",
-                name="Egresos",
-                marker=dict(color=CHART_BAR_RED, line=dict(color=CHART_BAR_RED, width=1)),
+                name="Netos negativos (egresos > ingresos)",
+                marker=dict(color="rgba(239,82,76,0.90)", line=dict(color="rgba(239,82,76,0.90)", width=0)),
                 hoverinfo="skip",
             )
         )
         fig_top.add_trace(
             go.Scatter(
-                x=base_dim["Neto"],
+                x=base_dim["X_neto"],
                 y=base_dim[dim],
                 mode="markers",
                 name="Neto",
                 marker=dict(
-                    size=np.clip(base_dim["N° Transacciones"].fillna(1).astype(float) * 1.8 + 8, 10, 28),
+                    size=14,
                     color=base_dim["Neto_color"],
-                    line=dict(color="#FFFFFF", width=1.8),
+                    line=dict(color="#FFFFFF", width=2),
                     symbol="diamond",
                 ),
                 hoverinfo="skip",
@@ -7488,37 +7711,33 @@ if active_section == "📈 Ingresos & egresos":
         )
 
         max_abs_riesgo = max(
-            float(base_dim["Ingresos"].abs().max()) if not base_dim.empty else 0.0,
-            float(base_dim["Egresos_abs"].abs().max()) if not base_dim.empty else 0.0,
-            float(base_dim["Neto"].abs().max()) if not base_dim.empty else 0.0,
+            float(base_dim["X_pos"].abs().max()) if not base_dim.empty else 0.0,
+            float(base_dim["X_neg"].abs().max()) if not base_dim.empty else 0.0,
+            float(base_dim["X_neto"].abs().max()) if not base_dim.empty else 0.0,
             1.0,
         )
-        top_label = base_dim.iloc[-1] if not base_dim.empty else None
-        if top_label is not None:
+        for _, row_risk in base_dim.iterrows():
+            if row_risk["X_neto"] == 0:
+                continue
             fig_top.add_annotation(
-                x=top_label["Neto"],
-                y=top_label[dim],
-                text=f"Neto ${top_label['Neto']:,.0f}",
-                showarrow=True,
-                arrowhead=2,
-                ax=34 if top_label["Neto"] >= 0 else -34,
-                ay=-20,
-                bgcolor="rgba(255,255,255,0.92)",
-                bordercolor="#CBD5E1",
-                borderwidth=1,
-                font=dict(size=11, color="#0F172A"),
+                x=row_risk["X_neto"],
+                y=row_risk[dim],
+                text=(f"{row_risk['X_neto']:.1%}" if view_metric_risk == "% del neto" else fmt_clp_largo(row_risk["Neto"])),
+                showarrow=False,
+                xshift=26 if row_risk["X_neto"] >= 0 else -26,
+                font=dict(size=10, color="#334155"),
             )
 
         fig_top.update_layout(
             title=dict(
-                text=f"Exposición y concentración Top {top_n} por {dim} · {periodo_filtro_lbl}",
+                text=f"Exposición y concentración Top {top_n} por {dim} · {periodo_filtro_lbl} &nbsp; ⓘ",
                 x=0.02,
                 xanchor="left",
-                font=dict(size=19, color="#0F2D52"),
+                font=dict(size=17, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             ),
             template="plotly_white",
-            height=max(520, 34 * len(base_dim) + 190),
-            margin=dict(l=24, r=34, t=84, b=36),
+            height=max(520, 40 * len(base_dim) + 180),
+            margin=dict(l=28, r=46, t=86, b=42),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
@@ -7526,30 +7745,38 @@ if active_section == "📈 Ingresos & egresos":
                 xanchor="left",
                 x=0.01,
                 bgcolor="rgba(255,255,255,0)",
+                font=dict(size=11, color="#334155"),
             ),
             hovermode="closest",
-            paper_bgcolor="#F8FAFC",
+            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
+            paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
             barmode="relative",
         )
         fig_top.add_vline(x=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75)
         fig_top.update_xaxes(
-            title_text="Monto CLP",
+            title_text=x_title_risk,
             showgrid=True,
-            gridcolor="rgba(15,45,82,0.10)",
+            gridcolor="#E8EEF6",
             zeroline=False,
-            tickprefix="$",
+            tickprefix=x_tickprefix_risk,
+            tickformat=x_tickformat_risk,
             separatethousands=True,
-            range=[-max_abs_riesgo * 1.14, max_abs_riesgo * 1.14],
-            linecolor="rgba(15,45,82,0.20)",
+            range=[-max_abs_riesgo * 1.18, max_abs_riesgo * 1.18],
+            linecolor="#CBD5E1",
+            title_font=dict(size=12, color="#334155"),
+            tickfont=dict(size=11, color="#475569"),
         )
         fig_top.update_yaxes(
             title_text=dim,
             showgrid=False,
-            linecolor="rgba(15,45,82,0.25)",
+            linecolor="#CBD5E1",
+            title_font=dict(size=12, color="#334155"),
+            tickfont=dict(size=11, color="#475569"),
             automargin=True,
         )
 
+        st.markdown('<div class="risk-chart-card">', unsafe_allow_html=True)
         st.plotly_chart(
             fig_top,
             use_container_width=True,
@@ -7558,6 +7785,17 @@ if active_section == "📈 Ingresos & egresos":
                 "displayModeBar": True,
                 "modeBarButtonsToAdd": ["toImage"],
             },
+            key="riesgos_concentracion_pro",
+        )
+        st.markdown(
+            """
+            <div class="risk-note-card">
+                <span>ⓘ</span>
+                <div>Los montos netos se calculan como ingresos menos egresos. Haga clic en las barras para ver el detalle de movimientos por concepto.</div>
+            </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
     else:
         treemap_df = topN.copy()

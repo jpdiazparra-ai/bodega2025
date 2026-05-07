@@ -5970,9 +5970,17 @@ if active_section == "📈 Ingresos & egresos":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:8px 12px;
-            margin: 0 0 10px 0;
-            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+            padding:12px 14px 10px 14px;
+            margin: 0 0 14px 0;
+            box-shadow:0 12px 28px rgba(15,23,42,0.045);
+        }
+        .ie-filter-card [data-testid="column"] {
+            border-right:1px solid #e5ebf3;
+            padding-right:18px;
+        }
+        .ie-filter-card [data-testid="column"]:last-child {
+            border-right:0;
+            padding-right:0;
         }
         .ie-kpi-card {
             min-height:118px;
@@ -6200,6 +6208,136 @@ if active_section == "📈 Ingresos & egresos":
             font-size:9.5px;
             font-weight:850;
             margin-top:2px;
+        }
+        .neto-chart-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:18px 22px 16px 22px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            margin-top:14px;
+        }
+        .neto-card-head {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:18px;
+            margin-bottom:10px;
+        }
+        .neto-card-title {
+            color:#081735;
+            font-size:18px;
+            line-height:1.15;
+            font-weight:950;
+            letter-spacing:-0.018em;
+        }
+        .neto-card-sub {
+            color:#64748b;
+            font-size:13px;
+            font-weight:650;
+            margin-top:8px;
+        }
+        .neto-kpi-grid {
+            display:grid;
+            grid-template-columns:repeat(4, minmax(0, 1fr));
+            border:1px solid #e5ebf3;
+            border-radius:9px;
+            overflow:hidden;
+            margin:8px 0 8px auto;
+            max-width:760px;
+        }
+        .neto-kpi-box {
+            padding:12px 14px;
+            background:#fbfdff;
+            border-left:1px solid #e5ebf3;
+        }
+        .neto-kpi-box:first-child { border-left:0; }
+        .neto-kpi-label {
+            color:#334155;
+            font-size:11px;
+            line-height:1.2;
+            font-weight:850;
+        }
+        .neto-kpi-value {
+            margin-top:8px;
+            color:var(--metric);
+            font-size:16px;
+            line-height:1;
+            font-weight:950;
+            letter-spacing:-0.02em;
+        }
+        .neto-kpi-note {
+            margin-top:6px;
+            color:#64748b;
+            font-size:10px;
+            font-weight:700;
+        }
+        .neto-note {
+            display:flex;
+            gap:8px;
+            align-items:flex-start;
+            color:#475569;
+            font-size:12px;
+            line-height:1.45;
+            font-weight:650;
+            margin-top:8px;
+        }
+        main [data-testid="stSelectbox"] > label {
+            color:#334155 !important;
+            font-size:11px !important;
+            font-weight:850 !important;
+            padding-bottom:4px !important;
+        }
+        main [data-testid="stRadio"] > label {
+            color:#334155 !important;
+            font-size:11px !important;
+            font-weight:850 !important;
+            padding-bottom:5px !important;
+        }
+        main div[role="radiogroup"] {
+            display:grid !important;
+            grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+            gap:0 !important;
+            border:1px solid #e5ebf3 !important;
+            background:#f1f5f9 !important;
+            border-radius:8px !important;
+            padding:3px !important;
+            min-height:38px !important;
+        }
+        main div[role="radiogroup"] > label {
+            min-height:30px !important;
+            margin:0 !important;
+            padding:0 14px !important;
+            border-radius:6px !important;
+            display:flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            color:#334155 !important;
+            font-size:12px !important;
+            font-weight:850 !important;
+            transition:all .16s ease !important;
+        }
+        main div[role="radiogroup"] > label > div:first-child {
+            display:none !important;
+        }
+        main div[role="radiogroup"] > label:has(input:checked) {
+            background:#0B4DB3 !important;
+            color:#ffffff !important;
+            box-shadow:0 8px 18px rgba(11,77,179,0.20) !important;
+        }
+        main [data-baseweb="select"] > div {
+            min-height:38px !important;
+            border-radius:8px !important;
+            border-color:#dbe3ee !important;
+            background:#f1f5f9 !important;
+            box-shadow:0 8px 18px rgba(15,23,42,0.035) !important;
+        }
+        .ie-main-chart-card {
+            border:1px solid #dbe3ee;
+            border-radius:12px;
+            background:#ffffff;
+            padding:16px 18px 12px 18px;
+            box-shadow:0 14px 34px rgba(15,23,42,0.055);
         }
         </style>
         <div class="ie-title-row">
@@ -6600,6 +6738,7 @@ if active_section == "📈 Ingresos & egresos":
                 text=f"Ingresos, egresos y resultado neto — {periodo} · {tipo_analisis}",
                 x=0.02,
                 xanchor="left",
+                y=0.985,
                 font=dict(size=18, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             ),
             font=dict(
@@ -6608,14 +6747,14 @@ if active_section == "📈 Ingresos & egresos":
                 color="#334155",
             ),
             template="plotly_white",
-            height=405,
-            margin=dict(l=16, r=22, t=58, b=22),
+            height=438,
+            margin=dict(l=18, r=22, t=78, b=28),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=1.02,
+                y=1.005,
                 xanchor="left",
-                x=0.01,
+                x=0.02,
                 bgcolor="rgba(255,255,255,0)",
                 font=dict(size=11, color="#334155", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
                 itemclick=False,
@@ -6627,9 +6766,9 @@ if active_section == "📈 Ingresos & egresos":
                 font=dict(size=12, color="#0F172A", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             ),
             hovermode="x unified",
-            paper_bgcolor="#F8FAFC",
+            paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
-            bargap=0.24,
+            bargap=0.22,
         )
         xaxis_range_ie = None
         if periodo == "Mensual" and not base.empty:
@@ -6641,21 +6780,27 @@ if active_section == "📈 Ingresos & egresos":
         fig_ie.update_xaxes(
             title_text=label_x,
             showgrid=False,
-            linecolor="rgba(15,45,82,0.25)",
+            linecolor="#CBD5E1",
             tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
             title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             range=xaxis_range_ie,
-            rangeslider=dict(visible=(periodo == "Mensual"), thickness=0.06),
+            rangeslider=dict(
+                visible=(periodo == "Mensual"),
+                thickness=0.075,
+                bgcolor="#F1F5F9",
+                bordercolor="#E2E8F0",
+                borderwidth=1,
+            ),
         )
         fig_ie.update_yaxes(
             title_text="Flujo CLP",
             showgrid=True,
-            gridcolor="rgba(15,45,82,0.10)",
+            gridcolor="#E8EEF6",
             zeroline=False,
             tickprefix="$",
             separatethousands=True,
-            linecolor="rgba(15,45,82,0.20)",
+            linecolor="#CBD5E1",
             title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
             secondary_y=False,
@@ -6730,7 +6875,17 @@ if active_section == "📈 Ingresos & egresos":
 
         chart_col, analysis_col = st.columns([2.15, 1])
         with chart_col:
-            components.html(fig_ie_html, height=425, scrolling=False)
+            components.html(
+                f"""
+                <div style="border:1px solid #dbe3ee;border-radius:12px;background:#fff;
+                            padding:10px 12px 8px 12px;box-shadow:0 14px 34px rgba(15,23,42,0.055);
+                            box-sizing:border-box;">
+                    {fig_ie_html}
+                </div>
+                """,
+                height=472,
+                scrolling=False,
+            )
         with analysis_col:
             st.markdown(
                 f"""
@@ -6935,35 +7090,124 @@ if active_section == "📈 Ingresos & egresos":
             st.info(f"No se encuentran registros para comparar neto financiero y contable en {periodo_filtro_lbl}.")
         else:
             neto_cmp = neto_cmp.fillna(0)
-            vista_neto_cmp = st.radio(
-                "Visualizar",
-                ["Neto", "Neto acumulado", "Ambos"],
-                horizontal=True,
-                index=0,
-                key="vista_neto_fin_cont",
+            st.markdown(
+                f"""
+                <div class="neto-chart-card">
+                    <div class="neto-card-head">
+                        <div>
+                            <div class="neto-card-title">Neto financiero vs neto contable — {periodo} · {periodo_filtro_lbl} ⓘ</div>
+                            <div class="neto-card-sub">Evolución mensual del resultado neto (ingresos menos egresos)</div>
+                        </div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
+
+            ctrl_1, ctrl_2, ctrl_3, ctrl_4 = st.columns([1.35, 1.35, 1.6, 0.3])
+            with ctrl_1:
+                vista_neto_cmp = st.selectbox(
+                    "Visualizar",
+                    ["Neto", "Neto acumulado", "Ambos"],
+                    index=0,
+                    key="vista_neto_fin_cont",
+                )
+            with ctrl_2:
+                tipo_grafico_neto = st.selectbox(
+                    "Tipo de gráfico",
+                    ["Línea", "Área"],
+                    index=0,
+                    key="tipo_grafico_neto_fin_cont",
+                )
+            with ctrl_3:
+                rango_neto_cmp = st.selectbox(
+                    "Rango",
+                    ["Todos los períodos", "Últimos 12 meses", "Últimos 24 meses"],
+                    index=0,
+                    key="rango_neto_fin_cont",
+                )
+            with ctrl_4:
+                st.markdown(
+                    "<div style='height:38px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#081735;font-weight:900;background:#fff;margin-top:25px;'>⋮</div>",
+                    unsafe_allow_html=True,
+                )
+
+            neto_plot = neto_cmp.copy()
+            if rango_neto_cmp != "Todos los períodos" and not neto_plot.empty:
+                meses_rango = 11 if rango_neto_cmp == "Últimos 12 meses" else 23
+                max_periodo_cmp = pd.to_datetime(neto_plot["Periodo"]).max()
+                min_periodo_cmp = pd.to_datetime(neto_plot["Periodo"]).min()
+                inicio_rango_cmp = max(max_periodo_cmp - pd.DateOffset(months=meses_rango), min_periodo_cmp)
+                neto_plot = neto_plot[neto_plot["Periodo"].between(inicio_rango_cmp, max_periodo_cmp)]
+
+            metric_source = neto_plot if not neto_plot.empty else neto_cmp
+            fin_avg = float(metric_source["Financiero"].mean()) if "Financiero" in metric_source else 0.0
+            con_avg = float(metric_source["Contable"].mean()) if "Contable" in metric_source else 0.0
+            if not metric_source.empty and "Financiero" in metric_source:
+                best_row = metric_source.loc[metric_source["Financiero"].idxmax()]
+                worst_row = metric_source.loc[metric_source["Financiero"].idxmin()]
+                best_val = float(best_row["Financiero"])
+                worst_val = float(worst_row["Financiero"])
+                best_lbl = pd.to_datetime(best_row["Periodo"]).strftime("%b %Y")
+                worst_lbl = pd.to_datetime(worst_row["Periodo"]).strftime("%b %Y")
+            else:
+                best_val = worst_val = 0.0
+                best_lbl = worst_lbl = "-"
+
+            st.markdown(
+                f"""
+                <div class="neto-kpi-grid">
+                    <div class="neto-kpi-box" style="--metric:{'#059669' if fin_avg >= 0 else '#EF4444'};">
+                        <div class="neto-kpi-label">Promedio neto financiero</div>
+                        <div class="neto-kpi-value">{fmt_clp_largo(fin_avg)}</div>
+                    </div>
+                    <div class="neto-kpi-box" style="--metric:{'#059669' if con_avg >= 0 else '#EF4444'};">
+                        <div class="neto-kpi-label">Promedio neto contable</div>
+                        <div class="neto-kpi-value">{fmt_clp_largo(con_avg)}</div>
+                    </div>
+                    <div class="neto-kpi-box" style="--metric:#059669;">
+                        <div class="neto-kpi-label">Mejor mes (financiero)</div>
+                        <div class="neto-kpi-value">{fmt_clp_largo(best_val)}</div>
+                        <div class="neto-kpi-note">{best_lbl}</div>
+                    </div>
+                    <div class="neto-kpi-box" style="--metric:#EF4444;">
+                        <div class="neto-kpi-label">Peor mes (financiero)</div>
+                        <div class="neto-kpi-value">{fmt_clp_largo(worst_val)}</div>
+                        <div class="neto-kpi-note">{worst_lbl}</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
             fig_neto_cmp = go.Figure()
+            fill_fin = "tozeroy" if tipo_grafico_neto == "Área" else None
+            fill_con = "tozeroy" if tipo_grafico_neto == "Área" else None
 
             if vista_neto_cmp in ["Neto", "Ambos"]:
                 fig_neto_cmp.add_trace(
                     go.Scatter(
-                        x=neto_cmp["Periodo"],
-                        y=neto_cmp["Financiero"],
+                        x=neto_plot["Periodo"],
+                        y=neto_plot["Financiero"],
                         mode="lines+markers",
                         name="Neto financiero",
-                        line=dict(color="#2563EB", width=3.2, shape="spline"),
-                        marker=dict(size=8, color="#2563EB", line=dict(color="#FFFFFF", width=1.4)),
+                        line=dict(color="#1257FF", width=3.0, shape="spline"),
+                        marker=dict(size=7, color="#1257FF", line=dict(color="#FFFFFF", width=1.4)),
+                        fill=fill_fin,
+                        fillcolor="rgba(18,87,255,0.08)",
                         hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
                     )
                 )
                 fig_neto_cmp.add_trace(
                     go.Scatter(
-                        x=neto_cmp["Periodo"],
-                        y=neto_cmp["Contable"],
+                        x=neto_plot["Periodo"],
+                        y=neto_plot["Contable"],
                         mode="lines+markers",
                         name="Neto contable",
-                        line=dict(color="#DC8A28", width=3.2, dash="dot", shape="spline"),
-                        marker=dict(size=8, color="#DC8A28", line=dict(color="#FFFFFF", width=1.4)),
+                        line=dict(color="#FF7A1A", width=2.8, dash="dot", shape="spline"),
+                        marker=dict(size=7, color="#FF7A1A", line=dict(color="#FFFFFF", width=1.4)),
+                        fill=fill_con,
+                        fillcolor="rgba(255,122,26,0.07)",
                         hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
                     )
                 )
@@ -6971,68 +7215,106 @@ if active_section == "📈 Ingresos & egresos":
             if vista_neto_cmp in ["Neto acumulado", "Ambos"]:
                 fig_neto_cmp.add_trace(
                     go.Scatter(
-                        x=neto_cmp["Periodo"],
-                        y=neto_cmp["Financiero acumulado"],
+                        x=neto_plot["Periodo"],
+                        y=neto_plot["Financiero acumulado"],
                         mode="lines+markers",
                         name="Neto acumulado financiero",
-                        line=dict(color="#0F766E", width=3.4, dash="dash", shape="spline"),
-                        marker=dict(size=8, color="#0F766E", line=dict(color="#FFFFFF", width=1.4)),
+                        line=dict(color="#0F766E", width=3.0, dash="dash", shape="spline"),
+                        marker=dict(size=7, color="#0F766E", line=dict(color="#FFFFFF", width=1.4)),
                         hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado financiero: $%{y:,.0f}<extra></extra>",
                     )
                 )
                 fig_neto_cmp.add_trace(
                     go.Scatter(
-                        x=neto_cmp["Periodo"],
-                        y=neto_cmp["Contable acumulado"],
+                        x=neto_plot["Periodo"],
+                        y=neto_plot["Contable acumulado"],
                         mode="lines+markers",
                         name="Neto acumulado contable",
-                        line=dict(color="#B91C1C", width=3.4, dash="dashdot", shape="spline"),
-                        marker=dict(size=8, color="#B91C1C", line=dict(color="#FFFFFF", width=1.4)),
+                        line=dict(color="#B91C1C", width=3.0, dash="dashdot", shape="spline"),
+                        marker=dict(size=7, color="#B91C1C", line=dict(color="#FFFFFF", width=1.4)),
                         hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado contable: $%{y:,.0f}<extra></extra>",
                     )
                 )
             fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75)
+            if not neto_plot.empty and vista_neto_cmp in ["Neto", "Ambos"]:
+                last_row_cmp = neto_plot.iloc[-1]
+                fig_neto_cmp.add_annotation(
+                    x=last_row_cmp["Periodo"],
+                    y=last_row_cmp["Financiero"],
+                    text=fmt_clp_largo(float(last_row_cmp["Financiero"])),
+                    showarrow=False,
+                    xshift=46,
+                    bgcolor="#EFF6FF",
+                    bordercolor="#DBEAFE",
+                    borderwidth=1,
+                    font=dict(size=11, color="#1257FF"),
+                )
+                fig_neto_cmp.add_annotation(
+                    x=last_row_cmp["Periodo"],
+                    y=last_row_cmp["Contable"],
+                    text=fmt_clp_largo(float(last_row_cmp["Contable"])),
+                    showarrow=False,
+                    xshift=46,
+                    bgcolor="#FFF7ED",
+                    bordercolor="#FED7AA",
+                    borderwidth=1,
+                    font=dict(size=11, color="#EA580C"),
+                )
             fig_neto_cmp.update_layout(
-                title=dict(
-                    text=f"Neto financiero vs neto contable — {periodo} · {periodo_filtro_lbl}",
-                    x=0.02,
-                    xanchor="left",
-                    font=dict(size=18, color="#0F2D52"),
-                ),
+                title=None,
+                font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
                 template="plotly_white",
-                height=420,
-                margin=dict(l=24, r=34, t=76, b=34),
+                height=500,
+                margin=dict(l=30, r=58, t=44, b=42),
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
-                    y=1.02,
+                    y=1.05,
                     xanchor="left",
                     x=0.01,
                     bgcolor="rgba(255,255,255,0)",
+                    font=dict(size=11, color="#334155"),
                 ),
+                hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=12, color="#0F172A")),
                 hovermode="x unified",
-                paper_bgcolor="#F8FAFC",
+                paper_bgcolor="#FFFFFF",
                 plot_bgcolor="#FFFFFF",
             )
             fig_neto_cmp.update_xaxes(
                 title_text=label_x,
                 showgrid=False,
                 tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
-                linecolor="rgba(15,45,82,0.25)",
+                linecolor="#CBD5E1",
+                title_font=dict(size=12, color="#334155"),
+                tickfont=dict(size=11, color="#475569"),
+                rangeslider=dict(visible=True, thickness=0.07, bgcolor="#F1F5F9", bordercolor="#E2E8F0", borderwidth=1),
             )
             fig_neto_cmp.update_yaxes(
                 title_text="Neto CLP",
                 showgrid=True,
-                gridcolor="rgba(15,45,82,0.10)",
+                gridcolor="#E5EAF2",
                 zeroline=False,
                 tickprefix="$",
                 separatethousands=True,
-                linecolor="rgba(15,45,82,0.20)",
+                linecolor="#CBD5E1",
+                title_font=dict(size=12, color="#334155"),
+                tickfont=dict(size=11, color="#475569"),
             )
             st.plotly_chart(
                 fig_neto_cmp,
                 use_container_width=True,
                 config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
+                key="neto_fin_cont_pro",
+            )
+            st.markdown(
+                """
+                <div class="neto-note">
+                    <span>ⓘ</span>
+                    <div>El neto financiero considera la clasificación financiera de los movimientos.<br>
+                    El neto contable considera la clasificación contable de los movimientos.</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
 
     st.markdown("---")

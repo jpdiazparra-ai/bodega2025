@@ -2319,6 +2319,9 @@ if active_section == "🏠 Visión general":
     st.markdown(
         """
         <style>
+        .tab-title-row {
+            margin:14px 0 10px 0;
+        }
         .asset-toolbar {
             display:flex;
             justify-content:flex-end;
@@ -2343,22 +2346,22 @@ if active_section == "🏠 Visión general":
             display:grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
             gap:10px;
-            margin: 16px 0 12px 0;
+            margin: 12px 0 10px 0;
         }
         .asset-kpi {
-            min-height:132px;
+            min-height:108px;
             border-radius:10px;
             border:1px solid var(--border);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:16px 16px 14px 16px;
+            padding:13px 14px 12px 14px;
             display:grid;
-            grid-template-columns:42px 1fr;
-            gap:10px;
+            grid-template-columns:38px 1fr;
+            gap:9px;
             box-shadow:0 10px 24px rgba(15,23,42,0.035);
         }
         .asset-kpi-icon {
-            width:36px;
-            height:36px;
+            width:32px;
+            height:32px;
             border-radius:999px;
             display:flex;
             align-items:center;
@@ -2372,11 +2375,11 @@ if active_section == "🏠 Visión general":
             color:#0f1f3d;
             font-size:11px;
             font-weight:900;
-            margin-bottom:8px;
+            margin-bottom:5px;
         }
         .asset-kpi-value {
             color:var(--accent);
-            font-size:22px;
+            font-size:20px;
             line-height:1.05;
             font-weight:900;
             letter-spacing:-0.025em;
@@ -2384,8 +2387,8 @@ if active_section == "🏠 Visión general":
         }
         .asset-kpi-badge {
             display:inline-block;
-            margin-top:10px;
-            padding:5px 8px;
+            margin-top:7px;
+            padding:4px 7px;
             border-radius:5px;
             background:var(--badge-bg);
             color:var(--badge-fg);
@@ -2395,10 +2398,10 @@ if active_section == "🏠 Visión general":
         .asset-kpi-note {
             grid-column:2;
             color:#475569;
-            font-size:10.5px;
+            font-size:10px;
             font-weight:700;
             align-self:end;
-            margin-top:8px;
+            margin-top:5px;
         }
         .asset-status {
             display:grid;
@@ -2408,8 +2411,8 @@ if active_section == "🏠 Visión general":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:16px 18px;
-            margin: 0 0 14px 0;
+            padding:12px 16px;
+            margin: 0 0 10px 0;
             box-shadow:0 8px 20px rgba(15,23,42,0.035);
         }
         .asset-status-title {
@@ -2422,7 +2425,7 @@ if active_section == "🏠 Visión general":
             display:inline-flex;
             min-width:92px;
             justify-content:center;
-            padding:7px 18px;
+            padding:6px 16px;
             border-radius:8px;
             background:var(--estado);
             color:white;
@@ -2432,7 +2435,7 @@ if active_section == "🏠 Visión general":
         .asset-status-item {
             border-left:1px solid #e5ebf3;
             padding-left:14px;
-            min-height:44px;
+            min-height:38px;
         }
         .asset-dot {
             display:inline-block;
@@ -2448,7 +2451,7 @@ if active_section == "🏠 Visión general":
             font-weight:900;
         }
         .asset-status-sub {
-            margin-top:9px;
+            margin-top:6px;
             color:#475569;
             font-size:10px;
             font-weight:700;
@@ -2457,15 +2460,15 @@ if active_section == "🏠 Visión general":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:16px;
+            padding:14px;
             box-shadow:0 10px 24px rgba(15,23,42,0.04);
             min-height:100%;
         }
         .asset-card-title {
             color:#081735;
-            font-size:17px;
+            font-size:16px;
             font-weight:900;
-            margin-bottom:14px;
+            margin-bottom:12px;
         }
         .asset-summary-list {
             display:flex;
@@ -2752,8 +2755,8 @@ if active_section == "🏠 Visión general":
             ),
             font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
             template="plotly_white",
-            height=275,
-            margin=dict(l=12, r=12, t=62, b=28),
+            height=245,
+            margin=dict(l=12, r=12, t=56, b=24),
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
             legend=dict(
@@ -2785,7 +2788,7 @@ if active_section == "🏠 Visión general":
             range=home_x_range,
             rangeslider=dict(
                 visible=True,
-                thickness=0.045,
+                thickness=0.038,
                 bgcolor="#F1F5F9",
                 bordercolor="#E2E8F0",
                 borderwidth=1,
@@ -2845,8 +2848,8 @@ if active_section == "🏠 Visión general":
                 ),
                 font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
                 template="plotly_white",
-                height=275,
-                margin=dict(l=12, r=46, t=62, b=28),
+                height=245,
+                margin=dict(l=12, r=46, t=56, b=24),
                 paper_bgcolor="#FFFFFF",
                 plot_bgcolor="#FFFFFF",
                 legend=dict(

@@ -40,11 +40,11 @@ LOGO_URI = data_uri("Logo_balmaceda.png")  # el archivo está en la misma carpet
 HERO_URI = data_uri("IMG_7331.jpeg")
 
 section_options = [
-    "🏠 Visión general",
-    "📈 Ingresos & egresos",
-    "⚠️ Riesgos & cobranzas",
-    "🏢 Canon anual / mensual",
-    "⚡ Electricidad",
+    "🏠 Overview Ejecutivo",
+    "📈 Flujo Operacional",
+    "⚠️ Riesgo & Cobranza",
+    "🏢 Canon & Contratos",
+    "⚡ Consumos Energéticos",
 ]
 
 # =======================
@@ -2432,7 +2432,7 @@ st.markdown("""
 # =========================================================
 # 🏠 TAB 1: VISIÓN GENERAL
 # =========================================================
-if active_section == "🏠 Visión general":
+if active_section == "🏠 Overview Ejecutivo":
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
 
@@ -2882,7 +2882,7 @@ if active_section == "🏠 Visión general":
 
     st.markdown(
         f"""
-        {tab_header("Visión general", "Estado del activo y métricas financieras consolidadas")}
+        {tab_header("Overview Ejecutivo", "Estado del activo y métricas financieras consolidadas")}
         <div class="asset-kpi-grid">
             <div class="asset-kpi" style="--accent:#DC2626;--soft:#fff7f7;--halo:#fde2e2;--border:#f1caca;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
                 <div class="asset-kpi-icon">↘</div>
@@ -4068,10 +4068,10 @@ if active_section == "🏠 Visión general":
 # =========================================================
 # ⚠️ TAB 2: RIESGOS & COBRANZAS
 # =========================================================
-if active_section == "⚠️ Riesgos & cobranzas":
+if active_section == "⚠️ Riesgo & Cobranza":
               # ---------- Resumen por Responsable (NO PAGADO vs Abonos) ----------
     st.markdown(
-        tab_header("Riesgos & cobranzas", "Monitoreo de cobranza, deuda y concentración de montos"),
+        tab_header("Riesgo & Cobranza", "Monitoreo de cobranza, deuda y concentración de montos"),
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -4976,9 +4976,9 @@ if active_section == "⚠️ Riesgos & cobranzas":
 # =========================================================
 # 🏢 TAB 3: CANON ANUAL / MENSUAL
 # =========================================================
-if active_section == "🏢 Canon anual / mensual":
+if active_section == "🏢 Canon & Contratos":
     st.markdown(
-        tab_header("Canon anual / mensual", "Evolución de canon, ocupación y valor por metro cuadrado"),
+        tab_header("Canon & Contratos", "Evolución de canon, ocupación y valor por metro cuadrado"),
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -5198,7 +5198,7 @@ if active_section == "🏢 Canon anual / mensual":
 # =========================================================
 # 🧩 CANON POR M² (integrado en TAB CANON)
 # =========================================================
-if active_section == "🏢 Canon anual / mensual":
+if active_section == "🏢 Canon & Contratos":
     st.markdown(
         section_heading("🧩", "Canon por m² — Canon Mensual (por Año y Esp)", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
@@ -6324,7 +6324,7 @@ if active_section == "💰 Ingresos":
 # =========================================================
 # 📈 TAB 5: INGRESOS & EGRESOS (Mensual / Anual)
 # =========================================================
-if active_section == "📈 Ingresos & egresos":
+if active_section == "📈 Flujo Operacional":
     st.markdown(
         """
         <style>
@@ -8732,11 +8732,11 @@ if active_section == "📈 Ingresos & egresos":
 # =========================================================
 # ⚡ TAB 6: ELECTRICIDAD (Excel por pestaña)
 # =========================================================
-if active_section == "⚡ Electricidad":
+if active_section == "⚡ Consumos Energéticos":
     title_col, btn_col = st.columns([6, 1])
     with title_col:
         st.markdown(
-            tab_header("Electricidad", "Liquidación por bodega e inputs de facturación"),
+            tab_header("Consumos Energéticos", "Liquidación por bodega e inputs de facturación"),
             unsafe_allow_html=True,
         )
         st.caption("Vista idéntica al Excel: inputs generales, boleta CGE, inputs por bodega y liquidación.")

@@ -4,8 +4,6 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import base64
-import json
-import re
 from matplotlib.colors import LinearSegmentedColormap
 from pathlib import Path
 from io import BytesIO
@@ -15,7 +13,6 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
 from xml.sax.saxutils import escape
-from streamlit.delta_generator import DeltaGenerator
 
 # =========================
 # Configuración base
@@ -322,95 +319,153 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-def _anchor_id_for_widget(widget_name: str, label: object, key: object) -> str:
-    source = str(key if key is not None else label)
-    clean = re.sub(r"[^a-zA-Z0-9_-]+", "-", source).strip("-").lower()
-    return f"bodega-anchor-{widget_name}-{clean or 'control'}"
+components.html(
+    """
+    <script>
+    (function () {
+        const win = window.parent;
+        const doc = win.document;
+        const KEY = "bodegas_scroll_state_v3";
 
+        function candidates() {
+            const fixed = [
+                win,
+                doc.scrollingElement,
+                doc.documentElement,
+                doc.body,
+                doc.querySelector("section.main"),
+                doc.querySelector("section.main > div"),
+                doc.querySelector('[data-testid="stAppViewContainer"]'),
+                doc.querySelector('[data-testid="stAppViewContainer"] > div'),
+                doc.querySelector('[data-testid="stVerticalBlock"]')
+            ].filter(Boolean);
+            const dynamic = Array.from(doc.querySelectorAll("body *")).filter(function (node) {
+                try {
+                    const style = win.getComputedStyle(node);
+                    return node.scrollHeight > node.clientHeight + 8
+                        && !["hidden", "clip"].includes(style.overflowY);
+                } catch (err) {
+                    return false;
+                }
+            });
+            return Array.from(new Set(fixed.concat(dynamic)));
+        }
 
-def _mark_widget_anchor(anchor_id: str) -> None:
-    st.session_state["_bodega_scroll_anchor"] = anchor_id
+        function currentY() {
+            return Math.max.apply(null, candidates().map(function (node) {
+                if (node === win) return win.scrollY || 0;
+                return node.scrollTop || 0;
+            }).concat([0]));
+        }
 
+        function readState() {
+            try {
+                return JSON.parse(win.localStorage.getItem(KEY) || "{}");
+            } catch (err) {
+                return {};
+            }
+        }
 
-def _install_widget_anchor_scroll() -> None:
-    if getattr(st, "_bodegas_anchor_scroll_installed", False):
-        return
+        function writeState(state) {
+            try {
+                win.localStorage.setItem(KEY, JSON.stringify(state));
+            } catch (err) {}
+        }
 
-    widget_names = (
-        "selectbox",
-        "radio",
-        "multiselect",
-        "slider",
-        "text_input",
-        "number_input",
-        "date_input",
-        "checkbox",
-    )
+        function savePosition(protect) {
+            const y = currentY();
+            const previous = readState();
+            const state = {
+                y: y > 8 ? y : (previous.y || 0),
+                protectUntil: protect ? Date.now() + 9000 : (previous.protectUntil || 0)
+            };
+            writeState(state);
+        }
 
-    def make_wrapper(widget_name: str, original):
-        def wrapped(self, label, *args, **kwargs):
-            key = kwargs.get("key")
-            if key is None:
-                return original(self, label, *args, **kwargs)
+        function protectedState() {
+            const state = readState();
+            return state && state.y > 8 && state.protectUntil && Date.now() < state.protectUntil ? state : null;
+        }
 
-            anchor_id = _anchor_id_for_widget(widget_name, label, key)
-            self.markdown(
-                f'<span id="{anchor_id}" class="bodega-widget-anchor" '
-                'style="display:block;position:relative;top:-8px;height:0;width:0;"></span>',
-                unsafe_allow_html=True,
-            )
+        function restorePosition(y) {
+            candidates().forEach(function (node) {
+                try {
+                    if (node === win) {
+                        win.__bodegasNativeScrollTo(0, y);
+                    } else {
+                        node.scrollTop = y;
+                    }
+                } catch (err) {}
+            });
+        }
 
-            user_callback = kwargs.get("on_change")
-            user_args = kwargs.pop("args", ())
-            user_kwargs = kwargs.pop("kwargs", {})
+        function isWidgetTarget(target) {
+            return Boolean(
+                target.closest('[data-testid="stSelectbox"]')
+                || target.closest('[data-testid="stMultiSelect"]')
+                || target.closest('[data-testid="stRadio"]')
+                || target.closest('[data-testid="stSlider"]')
+                || target.closest('[data-testid="stTextInput"]')
+                || target.closest('[data-testid="stNumberInput"]')
+                || target.closest('[data-testid="stDateInput"]')
+                || target.closest('[data-testid="stCheckbox"]')
+                || target.closest('[data-baseweb="select"]')
+                || target.closest('[role="listbox"]')
+                || target.closest('[role="option"]')
+                || target.closest("input, textarea, select")
+            );
+        }
 
-            def combined_callback():
-                _mark_widget_anchor(anchor_id)
-                if user_callback is not None:
-                    user_callback(*user_args, **user_kwargs)
+        if (!win.__bodegasScrollLockInstalled) {
+            win.__bodegasScrollLockInstalled = true;
+            win.__bodegasNativeScrollTo = win.scrollTo.bind(win);
+            win.__bodegasNativeScroll = win.scroll.bind(win);
 
-            kwargs["on_change"] = combined_callback
-            return original(self, label, *args, **kwargs)
+            win.scrollTo = function () {
+                const state = protectedState();
+                let requestedY = 0;
+                if (arguments.length === 1 && typeof arguments[0] === "object") {
+                    requestedY = Number(arguments[0].top || 0);
+                } else if (arguments.length > 1) {
+                    requestedY = Number(arguments[1] || 0);
+                }
+                if (state && requestedY <= 2) {
+                    return win.__bodegasNativeScrollTo(0, state.y);
+                }
+                return win.__bodegasNativeScrollTo.apply(win, arguments);
+            };
+            win.scroll = win.scrollTo;
 
-        return wrapped
+            let timer = null;
+            function scheduleSave() {
+                win.clearTimeout(timer);
+                timer = win.setTimeout(function () { savePosition(false); }, 120);
+            }
 
-    for widget_name in widget_names:
-        original = getattr(DeltaGenerator, widget_name, None)
-        if original is not None and not getattr(original, "_bodega_wrapped", False):
-            wrapped = make_wrapper(widget_name, original)
-            wrapped._bodega_wrapped = True
-            setattr(DeltaGenerator, widget_name, wrapped)
+            win.addEventListener("scroll", scheduleSave, true);
+            doc.addEventListener("scroll", scheduleSave, true);
 
-    st._bodegas_anchor_scroll_installed = True
+            ["pointerdown", "mousedown", "touchstart", "focusin", "input", "change", "click"].forEach(function (eventName) {
+                doc.addEventListener(eventName, function (event) {
+                    if (isWidgetTarget(event.target)) savePosition(true);
+                }, true);
+            });
+            doc.addEventListener("keydown", function (event) {
+                if (isWidgetTarget(event.target)) savePosition(true);
+            }, true);
+        }
 
-
-_install_widget_anchor_scroll()
-
-target_anchor = st.session_state.pop("_bodega_scroll_anchor", "")
-if target_anchor:
-    components.html(
-        f"""
-        <script>
-        (function () {{
-            const win = window.parent;
-            const doc = win.document;
-            const targetId = {json.dumps(target_anchor)};
-
-            function scrollToTarget() {{
-                const target = doc.getElementById(targetId);
-                if (!target) return false;
-                target.scrollIntoView({{behavior: "auto", block: "start", inline: "nearest"}});
-                return true;
-            }}
-
-            [40, 120, 260, 520, 900, 1400, 2200, 3200].forEach(function (delay) {{
-                win.setTimeout(scrollToTarget, delay);
-            }});
-        }})();
-        </script>
-        """,
-        height=0,
-    )
+        const state = protectedState();
+        if (state) {
+            [0, 40, 100, 180, 320, 520, 800, 1200, 1800, 2600, 3800, 5600, 7600].forEach(function (delay) {
+                win.setTimeout(function () { restorePosition(state.y); }, delay);
+            });
+        }
+    })();
+    </script>
+    """,
+    height=0,
+)
 
 
 

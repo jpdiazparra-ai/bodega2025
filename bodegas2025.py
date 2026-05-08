@@ -3936,6 +3936,58 @@ if active_section == "🏠 Overview Ejecutivo":
 # ⚠️ TAB 2: RIESGOS & COBRANZAS
 # =========================================================
 if active_section == "⚠️ Riesgo & Cobranza":
+    def _return_to_gmail_cobranza():
+        st.session_state["_scroll_to_gmail_cobranza_nonce"] = (
+            st.session_state.get("_scroll_to_gmail_cobranza_nonce", 0) + 1
+        )
+
+    gmail_scroll_nonce = st.session_state.get("_scroll_to_gmail_cobranza_nonce", 0)
+    gmail_scroll_rendered = st.session_state.get("_scroll_to_gmail_cobranza_rendered", 0)
+    if gmail_scroll_nonce and gmail_scroll_nonce != gmail_scroll_rendered:
+        st.session_state["_scroll_to_gmail_cobranza_rendered"] = gmail_scroll_nonce
+        components.html(
+            f"""
+            <script>
+            // nonce: {gmail_scroll_nonce}
+            const doc = window.parent.document;
+            const appRoot = doc.querySelector("section.main .block-container") || doc.querySelector("[data-testid='stAppViewContainer']");
+            if (appRoot) {{
+                appRoot.style.opacity = "0";
+                appRoot.style.transition = "opacity 80ms linear";
+            }}
+            let attempts = 0;
+            const reveal = () => {{
+                if (appRoot) {{
+                    appRoot.style.opacity = "1";
+                }}
+            }};
+            const scrollToGmailCobranza = () => {{
+                attempts += 1;
+                const anchor = doc.getElementById("gmail-cobranza-anchor");
+                if (anchor) {{
+                    anchor.scrollIntoView({{behavior: "auto", block: "start"}});
+                    window.parent.scrollBy(0, -18);
+                    reveal();
+                    return true;
+                }}
+                if (attempts > 60) {{
+                    reveal();
+                    return true;
+                }}
+                return false;
+            }};
+            const timer = setInterval(() => {{
+                if (scrollToGmailCobranza()) {{
+                    clearInterval(timer);
+                }}
+            }}, 50);
+            setTimeout(scrollToGmailCobranza, 0);
+            setTimeout(reveal, 3500);
+            </script>
+            """,
+            height=0,
+        )
+
               # ---------- Resumen por Responsable (NO PAGADO vs Abonos) ----------
     st.markdown(
         tab_header("Riesgo & Cobranza", "Monitoreo de cobranza, deuda y concentración de montos"),
@@ -4232,37 +4284,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
 
     st.dataframe(styler, use_container_width=True)
 
-    def _return_to_gmail_cobranza():
-        st.session_state["_scroll_to_gmail_cobranza_nonce"] = (
-            st.session_state.get("_scroll_to_gmail_cobranza_nonce", 0) + 1
-        )
-
     st.markdown(
         '<div id="gmail-cobranza-anchor"></div>',
         unsafe_allow_html=True,
     )
-    gmail_scroll_nonce = st.session_state.get("_scroll_to_gmail_cobranza_nonce", 0)
-    gmail_scroll_rendered = st.session_state.get("_scroll_to_gmail_cobranza_rendered", 0)
-    if gmail_scroll_nonce and gmail_scroll_nonce != gmail_scroll_rendered:
-        st.session_state["_scroll_to_gmail_cobranza_rendered"] = gmail_scroll_nonce
-        components.html(
-            f"""
-            <script>
-            // nonce: {gmail_scroll_nonce}
-            const scrollToGmailCobranza = () => {{
-                const anchor = window.parent.document.getElementById("gmail-cobranza-anchor");
-                if (anchor) {{
-                    anchor.scrollIntoView({{behavior: "auto", block: "start"}});
-                    window.parent.scrollBy(0, -18);
-                }}
-            }};
-            setTimeout(scrollToGmailCobranza, 80);
-            setTimeout(scrollToGmailCobranza, 260);
-            setTimeout(scrollToGmailCobranza, 520);
-            </script>
-            """,
-            height=0,
-        )
 
     st.markdown(
         section_heading("🧾", "Información cobranza Gmail", weight_class="section-heading-title-soft"),

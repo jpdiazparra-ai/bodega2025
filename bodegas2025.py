@@ -2614,59 +2614,6 @@ if active_section == "🏠 Overview Ejecutivo":
             align-self:end;
             margin-top:3px;
         }
-        .asset-status {
-            display:grid;
-            grid-template-columns: 1.2fr 1fr 1fr 1fr 1.55fr;
-            gap:14px;
-            align-items:center;
-            border:1px solid #dbe3ee;
-            border-radius:10px;
-            background:#ffffff;
-            padding:9px 14px;
-            margin: 0 0 8px 0;
-            box-shadow:0 8px 20px rgba(15,23,42,0.035);
-        }
-        .asset-status-title {
-            font-size:13px;
-            color:#0f1f3d;
-            font-weight:900;
-            margin-bottom:6px;
-        }
-        .asset-status-pill {
-            display:inline-flex;
-            min-width:92px;
-            justify-content:center;
-            padding:5px 14px;
-            border-radius:8px;
-            background:var(--estado);
-            color:white;
-            font-size:10px;
-            font-weight:900;
-        }
-        .asset-status-item {
-            border-left:1px solid #e5ebf3;
-            padding-left:12px;
-            min-height:32px;
-        }
-        .asset-dot {
-            display:inline-block;
-            width:9px;
-            height:9px;
-            border-radius:999px;
-            background:var(--dot);
-            margin-right:8px;
-        }
-        .asset-status-label {
-            color:#0f1f3d;
-            font-size:10px;
-            font-weight:900;
-        }
-        .asset-status-sub {
-            margin-top:4px;
-            color:#475569;
-            font-size:9px;
-            font-weight:700;
-        }
         .asset-card {
             border:1px solid #dbe3ee;
             border-radius:10px;
@@ -2871,8 +2818,6 @@ if active_section == "🏠 Overview Ejecutivo":
         }
         @media (max-width: 1300px) {
             .asset-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .asset-status { grid-template-columns: 1fr; }
-            .asset-status-item { border-left:0; padding-left:0; border-top:1px solid #e5ebf3; padding-top:12px; }
         }
         </style>
         """,
@@ -2927,28 +2872,6 @@ if active_section == "🏠 Overview Ejecutivo":
                     <div class="asset-kpi-badge">Cobertura mensual</div>
                 </div>
                 <div class="asset-kpi-note">Caja relativa al egreso promedio</div>
-            </div>
-        </div>
-        <div class="asset-status" style="--estado:{estado_color};">
-            <div>
-                <div class="asset-status-title">Estado del Activo</div>
-                <div class="asset-status-pill">{estado_txt}</div>
-            </div>
-            <div class="asset-status-item">
-                <div class="asset-status-label"><span class="asset-dot" style="--dot:{'#DC2626' if cobertura_egresos < 1 else '#059669'};"></span>Caja {'insuficiente' if cobertura_egresos < 1 else 'saludable'}</div>
-                <div class="asset-status-sub">{runway_txt}</div>
-            </div>
-            <div class="asset-status-item">
-                <div class="asset-status-label"><span class="asset-dot" style="--dot:{'#DC2626' if margen_neto < 0.05 else '#059669'};"></span>Margen {'bajo' if margen_neto < 0.05 else 'saludable'}</div>
-                <div class="asset-status-sub">{margen_neto:.1%} sobre ingresos</div>
-            </div>
-            <div class="asset-status-item">
-                <div class="asset-status-label"><span class="asset-dot" style="--dot:{'#F59E0B' if cobertura_capex < 1 else '#059669'};"></span>{'Alta exposición CAPEX' if cobertura_capex < 1 else 'CAPEX recuperado'}</div>
-                <div class="asset-status-sub">{cobertura_capex:.1%} de recuperación</div>
-            </div>
-            <div class="asset-status-item">
-                <div class="asset-status-label">Recomendación principal</div>
-                <div class="asset-status-sub">{'Revisar canon, cobranza y postergar CAPEX no crítico' if health_score < 70 else 'Mantener control de caja y ocupación'}</div>
             </div>
         </div>
         """,
@@ -3218,6 +3141,10 @@ if active_section == "🏠 Overview Ejecutivo":
             f'<span>{label}</span><strong>{points}</strong></div>'
             for label, points in diagnosis_penalties
         ) or '<div style="color:#059669;font-weight:900;">Sin penalizaciones activas</div>'
+        caja_status_color = "#DC2626" if cobertura_egresos < 1 else "#059669"
+        margen_status_color = "#DC2626" if margen_neto < 0.05 else "#059669"
+        capex_status_color = "#F59E0B" if cobertura_capex < 1 else "#059669"
+        recommendation_txt = "Revisar canon, cobranza y postergar CAPEX no crítico" if health_score < 70 else "Mantener control de caja y ocupación"
         fig_gauge = go.Figure(
             go.Indicator(
                 mode="gauge+number",
@@ -3238,7 +3165,7 @@ if active_section == "🏠 Overview Ejecutivo":
             )
         )
         fig_gauge.update_layout(
-            height=122,
+            height=100,
             margin=dict(l=0, r=0, t=0, b=0),
             paper_bgcolor="#FFFFFF",
         )
@@ -3258,9 +3185,29 @@ if active_section == "🏠 Overview Ejecutivo":
                     summary::marker {{ content:""; }}
                 </style>
                 <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
-                <div style="height:122px;">{fig_gauge_html}</div>
-                <div style="margin-top:-4px;text-align:center;color:#475569;font-size:9px;font-weight:800;">Estado general</div>
-                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:11px;">
+                <div style="height:100px;">{fig_gauge_html}</div>
+                <div style="margin-top:-4px;display:flex;align-items:center;justify-content:center;gap:7px;color:#475569;font-size:9px;font-weight:800;">
+                    <span>Estado general</span>
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:76px;height:20px;border-radius:7px;background:{estado_color};color:#ffffff;font-size:9px;font-weight:950;">{estado_txt}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px;">
+                    <div style="border:1px solid #e5ebf3;border-radius:7px;padding:5px 6px;background:#fbfdff;">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:8.5px;font-weight:950;color:#081735;"><span style="width:7px;height:7px;border-radius:999px;background:{caja_status_color};"></span>Caja</div>
+                        <div style="margin-top:3px;font-size:8px;font-weight:800;color:#475569;">{runway_txt}</div>
+                    </div>
+                    <div style="border:1px solid #e5ebf3;border-radius:7px;padding:5px 6px;background:#fbfdff;">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:8.5px;font-weight:950;color:#081735;"><span style="width:7px;height:7px;border-radius:999px;background:{margen_status_color};"></span>Margen</div>
+                        <div style="margin-top:3px;font-size:8px;font-weight:800;color:#475569;">{margen_neto:.1%} sobre ingresos</div>
+                    </div>
+                    <div style="border:1px solid #e5ebf3;border-radius:7px;padding:5px 6px;background:#fbfdff;">
+                        <div style="display:flex;align-items:center;gap:5px;font-size:8.5px;font-weight:950;color:#081735;"><span style="width:7px;height:7px;border-radius:999px;background:{capex_status_color};"></span>CAPEX</div>
+                        <div style="margin-top:3px;font-size:8px;font-weight:800;color:#475569;">{cobertura_capex:.1%} recuperado</div>
+                    </div>
+                </div>
+                <div style="margin-top:7px;border:1px solid #e5ebf3;border-radius:7px;background:#ffffff;padding:5px 7px;font-size:8.4px;line-height:1.25;font-weight:850;color:#334155;">
+                    <strong style="color:#081735;">Recomendación:</strong> {recommendation_txt}
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px;">
                     <div style="display:grid;grid-template-columns:14px 1fr;gap:5px;align-items:start;">
                         <span style="width:9px;height:9px;border-radius:999px;background:#DC2626;margin-top:3px;"></span>
                         <div style="font-size:9px;font-weight:900;color:#081735;">Riesgo Alto<br><span style="display:inline-block;margin-top:4px;color:#31507a;font-weight:850;">0 - 40</span></div>

@@ -2434,7 +2434,6 @@ st.markdown("""
 # =========================================================
 if active_section == "🏠 Overview Ejecutivo":
     import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
 
     data_src = df_f.copy()
     data_src["Periodo_ref"] = pd.to_datetime(data_src["Periodo_ref"], errors="coerce")
@@ -2700,7 +2699,7 @@ if active_section == "🏠 Overview Ejecutivo":
             align-items:center;
             border:1px solid #e5ebf3;
             border-radius:8px;
-            padding:5px 8px;
+            padding:7px 9px;
             background:#fbfdff;
         }
         .asset-summary-icon {
@@ -2717,26 +2716,26 @@ if active_section == "🏠 Overview Ejecutivo":
         }
         .asset-summary-label {
             color:#0f1f3d;
-            font-size:10px;
+            font-size:11px;
             line-height:1.15;
             font-weight:900;
         }
         .asset-summary-sub {
             margin-top:3px;
             color:#64748b;
-            font-size:8.8px;
+            font-size:9.5px;
             font-weight:700;
         }
         .asset-summary-value {
             color:var(--accent, #081735);
-            font-size:10px;
+            font-size:11px;
             font-weight:950;
             text-align:right;
             white-space:nowrap;
         }
         .asset-summary-pct {
             color:#0f2d52;
-            font-size:8.8px;
+            font-size:9.4px;
             font-weight:850;
             margin-top:3px;
         }
@@ -2754,7 +2753,7 @@ if active_section == "🏠 Overview Ejecutivo":
         }
         .trend-mini-title {
             color:#0f1f3d;
-            font-size:9.5px;
+            font-size:10.2px;
             line-height:1.15;
             font-weight:900;
         }
@@ -2768,7 +2767,7 @@ if active_section == "🏠 Overview Ejecutivo":
         .trend-mini-sub {
             margin-top:4px;
             color:#64748b;
-            font-size:9px;
+            font-size:9.5px;
             font-weight:700;
         }
         .asset-callout {
@@ -2778,7 +2777,7 @@ if active_section == "🏠 Overview Ejecutivo":
             border:1px solid #ccebd8;
             color:#14532d;
             padding:7px 10px;
-            font-size:8.8px;
+            font-size:9.3px;
             line-height:1.25;
             font-weight:750;
         }
@@ -2795,14 +2794,14 @@ if active_section == "🏠 Overview Ejecutivo":
             gap:8px;
             align-items:center;
             color:#081735;
-            font-size:9.3px;
+            font-size:10px;
             line-height:1.1;
             font-weight:950;
             margin-bottom:5px;
         }
         .trend-salary-head strong {
             color:#475569;
-            font-size:8.4px;
+            font-size:9px;
             font-weight:850;
             white-space:nowrap;
         }
@@ -2815,7 +2814,7 @@ if active_section == "🏠 Overview Ejecutivo":
         }
         .trend-salary-labels {
             color:#64748b;
-            font-size:7.7px;
+            font-size:8.4px;
             font-weight:900;
             text-transform:uppercase;
             padding-bottom:3px;
@@ -2823,7 +2822,7 @@ if active_section == "🏠 Overview Ejecutivo":
         }
         .trend-salary-row {
             color:#0f1f3d;
-            font-size:8.6px;
+            font-size:9.4px;
             font-weight:850;
             padding:3px 0;
             border-bottom:1px solid #eef2f7;
@@ -2833,13 +2832,13 @@ if active_section == "🏠 Overview Ejecutivo":
         }
         .trend-salary-row strong {
             color:#0B3A86;
-            font-size:9px;
+            font-size:9.8px;
             font-weight:950;
         }
         .trend-salary-note {
             margin-top:4px;
             color:#475569;
-            font-size:7.9px;
+            font-size:8.7px;
             line-height:1.25;
             font-weight:750;
         }
@@ -2956,7 +2955,7 @@ if active_section == "🏠 Overview Ejecutivo":
         unsafe_allow_html=True,
     )
 
-    chart_left, chart_right = st.columns([1, 1.25])
+    chart_left = st.container()
     with chart_left:
         def build_home_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
             if modo == "Contable":
@@ -3034,7 +3033,7 @@ if active_section == "🏠 Overview Ejecutivo":
             ),
             font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
             template="plotly_white",
-            height=192,
+            height=240,
             margin=dict(l=10, r=10, t=46, b=14),
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
@@ -3044,7 +3043,7 @@ if active_section == "🏠 Overview Ejecutivo":
                 y=1.01,
                 xanchor="left",
                 x=0.02,
-                font=dict(size=10, color="#334155"),
+                font=dict(size=11, color="#334155"),
                 bgcolor="rgba(255,255,255,0)",
             ),
             hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
@@ -3057,17 +3056,17 @@ if active_section == "🏠 Overview Ejecutivo":
             gridcolor="#E5EAF2",
             zeroline=False,
             title_font=dict(size=11, color="#64748B"),
-            tickfont=dict(size=10, color="#64748B"),
+            tickfont=dict(size=11, color="#64748B"),
         )
         fig_flow.update_xaxes(
             title_text="Mes",
             tickformat="%b %Y",
             title_font=dict(size=11, color="#64748B"),
-            tickfont=dict(size=10, color="#64748B"),
+            tickfont=dict(size=11, color="#64748B"),
             range=home_x_range,
             rangeslider=dict(
                 visible=True,
-                thickness=0.03,
+                thickness=0.035,
                 bgcolor="#F1F5F9",
                 bordercolor="#E2E8F0",
                 borderwidth=1,
@@ -3079,95 +3078,6 @@ if active_section == "🏠 Overview Ejecutivo":
             config={"displaylogo": False},
             key="vision_general_neto_fin_cont",
         )
-
-    with chart_right:
-        if df_canon_home.empty:
-            st.info("No hay datos de canon anual para mostrar.")
-        else:
-            fig_canon_home = make_subplots(specs=[[{"secondary_y": True}]])
-            fig_canon_home.add_trace(
-                go.Bar(
-                    x=df_canon_home["Año"],
-                    y=df_canon_home["Canon anual"],
-                    name="Canon anual",
-                    marker=dict(color="#22C55E", line=dict(color="rgba(255,255,255,0.9)", width=1)),
-                    hovertemplate="<b>Año %{x}</b><br>Canon: $%{y:,.0f}<extra></extra>",
-                ),
-                secondary_y=False,
-            )
-            fig_canon_home.add_trace(
-                go.Scatter(
-                    x=df_canon_home["Año"],
-                    y=df_canon_home["MA3"],
-                    name="Promedio móvil (MA-3)",
-                    mode="lines+markers",
-                    line=dict(color="#0B1F3A", width=3.0, shape="spline"),
-                    marker=dict(size=7, color="#0B1F3A", line=dict(color="#FFFFFF", width=1.4)),
-                ),
-                secondary_y=False,
-            )
-            fig_canon_home.add_trace(
-                go.Scatter(
-                    x=df_canon_home["Año"],
-                    y=df_canon_home["YoY"],
-                    name="Variación YoY",
-                    mode="lines+markers",
-                    line=dict(color="#D97706", width=2.3, dash="dot", shape="spline"),
-                    marker=dict(size=6, color="#D97706", line=dict(color="#FFFFFF", width=1.2)),
-                ),
-                secondary_y=True,
-            )
-            fig_canon_home.update_layout(
-                title=dict(
-                    text="Ingresos por Canon de Arriendo - Evolución Anual",
-                    x=0.02,
-                    y=0.98,
-                    xanchor="left",
-                    font=dict(size=16, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-                ),
-                font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
-                template="plotly_white",
-                height=192,
-                margin=dict(l=10, r=42, t=46, b=14),
-                paper_bgcolor="#FFFFFF",
-                plot_bgcolor="#FFFFFF",
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=1.01,
-                    xanchor="left",
-                    x=0.08,
-                    font=dict(size=10, color="#334155"),
-                    bgcolor="rgba(255,255,255,0)",
-                ),
-                hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
-            )
-            fig_canon_home.update_yaxes(
-                title_text="Canon (CLP)",
-                tickprefix="$",
-                separatethousands=True,
-                gridcolor="#E5EAF2",
-                zeroline=False,
-                title_font=dict(size=11, color="#64748B"),
-                tickfont=dict(size=10, color="#64748B"),
-                secondary_y=False,
-            )
-            fig_canon_home.update_yaxes(
-                title_text="YoY",
-                tickformat=".0%",
-                showgrid=False,
-                zeroline=False,
-                title_font=dict(size=11, color="#64748B"),
-                tickfont=dict(size=10, color="#64748B"),
-                secondary_y=True,
-            )
-            fig_canon_home.update_xaxes(title_text="Año", dtick=1, title_font=dict(size=11, color="#64748B"), tickfont=dict(size=10, color="#64748B"))
-            st.plotly_chart(
-                fig_canon_home,
-                use_container_width=True,
-                config={"displaylogo": False},
-                key="vision_general_canon_anual",
-            )
 
     bottom_a, bottom_b, bottom_c = st.columns([1.05, 1.2, 1.1])
     resumen_rows = [

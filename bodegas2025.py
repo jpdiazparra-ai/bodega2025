@@ -4232,6 +4232,31 @@ if active_section == "⚠️ Riesgo & Cobranza":
 
     st.dataframe(styler, use_container_width=True)
 
+    def _return_to_gmail_cobranza():
+        st.session_state["_scroll_to_gmail_cobranza"] = True
+
+    st.markdown(
+        '<div id="gmail-cobranza-anchor"></div>',
+        unsafe_allow_html=True,
+    )
+    if st.session_state.pop("_scroll_to_gmail_cobranza", False):
+        components.html(
+            """
+            <script>
+            const scrollToGmailCobranza = () => {
+                const anchor = window.parent.document.getElementById("gmail-cobranza-anchor");
+                if (anchor) {
+                    anchor.scrollIntoView({behavior: "auto", block: "start"});
+                    window.parent.scrollBy(0, -18);
+                }
+            };
+            setTimeout(scrollToGmailCobranza, 80);
+            setTimeout(scrollToGmailCobranza, 260);
+            </script>
+            """,
+            height=0,
+        )
+
     st.markdown(
         section_heading("🧾", "Información cobranza Gmail", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
@@ -4250,6 +4275,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
             year_opts_cancel,
             index=0,
             key="year_cancel_esp",
+            on_change=_return_to_gmail_cobranza,
         )
     with c_can2:
         sel_month_cancel = st.selectbox(
@@ -4257,6 +4283,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
             ["Todos"] + list(range(1, 13)),
             index=0,
             key="month_cancel_esp",
+            on_change=_return_to_gmail_cobranza,
         )
     with c_can4:
         sel_esp_cancel = st.selectbox(
@@ -4264,6 +4291,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
             ["Todos"] + list(range(1, 8)),
             index=0,
             key="esp_cancel_esp",
+            on_change=_return_to_gmail_cobranza,
         )
     df_resp_opts = df_f.copy()
     df_resp_opts = df_resp_opts[df_resp_opts["Esp_num"].between(1, 7, inclusive="both")]
@@ -4282,6 +4310,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
             responsables_opts_cancel,
             index=0,
             key="resp_cancel_esp",
+            on_change=_return_to_gmail_cobranza,
         )
 
     if sel_year_cancel != "Todos":

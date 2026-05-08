@@ -81,23 +81,37 @@ footer {
     overflow: hidden !important;
     pointer-events: none !important;
 }
-section[data-testid="stSidebar"] {
+section[data-testid="stSidebar"],
+aside[data-testid="stSidebar"] {
     width: 252px !important;
     min-width: 252px !important;
-    background: linear-gradient(180deg, #061d3b 0%, #031326 62%, #020b17 100%);
+    max-width: 252px !important;
+    background: linear-gradient(180deg, #061d3b 0%, #031326 62%, #020b17 100%) !important;
     border-right: 1px solid rgba(148, 163, 184, 0.16);
     transition: margin-left 160ms ease, width 160ms ease, min-width 160ms ease, opacity 120ms ease;
     z-index: 999;
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
-body.bodegas-sidebar-collapsed section[data-testid="stSidebar"] {
+section[data-testid="stSidebar"] > div,
+aside[data-testid="stSidebar"] > div,
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+aside[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    background: transparent !important;
+}
+body.bodegas-sidebar-collapsed section[data-testid="stSidebar"],
+body.bodegas-sidebar-collapsed aside[data-testid="stSidebar"] {
     width: 0 !important;
     min-width: 0 !important;
+    max-width: 0 !important;
     margin-left: -252px !important;
     opacity: 0 !important;
     overflow: hidden !important;
     border-right: 0 !important;
 }
-body.bodegas-sidebar-collapsed section[data-testid="stSidebar"] > div {
+body.bodegas-sidebar-collapsed section[data-testid="stSidebar"] > div,
+body.bodegas-sidebar-collapsed aside[data-testid="stSidebar"] > div {
     display: none !important;
 }
 body.bodegas-sidebar-collapsed .block-container {
@@ -378,7 +392,7 @@ components.html(
     (function () {
         const win = window.parent;
         const doc = win.document;
-        const KEY = "bodegas_sidebar_collapsed_v1";
+        const KEY = "bodegas_sidebar_collapsed_v2";
 
         function collapsed() {
             try {
@@ -393,6 +407,16 @@ components.html(
             try {
                 win.localStorage.setItem(KEY, value ? "1" : "0");
             } catch (err) {}
+            const sidebar = doc.querySelector('section[data-testid="stSidebar"], aside[data-testid="stSidebar"]');
+            if (sidebar && !value) {
+                sidebar.style.background = "linear-gradient(180deg, #061d3b 0%, #031326 62%, #020b17 100%)";
+                sidebar.style.visibility = "visible";
+                sidebar.style.opacity = "1";
+                sidebar.style.transform = "translateX(0)";
+                sidebar.style.width = "252px";
+                sidebar.style.minWidth = "252px";
+                sidebar.style.maxWidth = "252px";
+            }
             const btn = doc.getElementById("bodegas-sidebar-toggle");
             if (btn) {
                 btn.innerHTML = value ? "☰" : "‹";

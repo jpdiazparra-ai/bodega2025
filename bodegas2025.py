@@ -2835,7 +2835,6 @@ if active_section == "🏠 Overview Ejecutivo":
                     <div class="asset-kpi-value">{fmt_clp_largo(posicion_neta)}</div>
                     <div class="asset-kpi-badge">{'Déficit' if posicion_neta < 0 else 'Superávit'} acumulado</div>
                 </div>
-                <div class="asset-kpi-note">Caja + CxC neta + egresos por pagar</div>
             </div>
             <div class="asset-kpi" style="--accent:#047857;--soft:#f6fffb;--halo:#d8f5e4;--border:#cfe9de;--badge-bg:#dcfce7;--badge-fg:#166534;">
                 <div class="asset-kpi-icon">▰</div>
@@ -2844,7 +2843,6 @@ if active_section == "🏠 Overview Ejecutivo":
                     <div class="asset-kpi-value">{fmt_clp_largo(balance_kpi)}</div>
                     <div class="asset-kpi-badge">Runway: {cobertura_egresos:.1f} meses</div>
                 </div>
-                <div class="asset-kpi-note">Saldo operacional disponible</div>
             </div>
             <div class="asset-kpi" style="--accent:#B7791F;--soft:#fffaf0;--halo:#fceec8;--border:#eadfbd;--badge-bg:#f3f4f6;--badge-fg:#334155;">
                 <div class="asset-kpi-icon">▣</div>
@@ -2853,7 +2851,6 @@ if active_section == "🏠 Overview Ejecutivo":
                     <div class="asset-kpi-value">{fmt_clp_largo(CAPEX)}</div>
                     <div class="asset-kpi-badge">{cobertura_capex:.1%} recuperado</div>
                 </div>
-                <div class="asset-kpi-note">Total invertido en el proyecto</div>
             </div>
             <div class="asset-kpi" style="--accent:#1D4ED8;--soft:#f6f9ff;--halo:#e0ebff;--border:#d4e1f6;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
                 <div class="asset-kpi-icon">↗</div>
@@ -2862,7 +2859,6 @@ if active_section == "🏠 Overview Ejecutivo":
                     <div class="asset-kpi-value">{margen_neto:.1%}</div>
                     <div class="asset-kpi-badge">Sobre ingresos acumulados</div>
                 </div>
-                <div class="asset-kpi-note">Resultado operativo / ingresos</div>
             </div>
             <div class="asset-kpi" style="--accent:#6D28D9;--soft:#fbf8ff;--halo:#eadcff;--border:#e0d3f5;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
                 <div class="asset-kpi-icon">▬</div>
@@ -2871,7 +2867,6 @@ if active_section == "🏠 Overview Ejecutivo":
                     <div class="asset-kpi-value">{cobertura_egresos:.2f}x</div>
                     <div class="asset-kpi-badge">Cobertura mensual</div>
                 </div>
-                <div class="asset-kpi-note">Caja relativa al egreso promedio</div>
             </div>
         </div>
         """,

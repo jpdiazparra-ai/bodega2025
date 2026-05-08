@@ -319,155 +319,6 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-components.html(
-    """
-    <script>
-    (function () {
-        const win = window.parent;
-        const doc = win.document;
-        const KEY = "bodegas_scroll_state_v3";
-
-        function candidates() {
-            const fixed = [
-                win,
-                doc.scrollingElement,
-                doc.documentElement,
-                doc.body,
-                doc.querySelector("section.main"),
-                doc.querySelector("section.main > div"),
-                doc.querySelector('[data-testid="stAppViewContainer"]'),
-                doc.querySelector('[data-testid="stAppViewContainer"] > div'),
-                doc.querySelector('[data-testid="stVerticalBlock"]')
-            ].filter(Boolean);
-            const dynamic = Array.from(doc.querySelectorAll("body *")).filter(function (node) {
-                try {
-                    const style = win.getComputedStyle(node);
-                    return node.scrollHeight > node.clientHeight + 8
-                        && !["hidden", "clip"].includes(style.overflowY);
-                } catch (err) {
-                    return false;
-                }
-            });
-            return Array.from(new Set(fixed.concat(dynamic)));
-        }
-
-        function currentY() {
-            return Math.max.apply(null, candidates().map(function (node) {
-                if (node === win) return win.scrollY || 0;
-                return node.scrollTop || 0;
-            }).concat([0]));
-        }
-
-        function readState() {
-            try {
-                return JSON.parse(win.localStorage.getItem(KEY) || "{}");
-            } catch (err) {
-                return {};
-            }
-        }
-
-        function writeState(state) {
-            try {
-                win.localStorage.setItem(KEY, JSON.stringify(state));
-            } catch (err) {}
-        }
-
-        function savePosition(protect) {
-            const y = currentY();
-            const previous = readState();
-            const state = {
-                y: y > 8 ? y : (previous.y || 0),
-                protectUntil: protect ? Date.now() + 9000 : (previous.protectUntil || 0)
-            };
-            writeState(state);
-        }
-
-        function protectedState() {
-            const state = readState();
-            return state && state.y > 8 && state.protectUntil && Date.now() < state.protectUntil ? state : null;
-        }
-
-        function restorePosition(y) {
-            candidates().forEach(function (node) {
-                try {
-                    if (node === win) {
-                        win.__bodegasNativeScrollTo(0, y);
-                    } else {
-                        node.scrollTop = y;
-                    }
-                } catch (err) {}
-            });
-        }
-
-        function isWidgetTarget(target) {
-            return Boolean(
-                target.closest('[data-testid="stSelectbox"]')
-                || target.closest('[data-testid="stMultiSelect"]')
-                || target.closest('[data-testid="stRadio"]')
-                || target.closest('[data-testid="stSlider"]')
-                || target.closest('[data-testid="stTextInput"]')
-                || target.closest('[data-testid="stNumberInput"]')
-                || target.closest('[data-testid="stDateInput"]')
-                || target.closest('[data-testid="stCheckbox"]')
-                || target.closest('[data-baseweb="select"]')
-                || target.closest('[role="listbox"]')
-                || target.closest('[role="option"]')
-                || target.closest("input, textarea, select")
-            );
-        }
-
-        if (!win.__bodegasScrollLockInstalled) {
-            win.__bodegasScrollLockInstalled = true;
-            win.__bodegasNativeScrollTo = win.scrollTo.bind(win);
-            win.__bodegasNativeScroll = win.scroll.bind(win);
-
-            win.scrollTo = function () {
-                const state = protectedState();
-                let requestedY = 0;
-                if (arguments.length === 1 && typeof arguments[0] === "object") {
-                    requestedY = Number(arguments[0].top || 0);
-                } else if (arguments.length > 1) {
-                    requestedY = Number(arguments[1] || 0);
-                }
-                if (state && requestedY <= 2) {
-                    return win.__bodegasNativeScrollTo(0, state.y);
-                }
-                return win.__bodegasNativeScrollTo.apply(win, arguments);
-            };
-            win.scroll = win.scrollTo;
-
-            let timer = null;
-            function scheduleSave() {
-                win.clearTimeout(timer);
-                timer = win.setTimeout(function () { savePosition(false); }, 120);
-            }
-
-            win.addEventListener("scroll", scheduleSave, true);
-            doc.addEventListener("scroll", scheduleSave, true);
-
-            ["pointerdown", "mousedown", "touchstart", "focusin", "input", "change", "click"].forEach(function (eventName) {
-                doc.addEventListener(eventName, function (event) {
-                    if (isWidgetTarget(event.target)) savePosition(true);
-                }, true);
-            });
-            doc.addEventListener("keydown", function (event) {
-                if (isWidgetTarget(event.target)) savePosition(true);
-            }, true);
-        }
-
-        const state = protectedState();
-        if (state) {
-            [0, 40, 100, 180, 320, 520, 800, 1200, 1800, 2600, 3800, 5600, 7600].forEach(function (delay) {
-                win.setTimeout(function () { restorePosition(state.y); }, delay);
-            });
-        }
-    })();
-    </script>
-    """,
-    height=0,
-)
-
-
 
 # =========================
 # Carga de datos
@@ -6611,6 +6462,20 @@ if active_section == "📈 Ingresos & egresos":
             font-weight:650;
             margin-top:8px;
         }
+        .risk-filter-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:10px 14px 8px 14px;
+            margin:10px 0 10px 0;
+            box-shadow:0 8px 18px rgba(15,23,42,0.035);
+        }
+        .risk-filter-title {
+            color:#081735;
+            font-size:14px;
+            font-weight:950;
+            margin-bottom:6px;
+        }
         main [data-testid="stSelectbox"] > label,
         main [data-testid="stRadio"] > label {
             color:#0f1f3d !important;
@@ -6762,6 +6627,271 @@ if active_section == "📈 Ingresos & egresos":
             else "Todos los períodos"
         )
     )
+
+    ie_view = st.radio(
+        "Vista de trabajo",
+        ["Resumen", "Neto financiero vs contable", "Filtro centro costo / situación"],
+        horizontal=True,
+        index=0,
+        key="ie_view_ing_eg",
+    )
+    x_hover = "%b %Y" if periodo == "Mensual" else "%Y"
+
+    def _build_ie_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
+        if modo == "Contable":
+            anio_col = "Año_sel_contable"
+            periodo_col = "Periodo_ref_contable"
+        else:
+            anio_col = "Año_sel"
+            periodo_col = "Periodo_ref"
+
+        df_cmp = df_src.dropna(subset=["Monto"]).copy()
+        df_cmp = df_cmp[df_cmp["CC_norm"].isin(["INGRESO", "EGRESO"])]
+        df_cmp = df_cmp[df_cmp["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+        if periodo == "Mensual":
+            df_cmp = df_cmp.dropna(subset=[periodo_col])
+            df_cmp["Periodo"] = df_cmp[periodo_col]
+        else:
+            df_cmp = df_cmp.dropna(subset=[anio_col])
+            df_cmp["Periodo"] = pd.to_datetime(
+                dict(year=df_cmp[anio_col].astype(int), month=1, day=1),
+                errors="coerce",
+            )
+
+        df_cmp["Periodo"] = pd.to_datetime(df_cmp["Periodo"], errors="coerce")
+        df_cmp = df_cmp.dropna(subset=["Periodo"])
+        if df_cmp.empty:
+            return pd.DataFrame(columns=["Periodo", modo, f"{modo} acumulado"])
+
+        agg_cmp = (
+            df_cmp.groupby(["Periodo", "CC_norm"], as_index=False)["Monto"]
+            .sum()
+            .sort_values("Periodo")
+        )
+        ingresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+        egresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+        base_cmp = pd.DataFrame({"Periodo": sorted(agg_cmp["Periodo"].dropna().unique())})
+        base_cmp["Periodo"] = pd.to_datetime(base_cmp["Periodo"], errors="coerce")
+        base_cmp = base_cmp.merge(ingresos_cmp[["Periodo", "Ingresos"]], on="Periodo", how="left")
+        base_cmp = base_cmp.merge(egresos_cmp[["Periodo", "Egresos"]], on="Periodo", how="left")
+        base_cmp = base_cmp.fillna(0).sort_values("Periodo")
+        base_cmp[modo] = base_cmp["Ingresos"] - base_cmp["Egresos"].abs()
+        base_cmp[f"{modo} acumulado"] = base_cmp[modo].cumsum()
+
+        if sel_year != "Todos":
+            base_cmp = base_cmp[base_cmp["Periodo"].dt.year == int(sel_year)]
+        if sel_month != "Todos" and periodo == "Mensual":
+            base_cmp = base_cmp[base_cmp["Periodo"].dt.month == int(sel_month)]
+
+        return base_cmp[["Periodo", modo, f"{modo} acumulado"]]
+
+    if ie_view == "Neto financiero vs contable":
+        st.markdown(
+            f"""
+            <div class="neto-chart-card">
+                <div class="neto-card-title">Neto financiero vs neto contable — {periodo} · {periodo_filtro_lbl} ⓘ</div>
+                <div class="neto-card-sub">Vista aislada para trabajar sin bajar por la página completa.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        ctrl_1, ctrl_2, ctrl_3 = st.columns([1.2, 1.2, 1.4])
+        with ctrl_1:
+            vista_neto_cmp_top = st.selectbox(
+                "Visualizar",
+                ["Neto", "Neto acumulado", "Ambos"],
+                index=0,
+                key="vista_neto_fin_cont_top",
+            )
+        with ctrl_2:
+            tipo_grafico_neto_top = st.selectbox(
+                "Tipo de gráfico",
+                ["Línea", "Área"],
+                index=0,
+                key="tipo_grafico_neto_fin_cont_top",
+            )
+        with ctrl_3:
+            rango_neto_cmp_top = st.selectbox(
+                "Rango",
+                ["Todos los períodos", "Últimos 12 meses", "Últimos 24 meses"],
+                index=0,
+                key="rango_neto_fin_cont_top",
+            )
+
+        neto_financiero_top = _build_ie_neto_comparativo(df_f, "Financiero")
+        neto_contable_top = _build_ie_neto_comparativo(df_f, "Contable")
+        neto_plot_top = (
+            neto_financiero_top.merge(neto_contable_top, on="Periodo", how="outer")
+            .sort_values("Periodo")
+            .fillna(0)
+        )
+
+        if rango_neto_cmp_top != "Todos los períodos" and not neto_plot_top.empty:
+            meses_rango = 11 if rango_neto_cmp_top == "Últimos 12 meses" else 23
+            max_periodo_cmp = pd.to_datetime(neto_plot_top["Periodo"]).max()
+            min_periodo_cmp = pd.to_datetime(neto_plot_top["Periodo"]).min()
+            inicio_rango_cmp = max(max_periodo_cmp - pd.DateOffset(months=meses_rango), min_periodo_cmp)
+            neto_plot_top = neto_plot_top[neto_plot_top["Periodo"].between(inicio_rango_cmp, max_periodo_cmp)]
+
+        if neto_plot_top.empty:
+            st.info(f"No se encuentran registros para comparar neto financiero y contable en {periodo_filtro_lbl}.")
+        else:
+            fig_neto_top = go.Figure()
+            fill_mode = "tozeroy" if tipo_grafico_neto_top == "Área" else None
+            if vista_neto_cmp_top in ["Neto", "Ambos"]:
+                fig_neto_top.add_trace(go.Scatter(
+                    x=neto_plot_top["Periodo"], y=neto_plot_top["Financiero"],
+                    mode="lines+markers", name="Neto financiero",
+                    line=dict(color="#1257FF", width=3, shape="spline"),
+                    marker=dict(size=7, color="#1257FF", line=dict(color="#FFFFFF", width=1.3)),
+                    fill=fill_mode, fillcolor="rgba(18,87,255,0.08)",
+                    hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
+                ))
+                fig_neto_top.add_trace(go.Scatter(
+                    x=neto_plot_top["Periodo"], y=neto_plot_top["Contable"],
+                    mode="lines+markers", name="Neto contable",
+                    line=dict(color="#FF7A1A", width=2.8, dash="dot", shape="spline"),
+                    marker=dict(size=7, color="#FF7A1A", line=dict(color="#FFFFFF", width=1.3)),
+                    fill=fill_mode, fillcolor="rgba(255,122,26,0.07)",
+                    hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
+                ))
+            if vista_neto_cmp_top in ["Neto acumulado", "Ambos"]:
+                fig_neto_top.add_trace(go.Scatter(
+                    x=neto_plot_top["Periodo"], y=neto_plot_top["Financiero acumulado"],
+                    mode="lines+markers", name="Neto acumulado financiero",
+                    line=dict(color="#0F766E", width=3, dash="dash", shape="spline"),
+                    marker=dict(size=7, color="#0F766E", line=dict(color="#FFFFFF", width=1.3)),
+                    hovertemplate="<b>%{x|" + x_hover + "}</b><br>Acum. financiero: $%{y:,.0f}<extra></extra>",
+                ))
+                fig_neto_top.add_trace(go.Scatter(
+                    x=neto_plot_top["Periodo"], y=neto_plot_top["Contable acumulado"],
+                    mode="lines+markers", name="Neto acumulado contable",
+                    line=dict(color="#B91C1C", width=3, dash="dashdot", shape="spline"),
+                    marker=dict(size=7, color="#B91C1C", line=dict(color="#FFFFFF", width=1.3)),
+                    hovertemplate="<b>%{x|" + x_hover + "}</b><br>Acum. contable: $%{y:,.0f}<extra></extra>",
+                ))
+            fig_neto_top.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75)
+            fig_neto_top.update_layout(
+                template="plotly_white",
+                height=560,
+                margin=dict(l=30, r=58, t=42, b=42),
+                legend=dict(orientation="h", y=1.05, x=0.01),
+                hovermode="x unified",
+                paper_bgcolor="#FFFFFF",
+                plot_bgcolor="#FFFFFF",
+            )
+            fig_neto_top.update_xaxes(
+                title_text=("Periodo" if periodo == "Mensual" else "Año"),
+                tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
+                showgrid=False,
+                linecolor="#CBD5E1",
+                rangeslider=dict(visible=True, thickness=0.07, bgcolor="#F1F5F9", bordercolor="#E2E8F0", borderwidth=1),
+            )
+            fig_neto_top.update_yaxes(
+                title_text="Neto CLP",
+                tickprefix="$",
+                separatethousands=True,
+                gridcolor="#E5EAF2",
+                zeroline=False,
+                linecolor="#CBD5E1",
+            )
+            st.plotly_chart(
+                fig_neto_top,
+                use_container_width=True,
+                config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
+                key="neto_fin_cont_top",
+            )
+        st.stop()
+
+    if ie_view == "Filtro centro costo / situación":
+        st.markdown(
+            """
+            <div class="risk-filter-card"><div class="risk-filter-title">Filtro por centro de costo / situación</div>
+            """,
+            unsafe_allow_html=True,
+        )
+        c_top1, c_top2, c_top3, c_top4 = st.columns([2, 1, 1, 1])
+        with c_top1:
+            dim_top = st.selectbox("Dimensión", ["Obs", "CC1", "Sit", "CC"], index=1, key="dim_pro_top")
+        with c_top2:
+            order_by_top = st.radio(
+                "Ordenar por",
+                ["Total CLP", "N° Transacciones"],
+                horizontal=True,
+                index=0,
+                key="order_by_pro_top",
+            )
+        with c_top3:
+            chart_type_top = st.selectbox(
+                "Visualización",
+                ["Barras", "Treemap"],
+                index=0,
+                key="chart_type_pro_top",
+            )
+        with c_top4:
+            top_n_top = st.slider(
+                "Top N",
+                min_value=5,
+                max_value=30,
+                value=12,
+                step=1,
+                key="topn_pro_top",
+            )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        df_riesgos_top = df_ie_base_periodo.dropna(subset=["Monto"]).copy()
+        df_riesgos_top[dim_top] = df_riesgos_top[dim_top].astype(str).str.strip()
+        df_riesgos_top = df_riesgos_top[
+            df_riesgos_top[dim_top].notna()
+            & (df_riesgos_top[dim_top] != "")
+            & (df_riesgos_top[dim_top].str.upper() != "NAN")
+        ]
+        if df_riesgos_top.empty:
+            st.info(f"No se encuentran registros para {periodo_filtro_lbl} en análisis {tipo_analisis.lower()}.")
+        else:
+            topN_raw_top = (
+                df_riesgos_top.groupby(dim_top)["Monto"]
+                .agg(["sum", "count"])
+                .rename(columns={"sum": "Total CLP", "count": "N° Transacciones"})
+                .reset_index()
+            )
+            sort_col_top = "Total CLP" if order_by_top == "Total CLP" else "N° Transacciones"
+            topN_top = topN_raw_top.sort_values(sort_col_top, ascending=False).head(top_n_top).copy()
+            topN_top["Impacto_abs"] = topN_top["Total CLP"].abs()
+            if chart_type_top == "Barras":
+                topN_top = topN_top.sort_values(sort_col_top, ascending=True)
+                fig_top_simple = go.Figure(go.Bar(
+                    x=topN_top[sort_col_top],
+                    y=topN_top[dim_top],
+                    orientation="h",
+                    marker=dict(color=np.where(topN_top["Total CLP"] >= 0, CHART_TEAL, CHART_RED)),
+                    customdata=topN_top[["Total CLP", "N° Transacciones"]],
+                    hovertemplate="<b>%{y}</b><br>Total: $%{customdata[0]:,.0f}<br>Transacciones: %{customdata[1]}<extra></extra>",
+                ))
+                fig_top_simple.update_layout(
+                    title=dict(text=f"Top {top_n_top} por {dim_top} · {periodo_filtro_lbl}", x=0.02),
+                    template="plotly_white",
+                    height=560,
+                    margin=dict(l=20, r=30, t=58, b=30),
+                    paper_bgcolor="#FFFFFF",
+                    plot_bgcolor="#FFFFFF",
+                )
+                fig_top_simple.update_xaxes(title_text=sort_col_top, tickprefix=("$" if sort_col_top == "Total CLP" else None), separatethousands=True)
+                fig_top_simple.update_yaxes(title_text="")
+                st.plotly_chart(fig_top_simple, use_container_width=True, config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]}, key="risk_top_simple")
+            else:
+                value_col_tree = "Impacto_abs" if sort_col_top == "Total CLP" else "N° Transacciones"
+                fig_tree_top = px.treemap(
+                    topN_top,
+                    path=[dim_top],
+                    values=value_col_tree,
+                    color="Total CLP",
+                    color_continuous_scale=["#EF4444", "#F8FAFC", "#7EA9A2"],
+                    title=f"Treemap Top {top_n_top} por {dim_top} · {periodo_filtro_lbl}",
+                )
+                fig_tree_top.update_layout(height=560, margin=dict(l=10, r=10, t=58, b=10), paper_bgcolor="#FFFFFF")
+                st.plotly_chart(fig_tree_top, use_container_width=True, config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]}, key="risk_tree_top")
+        st.stop()
 
     _df_acum = df_f.dropna(subset=["Monto"]).copy()
     _df_acum["Fecha_dt_acum"] = _df_acum[fecha_dt_acum_col]
@@ -7357,6 +7487,9 @@ if active_section == "📈 Ingresos & egresos":
                     config={"displaylogo": False, "displayModeBar": False},
                     key="ing_eg_donut_egresos_bottom",
                 )
+
+        if ie_view == "Resumen":
+            st.stop()
 
         def build_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
             if modo == "Contable":

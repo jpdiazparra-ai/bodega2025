@@ -2985,13 +2985,35 @@ if active_section == "🏠 Overview Ejecutivo":
             base_cmp = base_cmp.merge(egresos_cmp[["Periodo", "Egresos"]], on="Periodo", how="left")
             base_cmp = base_cmp.fillna(0).sort_values("Periodo")
             base_cmp[modo] = base_cmp["Ingresos"] - base_cmp["Egresos"].abs()
-            return base_cmp[["Periodo", modo]]
+            base_cmp["Egresos_plot"] = -base_cmp["Egresos"].abs()
+            return base_cmp[["Periodo", "Ingresos", "Egresos_plot", modo]]
 
-        neto_home_fin = build_home_neto_comparativo(df_f, "Financiero")
-        neto_home_con = build_home_neto_comparativo(df_f, "Contable")
+        flujo_home_fin = build_home_neto_comparativo(df_f, "Financiero")
+        flujo_home_con = build_home_neto_comparativo(df_f, "Contable")
+        neto_home_fin = flujo_home_fin[["Periodo", "Financiero"]]
+        neto_home_con = flujo_home_con[["Periodo", "Contable"]]
         neto_home_cmp = neto_home_fin.merge(neto_home_con, on="Periodo", how="outer").sort_values("Periodo").fillna(0)
 
         fig_flow = go.Figure()
+        if not flujo_home_fin.empty:
+            fig_flow.add_trace(
+                go.Bar(
+                    x=flujo_home_fin["Periodo"],
+                    y=flujo_home_fin["Ingresos"],
+                    name="Ingresos",
+                    marker=dict(color="rgba(5,150,105,0.42)", line=dict(color="rgba(5,150,105,0.65)", width=1)),
+                    hovertemplate="<b>%{x|%b %Y}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
+                )
+            )
+            fig_flow.add_trace(
+                go.Bar(
+                    x=flujo_home_fin["Periodo"],
+                    y=flujo_home_fin["Egresos_plot"],
+                    name="Egresos",
+                    marker=dict(color="rgba(220,38,38,0.42)", line=dict(color="rgba(220,38,38,0.65)", width=1)),
+                    hovertemplate="<b>%{x|%b %Y}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
+                )
+            )
         if not neto_home_cmp.empty:
             fig_flow.add_trace(
                 go.Scatter(
@@ -3016,16 +3038,9 @@ if active_section == "🏠 Overview Ejecutivo":
                 )
             )
         fig_flow.add_hline(y=0, line_width=1, line_color="#CBD5E1")
-        if not neto_home_cmp.empty:
-            max_home_periodo = pd.to_datetime(neto_home_cmp["Periodo"]).max()
-            min_home_periodo = pd.to_datetime(neto_home_cmp["Periodo"]).min()
-            start_home_12m = max(max_home_periodo - pd.DateOffset(months=11), min_home_periodo)
-            home_x_range = [start_home_12m, max_home_periodo]
-        else:
-            home_x_range = None
         fig_flow.update_layout(
             title=dict(
-                text="Neto financiero vs neto contable",
+                text="Ingresos, egresos y neto financiero vs contable",
                 x=0.02,
                 y=0.98,
                 xanchor="left",
@@ -3035,6 +3050,7 @@ if active_section == "🏠 Overview Ejecutivo":
             template="plotly_white",
             height=240,
             margin=dict(l=10, r=10, t=46, b=14),
+            barmode="relative",
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
             legend=dict(
@@ -3050,7 +3066,7 @@ if active_section == "🏠 Overview Ejecutivo":
             hovermode="x unified",
         )
         fig_flow.update_yaxes(
-            title_text="Neto CLP",
+            title_text="Flujo CLP",
             tickprefix="$",
             separatethousands=True,
             gridcolor="#E5EAF2",
@@ -3063,7 +3079,6 @@ if active_section == "🏠 Overview Ejecutivo":
             tickformat="%b %Y",
             title_font=dict(size=11, color="#64748B"),
             tickfont=dict(size=11, color="#64748B"),
-            range=home_x_range,
             rangeslider=dict(
                 visible=True,
                 thickness=0.035,

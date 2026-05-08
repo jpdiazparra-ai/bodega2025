@@ -2772,14 +2772,75 @@ if active_section == "🏠 Visión general":
             font-weight:700;
         }
         .asset-callout {
-            margin-top:10px;
+            margin-top:8px;
             border-radius:8px;
             background:#ecfdf3;
             border:1px solid #ccebd8;
             color:#14532d;
-            padding:8px 10px;
+            padding:7px 10px;
+            font-size:8.8px;
+            line-height:1.25;
+            font-weight:750;
+        }
+        .trend-salary-plan {
+            margin-top:7px;
+            border:1px solid #e2e8f0;
+            border-radius:8px;
+            background:#fbfdff;
+            padding:7px 8px;
+        }
+        .trend-salary-head {
+            display:flex;
+            justify-content:space-between;
+            gap:8px;
+            align-items:center;
+            color:#081735;
+            font-size:9.3px;
+            line-height:1.1;
+            font-weight:950;
+            margin-bottom:5px;
+        }
+        .trend-salary-head strong {
+            color:#475569;
+            font-size:8.4px;
+            font-weight:850;
+            white-space:nowrap;
+        }
+        .trend-salary-labels,
+        .trend-salary-row {
+            display:grid;
+            grid-template-columns:.55fr 1fr 1fr;
+            gap:6px;
+            align-items:center;
+        }
+        .trend-salary-labels {
+            color:#64748b;
+            font-size:7.7px;
+            font-weight:900;
+            text-transform:uppercase;
+            padding-bottom:3px;
+            border-bottom:1px solid #e5ebf3;
+        }
+        .trend-salary-row {
+            color:#0f1f3d;
+            font-size:8.6px;
+            font-weight:850;
+            padding:3px 0;
+            border-bottom:1px solid #eef2f7;
+        }
+        .trend-salary-row:last-of-type {
+            border-bottom:0;
+        }
+        .trend-salary-row strong {
+            color:#0B3A86;
             font-size:9px;
-            line-height:1.35;
+            font-weight:950;
+        }
+        .trend-salary-note {
+            margin-top:4px;
+            color:#475569;
+            font-size:7.9px;
+            line-height:1.25;
             font-weight:750;
         }
         .asset-diagnosis-card {
@@ -3141,6 +3202,27 @@ if active_section == "🏠 Visión general":
         ingresos_trend_color = "#DC2626" if ingresos_12m_growth < 0 else "#059669"
         canon_trend_color = "#DC2626" if canon_12m_growth < 0 else "#059669"
         egresos_trend_color = "#DC2626" if egresos_12m_growth > 0 else "#059669"
+        sueldo_base_honorario = 1_700_000
+        sueldo_actual_honorario = 1_500_000
+        deficit_honorarios = abs(posicion_neta) if posicion_neta < 0 else 0
+        honorario_rows_html = ""
+        for meses_plan in (6, 8, 12):
+            ahorro_mensual_total = deficit_honorarios / meses_plan if deficit_honorarios else 0
+            reduccion_por_persona = ahorro_mensual_total / 2
+            sueldo_por_persona = max(sueldo_base_honorario - reduccion_por_persona, 0)
+            honorario_rows_html += (
+                f'<div class="trend-salary-row">'
+                f'<strong>{meses_plan} meses</strong>'
+                f'<span>{fmt_clp_largo(reduccion_por_persona)}</span>'
+                f'<span>{fmt_clp_largo(sueldo_por_persona)}</span>'
+                f'</div>'
+            )
+        ahorro_actual_total = (sueldo_base_honorario - sueldo_actual_honorario) * 2
+        meses_con_sueldo_actual = deficit_honorarios / ahorro_actual_total if ahorro_actual_total and deficit_honorarios else 0
+        sueldo_actual_note = (
+            f"Actual {fmt_clp_largo(sueldo_actual_honorario)} c/u: ahorro "
+            f"{fmt_clp_largo(ahorro_actual_total)}/mes, cubre en {meses_con_sueldo_actual:.1f} meses."
+        )
         st.markdown(
             f"""
             <div class="asset-card asset-bottom-card">
@@ -3163,6 +3245,19 @@ if active_section == "🏠 Visión general":
                     </div>
                 </div>
                 <div class="asset-callout">Lectura 12M: {top_concentration_txt}. {pressure_txt}. Base móvil sobre registros pagados y abonados.</div>
+                <div class="trend-salary-plan">
+                    <div class="trend-salary-head">
+                        <span>Escenario honorarios</span>
+                        <strong>Base {fmt_clp_largo(sueldo_base_honorario)} c/u</strong>
+                    </div>
+                    <div class="trend-salary-labels">
+                        <span>Plazo</span>
+                        <span>Reducir c/u</span>
+                        <span>Sueldo c/u</span>
+                    </div>
+                    {honorario_rows_html}
+                    <div class="trend-salary-note">Para cubrir {fmt_clp_largo(deficit_honorarios)} de neto acumulado. {sueldo_actual_note}</div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,

@@ -86,6 +86,59 @@ section[data-testid="stSidebar"] {
     min-width: 252px !important;
     background: linear-gradient(180deg, #061d3b 0%, #031326 62%, #020b17 100%);
     border-right: 1px solid rgba(148, 163, 184, 0.16);
+    transition: margin-left 160ms ease, width 160ms ease, min-width 160ms ease, opacity 120ms ease;
+    z-index: 999;
+}
+body.bodegas-sidebar-collapsed section[data-testid="stSidebar"] {
+    width: 0 !important;
+    min-width: 0 !important;
+    margin-left: -252px !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    border-right: 0 !important;
+}
+body.bodegas-sidebar-collapsed section[data-testid="stSidebar"] > div {
+    display: none !important;
+}
+body.bodegas-sidebar-collapsed .block-container {
+    max-width: none !important;
+    padding-left: 1.15rem !important;
+    padding-right: 1.15rem !important;
+}
+body.bodegas-sidebar-collapsed [data-testid="stAppViewContainer"] {
+    margin-left: 0 !important;
+}
+.bodegas-sidebar-toggle {
+    position: fixed;
+    left: 12px;
+    top: 92px;
+    z-index: 10000;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid rgba(203,213,225,0.9);
+    background: #ffffff;
+    color: #0f2d52;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 28px rgba(15,23,42,0.16);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    font-weight: 950;
+}
+.bodegas-sidebar-toggle:hover {
+    background: #f8fafc;
+    border-color: #93c5fd;
+}
+body:not(.bodegas-sidebar-collapsed) .bodegas-sidebar-toggle {
+    left: 262px;
+}
+@media (max-width: 900px) {
+    body:not(.bodegas-sidebar-collapsed) .bodegas-sidebar-toggle {
+        left: 12px;
+    }
 }
 section[data-testid="stSidebar"] > div {
     background: transparent;
@@ -318,6 +371,57 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 }
 </style>
 """, unsafe_allow_html=True)
+
+components.html(
+    """
+    <script>
+    (function () {
+        const win = window.parent;
+        const doc = win.document;
+        const KEY = "bodegas_sidebar_collapsed_v1";
+
+        function collapsed() {
+            try {
+                return win.localStorage.getItem(KEY) === "1";
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function setCollapsed(value) {
+            doc.body.classList.toggle("bodegas-sidebar-collapsed", value);
+            try {
+                win.localStorage.setItem(KEY, value ? "1" : "0");
+            } catch (err) {}
+            const btn = doc.getElementById("bodegas-sidebar-toggle");
+            if (btn) {
+                btn.innerHTML = value ? "☰" : "‹";
+                btn.title = value ? "Abrir panel" : "Ocultar panel";
+                btn.setAttribute("aria-label", btn.title);
+            }
+            win.dispatchEvent(new Event("resize"));
+            setTimeout(function () { win.dispatchEvent(new Event("resize")); }, 180);
+        }
+
+        setCollapsed(collapsed());
+
+        let btn = doc.getElementById("bodegas-sidebar-toggle");
+        if (!btn) {
+            btn = doc.createElement("button");
+            btn.id = "bodegas-sidebar-toggle";
+            btn.type = "button";
+            btn.className = "bodegas-sidebar-toggle";
+            doc.body.appendChild(btn);
+        }
+        btn.onclick = function () {
+            setCollapsed(!doc.body.classList.contains("bodegas-sidebar-collapsed"));
+        };
+        setCollapsed(collapsed());
+    })();
+    </script>
+    """,
+    height=0,
+)
 
 components.html(
     """

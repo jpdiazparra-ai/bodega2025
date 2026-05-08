@@ -4233,25 +4233,32 @@ if active_section == "⚠️ Riesgo & Cobranza":
     st.dataframe(styler, use_container_width=True)
 
     def _return_to_gmail_cobranza():
-        st.session_state["_scroll_to_gmail_cobranza"] = True
+        st.session_state["_scroll_to_gmail_cobranza_nonce"] = (
+            st.session_state.get("_scroll_to_gmail_cobranza_nonce", 0) + 1
+        )
 
     st.markdown(
         '<div id="gmail-cobranza-anchor"></div>',
         unsafe_allow_html=True,
     )
-    if st.session_state.pop("_scroll_to_gmail_cobranza", False):
+    gmail_scroll_nonce = st.session_state.get("_scroll_to_gmail_cobranza_nonce", 0)
+    gmail_scroll_rendered = st.session_state.get("_scroll_to_gmail_cobranza_rendered", 0)
+    if gmail_scroll_nonce and gmail_scroll_nonce != gmail_scroll_rendered:
+        st.session_state["_scroll_to_gmail_cobranza_rendered"] = gmail_scroll_nonce
         components.html(
-            """
+            f"""
             <script>
-            const scrollToGmailCobranza = () => {
+            // nonce: {gmail_scroll_nonce}
+            const scrollToGmailCobranza = () => {{
                 const anchor = window.parent.document.getElementById("gmail-cobranza-anchor");
-                if (anchor) {
-                    anchor.scrollIntoView({behavior: "auto", block: "start"});
+                if (anchor) {{
+                    anchor.scrollIntoView({{behavior: "auto", block: "start"}});
                     window.parent.scrollBy(0, -18);
-                }
-            };
+                }}
+            }};
             setTimeout(scrollToGmailCobranza, 80);
             setTimeout(scrollToGmailCobranza, 260);
+            setTimeout(scrollToGmailCobranza, 520);
             </script>
             """,
             height=0,

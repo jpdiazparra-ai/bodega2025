@@ -4099,28 +4099,16 @@ if active_section == "⚠️ Riesgo & Cobranza":
             <script>
             // nonce: {gmail_scroll_nonce}
             const doc = window.parent.document;
-            const appRoot = doc.querySelector("section.main .block-container") || doc.querySelector("[data-testid='stAppViewContainer']");
-            if (appRoot) {{
-                appRoot.style.opacity = "0";
-                appRoot.style.transition = "opacity 80ms linear";
-            }}
             let attempts = 0;
-            const reveal = () => {{
-                if (appRoot) {{
-                    appRoot.style.opacity = "1";
-                }}
-            }};
             const scrollToGmailCobranza = () => {{
                 attempts += 1;
                 const anchor = doc.getElementById("gmail-cobranza-anchor");
                 if (anchor) {{
                     anchor.scrollIntoView({{behavior: "auto", block: "start"}});
                     window.parent.scrollBy(0, -18);
-                    reveal();
                     return true;
                 }}
                 if (attempts > 60) {{
-                    reveal();
                     return true;
                 }}
                 return false;
@@ -4131,7 +4119,6 @@ if active_section == "⚠️ Riesgo & Cobranza":
                 }}
             }}, 50);
             setTimeout(scrollToGmailCobranza, 0);
-            setTimeout(reveal, 3500);
             </script>
             """,
             height=0,

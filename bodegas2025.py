@@ -59,7 +59,15 @@ main {
 }
 .block-container {
     max-width: 1680px;
-    padding: 0rem 1rem 0.5rem 1rem !important;
+    padding: 1.2rem 1rem 0.5rem 1rem !important;
+}
+section.main > div,
+div[data-testid="stMainBlockContainer"],
+div[data-testid="block-container"] {
+    padding-top: 1.2rem !important;
+}
+div[data-testid="stAppViewContainer"] {
+    padding-top: 0 !important;
 }
 header[data-testid="stHeader"],
 div[data-testid="stToolbar"],
@@ -125,7 +133,7 @@ body.bodegas-sidebar-collapsed [data-testid="stAppViewContainer"] {
 .bodegas-sidebar-toggle {
     position: fixed;
     left: 12px;
-    top: 92px;
+    top: 28px;
     z-index: 10000;
     width: 38px;
     height: 38px;
@@ -157,6 +165,10 @@ body:not(.bodegas-sidebar-collapsed) .bodegas-sidebar-toggle {
 section[data-testid="stSidebar"] > div {
     background: transparent;
     padding: 1.15rem 0.65rem 1rem 0.65rem;
+}
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+aside[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    padding-top: 1.2rem !important;
 }
 section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
     color: #e5edf7;

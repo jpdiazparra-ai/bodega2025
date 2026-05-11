@@ -2524,7 +2524,7 @@ st.markdown("""
         display:flex;
         justify-content:space-between;
         align-items:flex-start;
-        margin:22px 0 14px 0;
+        margin:-68px 0 14px 0;
         gap:16px;
     }
     .tab-title-main {
@@ -4193,7 +4193,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
     st.markdown(
         """
         <style>
-        .tab-title-row { margin:14px 0 10px 0; }
+        .tab-title-row { margin:-68px 0 10px 0; }
         .section-heading-wrap { margin:14px 0 10px 0; }
         .risk-kpi-card {
             min-height:74px;
@@ -5641,7 +5641,7 @@ if active_section == "💰 Ingresos":
             display:flex;
             justify-content:space-between;
             align-items:flex-start;
-            margin:18px 0 14px 0;
+            margin:-68px 0 14px 0;
         }
         .ie-title {
             color:#081735;
@@ -6403,7 +6403,7 @@ if active_section == "📈 Flujo Operacional":
             display:flex;
             justify-content:space-between;
             align-items:flex-start;
-            margin:18px 0 18px 0;
+            margin:-68px 0 18px 0;
         }
         .ie-title {
             color:#081735;

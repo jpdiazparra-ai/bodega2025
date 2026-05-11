@@ -2958,6 +2958,10 @@ if active_section == "🏠 Overview Ejecutivo":
             font-size:10px;
             font-weight:700;
         }
+        iframe[title="streamlitApp"][height="384"] {
+            display:block;
+            margin-top:-14px !important;
+        }
         @media (max-width: 1300px) {
             .asset-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }

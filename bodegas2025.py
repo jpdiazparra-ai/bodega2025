@@ -2524,7 +2524,7 @@ st.markdown("""
         display:flex;
         justify-content:space-between;
         align-items:flex-start;
-        margin:-76px 0 14px 0;
+        margin:22px 0 14px 0;
         gap:16px;
     }
     .tab-title-main {
@@ -2671,7 +2671,7 @@ if active_section == "🏠 Overview Ejecutivo":
         """
         <style>
         .tab-title-row {
-            margin:6px 0 8px 0;
+            margin:-68px 0 8px 0;
         }
         .asset-toolbar {
             display:flex;

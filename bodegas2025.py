@@ -155,11 +155,11 @@ body.bodegas-sidebar-collapsed [data-testid="stAppViewContainer"] {
     border-color: #93c5fd;
 }
 body:not(.bodegas-sidebar-collapsed) .bodegas-sidebar-toggle {
-    left: 262px;
+    left: 202px;
 }
 @media (max-width: 900px) {
     body:not(.bodegas-sidebar-collapsed) .bodegas-sidebar-toggle {
-        left: 12px;
+        left: 202px;
     }
 }
 section[data-testid="stSidebar"] > div {

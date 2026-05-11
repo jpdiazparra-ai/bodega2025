@@ -2758,12 +2758,12 @@ if active_section == "🏠 Overview Ejecutivo":
             border:1px solid #dbe3ee;
             border-radius:10px;
             background:#ffffff;
-            padding:11px;
+            padding:16px;
             box-shadow:0 10px 24px rgba(15,23,42,0.04);
             min-height:100%;
         }
         .asset-bottom-card {
-            height:326px;
+            height:380px;
             box-sizing:border-box;
             display:flex;
             flex-direction:column;
@@ -2777,7 +2777,9 @@ if active_section == "🏠 Overview Ejecutivo":
         .asset-summary-list {
             display:flex;
             flex-direction:column;
-            gap:6px;
+            gap:8px;
+            flex:1;
+            justify-content:space-between;
         }
         .asset-summary-row {
             display:grid;
@@ -2858,7 +2860,7 @@ if active_section == "🏠 Overview Ejecutivo":
             font-weight:700;
         }
         .asset-callout {
-            margin-top:8px;
+            margin-top:10px;
             border-radius:8px;
             background:#ecfdf3;
             border:1px solid #ccebd8;
@@ -2869,11 +2871,11 @@ if active_section == "🏠 Overview Ejecutivo":
             font-weight:750;
         }
         .trend-salary-plan {
-            margin-top:7px;
+            margin-top:auto;
             border:1px solid #e2e8f0;
             border-radius:8px;
             background:#fbfdff;
-            padding:7px 8px;
+            padding:10px 10px;
         }
         .trend-salary-head {
             display:flex;
@@ -3311,8 +3313,8 @@ if active_section == "🏠 Overview Ejecutivo":
         )
         components.html(
             f"""
-            <div style="height:326px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
-                        padding:11px 13px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
+            <div style="height:380px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
+                        padding:16px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
                         position:relative;
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
                 <style>
@@ -3356,7 +3358,7 @@ if active_section == "🏠 Overview Ejecutivo":
                         <div style="font-size:9px;font-weight:900;color:#081735;">Estado Saludable<br><span style="display:inline-block;margin-top:4px;color:#31507a;font-weight:850;">70 - 100</span></div>
                     </div>
                 </div>
-                <details style="position:absolute;left:13px;right:13px;bottom:11px;">
+                <details style="position:absolute;left:16px;right:16px;bottom:16px;">
                     <summary style="height:26px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;
                                 justify-content:center;color:#0f2d52;font-size:10px;font-weight:900;cursor:pointer;background:#ffffff;">
                         <span style="flex:1;text-align:center;">Ver recomendaciones</span><span style="padding-right:10px;">→</span>
@@ -3372,7 +3374,7 @@ if active_section == "🏠 Overview Ejecutivo":
                 </details>
             </div>
             """,
-            height=330,
+            height=384,
             scrolling=False,
         )
 

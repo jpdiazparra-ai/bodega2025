@@ -2107,137 +2107,11 @@ def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: 
     )
 
 
-def _download_link_html(label: str, data: bytes, filename: str, mime: str, css_class: str) -> str:
-    b64 = base64.b64encode(data).decode("utf-8")
+def _print_pdf_action_html(label: str, css_class: str) -> str:
     return (
-        f'<a class="{css_class}" href="data:{mime};base64,{b64}" '
-        f'download="{filename}">{label}</a>'
+        f'<a class="{css_class}" href="#" '
+        f'onclick="window.print(); return false;">{label}</a>'
     )
-
-
-def build_overview_pdf(
-    kpis: list[tuple[str, str, str]],
-    summary_rows: list[tuple[str, str, str, str]],
-    trends: list[tuple[str, str, str]],
-    diagnosis: dict,
-    lectura: str,
-    recommendation: str,
-) -> bytes:
-    buf = BytesIO()
-    doc = SimpleDocTemplate(
-        buf,
-        pagesize=landscape(A4),
-        rightMargin=24,
-        leftMargin=24,
-        topMargin=22,
-        bottomMargin=20,
-    )
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        "OverviewTitle",
-        parent=styles["Title"],
-        fontName="Helvetica-Bold",
-        fontSize=20,
-        leading=24,
-        textColor=colors.HexColor("#081735"),
-        alignment=TA_LEFT,
-        spaceAfter=2,
-    )
-    sub_style = ParagraphStyle(
-        "OverviewSub",
-        parent=styles["BodyText"],
-        fontName="Helvetica",
-        fontSize=9.5,
-        leading=12,
-        textColor=colors.HexColor("#475569"),
-        spaceAfter=12,
-    )
-    body_style = ParagraphStyle(
-        "OverviewBody",
-        parent=styles["BodyText"],
-        fontName="Helvetica",
-        fontSize=8.2,
-        leading=10,
-        textColor=colors.HexColor("#334155"),
-    )
-    story = [
-        Paragraph("Overview Ejecutivo", title_style),
-        Paragraph("Estado del activo y métricas financieras consolidadas", sub_style),
-    ]
-
-    card_data = []
-    for title, value, badge in kpis:
-        card_data.append(
-            [
-                Paragraph(f"<b>{escape(title)}</b>", body_style),
-                Paragraph(f"<font size='14'><b>{escape(value)}</b></font>", body_style),
-                Paragraph(escape(badge), body_style),
-            ]
-        )
-    card_table = Table([card_data], colWidths=[152] * len(card_data))
-    card_table.setStyle(
-        TableStyle(
-            [
-                ("GRID", (0, 0), (-1, -1), 0.6, colors.HexColor("#DDE7F2")),
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FBFDFF")),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ]
-        )
-    )
-    story.extend([card_table, Spacer(1, 10)])
-
-    story.append(_pdf_section_banner("LECTURA DEL FLUJO", 790))
-    story.append(Paragraph(escape(lectura), body_style))
-    story.append(Spacer(1, 10))
-
-    summary_df = pd.DataFrame(summary_rows, columns=["Indicador", "Detalle", "Valor", "%"])
-    trends_df = pd.DataFrame(trends, columns=["Métrica", "Variación", "Detalle"])
-    diag_df = pd.DataFrame(
-        [
-            ("Puntaje", f"{diagnosis['score']}/100"),
-            ("Estado", diagnosis["status"]),
-            ("Caja", diagnosis["cash"]),
-            ("Margen", diagnosis["margin"]),
-            ("CAPEX", diagnosis["capex"]),
-            ("Recomendación", recommendation),
-        ],
-        columns=["Diagnóstico", "Valor"],
-    )
-
-    table_row = [
-        _df_to_rl_table(summary_df, max_width=250, font_size=6.6, min_col_width=38, max_col_width=92, cell_padding=3),
-        _df_to_rl_table(trends_df, max_width=250, font_size=6.8, min_col_width=45, max_col_width=105, cell_padding=3),
-        _df_to_rl_table(diag_df, max_width=250, font_size=6.8, min_col_width=52, max_col_width=150, cell_padding=3),
-    ]
-    cols = Table(
-        [
-            [
-                _pdf_section_banner("RESUMEN DEL PERÍODO", 250),
-                _pdf_section_banner("ANÁLISIS DE TENDENCIA", 250),
-                _pdf_section_banner("DIAGNÓSTICO DEL ACTIVO", 250),
-            ],
-            table_row,
-        ],
-        colWidths=[260, 260, 260],
-    )
-    cols.setStyle(
-        TableStyle(
-            [
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                ("TOPPADDING", (0, 0), (-1, -1), 0),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ]
-        )
-    )
-    story.append(cols)
-    doc.build(story)
-    return buf.getvalue()
 
 
 def tab_header(
@@ -2710,6 +2584,59 @@ st.markdown("""
         border-color:#0B3A86;
         color:#ffffff;
     }
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 7mm;
+        }
+        html, body, main, .stApp {
+            background:#ffffff !important;
+            overflow: visible !important;
+        }
+        header[data-testid="stHeader"],
+        div[data-testid="stToolbar"],
+        div[data-testid="stStatusWidget"],
+        div[data-testid="stDecoration"],
+        section[data-testid="stSidebar"],
+        aside[data-testid="stSidebar"],
+        .bodegas-sidebar-toggle,
+        .tab-actions,
+        #MainMenu,
+        footer {
+            display:none !important;
+            visibility:hidden !important;
+            width:0 !important;
+            height:0 !important;
+        }
+        .block-container,
+        div[data-testid="stMainBlockContainer"],
+        div[data-testid="block-container"] {
+            max-width:none !important;
+            width:100% !important;
+            padding:0 !important;
+            margin:0 !important;
+        }
+        div[data-testid="stAppViewContainer"],
+        body.bodegas-sidebar-collapsed [data-testid="stAppViewContainer"] {
+            margin-left:0 !important;
+            padding-left:0 !important;
+        }
+        .tab-title-row {
+            margin:0 0 8px 0 !important;
+        }
+        .asset-kpi-grid,
+        .asset-card,
+        .asset-bottom-card {
+            break-inside:avoid;
+            page-break-inside:avoid;
+        }
+        .js-plotly-plot,
+        .plot-container,
+        .svg-container {
+            break-inside:avoid;
+            page-break-inside:avoid;
+        }
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -3117,49 +3044,8 @@ if active_section == "🏠 Overview Ejecutivo":
         unsafe_allow_html=True,
     )
 
-    overview_kpis_pdf = [
-        ("Posición Neta", fmt_clp_largo(posicion_neta), f"{'Déficit' if posicion_neta < 0 else 'Superávit'} acumulado"),
-        ("Caja Disponible", fmt_clp_largo(balance_kpi), f"Runway: {cobertura_egresos:.1f} meses"),
-        ("Inversión Total (CAPEX)", fmt_clp_largo(CAPEX), f"{cobertura_capex:.1%} recuperado"),
-        ("Margen Neto", f"{margen_neto:.1%}", "Sobre ingresos acumulados"),
-        ("Caja / Egreso Prom.", f"{cobertura_egresos:.2f}x", "Cobertura mensual"),
-    ]
-    overview_summary_pdf = [
-        ("Total ingresos", "Suma de ingresos del período", fmt_clp_largo(ingresos_kpi), "100.0%"),
-        ("Total egresos", "Suma de egresos del período", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
-        ("Total neto", "Ingresos menos egresos", fmt_clp_largo(utilidad_operativa), f"{margen_neto:.1%}"),
-        ("Neto acumulado", "Suma histórica del neto", fmt_clp_largo(posicion_neta), "-"),
-        ("Margen neto", "Neto dividido por ingresos", f"{margen_neto:.1%}", "-"),
-    ]
-    overview_trends_pdf = [
-        ("Ingresos 12M", f"{ingresos_12m_growth:+.1%}", "Total ingresos vs 12 previos"),
-        ("Canon 12M", f"{canon_12m_growth:+.1%}", "Canon mensual vs 12 previos"),
-        ("Egresos 12M", f"{egresos_12m_growth:+.1%}", "Egresos pagados vs 12 previos"),
-    ]
-    overview_recommendation_pdf = (
-        "Revisar canon, cobranza y postergar CAPEX no crítico"
-        if health_score < 70
-        else "Mantener control de caja y ocupación"
-    )
-    overview_pdf_bytes = build_overview_pdf(
-        overview_kpis_pdf,
-        overview_summary_pdf,
-        overview_trends_pdf,
-        {
-            "score": health_score,
-            "status": estado_txt,
-            "cash": runway_txt,
-            "margin": f"{margen_neto:.1%} sobre ingresos",
-            "capex": f"{cobertura_capex:.1%} recuperado",
-        },
-        f"{top_concentration_txt}. {pressure_txt}. Base móvil sobre registros pagados y abonados.",
-        overview_recommendation_pdf,
-    )
-    overview_download_html = _download_link_html(
+    overview_download_html = _print_pdf_action_html(
         "⇩ Descargar reporte",
-        overview_pdf_bytes,
-        "overview_ejecutivo_bodegas_balmaceda.pdf",
-        "application/pdf",
         "tab-action tab-action-primary",
     )
 

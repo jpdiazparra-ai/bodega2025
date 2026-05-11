@@ -2107,149 +2107,11 @@ def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: 
     )
 
 
-def _download_link_html(label: str, data: bytes, filename: str, mime: str, css_class: str) -> str:
-    b64 = base64.b64encode(data).decode("utf-8")
-    return (
-        f'<a id="overview-download-report" class="{css_class}" href="data:{mime};base64,{b64}" '
-        f'download="{filename}">{label}</a>'
-    )
-
-
 def _download_anchor_html(label: str, css_class: str) -> str:
     return (
         f'<a id="overview-download-report" class="{css_class}" href="#" '
         f'role="button">{label}</a>'
     )
-
-
-def build_overview_pdf(
-    kpis: list[tuple[str, str, str]],
-    summary_rows: list[tuple[str, str, str, str]],
-    trends: list[tuple[str, str, str]],
-    diagnosis: dict,
-    lectura: str,
-    recommendation: str,
-    chart_png: bytes | None = None,
-) -> bytes:
-    buf = BytesIO()
-    doc = SimpleDocTemplate(
-        buf,
-        pagesize=landscape(A4),
-        rightMargin=22,
-        leftMargin=22,
-        topMargin=18,
-        bottomMargin=18,
-    )
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        "OverviewTitle",
-        parent=styles["Title"],
-        fontName="Helvetica-Bold",
-        fontSize=18,
-        leading=22,
-        textColor=colors.HexColor("#081735"),
-        alignment=TA_LEFT,
-        spaceAfter=2,
-    )
-    sub_style = ParagraphStyle(
-        "OverviewSub",
-        parent=styles["BodyText"],
-        fontName="Helvetica",
-        fontSize=9,
-        leading=11,
-        textColor=colors.HexColor("#475569"),
-        spaceAfter=8,
-    )
-    cell_style = ParagraphStyle(
-        "OverviewCell",
-        parent=styles["BodyText"],
-        fontName="Helvetica",
-        fontSize=7.2,
-        leading=9,
-        textColor=colors.HexColor("#334155"),
-    )
-
-    story = [
-        Paragraph("Overview Ejecutivo", title_style),
-        Paragraph("Estado del activo y métricas financieras consolidadas", sub_style),
-    ]
-
-    kpi_cells = []
-    for title, value, badge in kpis:
-        kpi_cells.append(
-            [
-                Paragraph(f"<b>{escape(title)}</b>", cell_style),
-                Paragraph(f"<font size='13'><b>{escape(value)}</b></font>", cell_style),
-                Paragraph(escape(badge), cell_style),
-            ]
-        )
-    kpi_table = Table([kpi_cells], colWidths=[154] * len(kpi_cells))
-    kpi_table.setStyle(
-        TableStyle(
-            [
-                ("GRID", (0, 0), (-1, -1), 0.65, colors.HexColor("#DDE7F2")),
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FBFDFF")),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 7),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
-            ]
-        )
-    )
-    story.extend([kpi_table, Spacer(1, 7)])
-
-    if chart_png:
-        story.append(_pdf_section_banner("INGRESOS, EGRESOS Y NETO FINANCIERO VS CONTABLE", 790))
-        story.append(RLImage(BytesIO(chart_png), width=760, height=210))
-        story.append(Spacer(1, 8))
-    else:
-        story.append(_pdf_section_banner("LECTURA DEL FLUJO", 790))
-        story.append(Paragraph(escape(lectura), cell_style))
-        story.append(Spacer(1, 8))
-
-    summary_df = pd.DataFrame(summary_rows, columns=["Indicador", "Detalle", "Valor", "%"])
-    trends_df = pd.DataFrame(trends, columns=["Métrica", "Variación", "Detalle"])
-    diag_df = pd.DataFrame(
-        [
-            ("Puntaje", f"{diagnosis['score']}/100"),
-            ("Estado", diagnosis["status"]),
-            ("Caja", diagnosis["cash"]),
-            ("Margen", diagnosis["margin"]),
-            ("CAPEX", diagnosis["capex"]),
-            ("Recomendación", recommendation),
-        ],
-        columns=["Diagnóstico", "Valor"],
-    )
-    columns = Table(
-        [
-            [
-                _pdf_section_banner("RESUMEN DEL PERÍODO", 250),
-                _pdf_section_banner("ANÁLISIS DE TENDENCIA", 250),
-                _pdf_section_banner("DIAGNÓSTICO DEL ACTIVO", 250),
-            ],
-            [
-                _df_to_rl_table(summary_df, max_width=250, font_size=6.5, min_col_width=36, max_col_width=92, cell_padding=3),
-                _df_to_rl_table(trends_df, max_width=250, font_size=6.7, min_col_width=45, max_col_width=105, cell_padding=3),
-                _df_to_rl_table(diag_df, max_width=250, font_size=6.7, min_col_width=52, max_col_width=150, cell_padding=3),
-            ],
-        ],
-        colWidths=[263, 263, 263],
-    )
-    columns.setStyle(
-        TableStyle(
-            [
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                ("TOPPADDING", (0, 0), (-1, -1), 0),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ]
-        )
-    )
-    story.append(columns)
-    doc.build(story)
-    return buf.getvalue()
 
 
 def tab_header(
@@ -3367,64 +3229,6 @@ if active_section == "🏠 Overview Ejecutivo":
                 borderwidth=1,
             ),
         )
-        overview_chart_png = None
-        try:
-            fig_pdf = go.Figure(fig_flow)
-            fig_pdf.update_layout(height=315, margin=dict(l=32, r=18, t=58, b=36))
-            fig_pdf.update_xaxes(rangeslider=dict(visible=False))
-            overview_chart_png = fig_pdf.to_image(format="png", width=1520, height=630, scale=2)
-        except Exception:
-            overview_chart_png = None
-
-        overview_pdf_bytes = build_overview_pdf(
-            [
-                ("Posición Neta", fmt_clp_largo(posicion_neta), f"{'Déficit' if posicion_neta < 0 else 'Superávit'} acumulado"),
-                ("Caja Disponible", fmt_clp_largo(balance_kpi), f"Runway: {cobertura_egresos:.1f} meses"),
-                ("Inversión Total (CAPEX)", fmt_clp_largo(CAPEX), f"{cobertura_capex:.1%} recuperado"),
-                ("Margen Neto", f"{margen_neto:.1%}", "Sobre ingresos acumulados"),
-                ("Caja / Egreso Prom.", f"{cobertura_egresos:.2f}x", "Cobertura mensual"),
-            ],
-            [
-                ("Total ingresos", "Suma de ingresos del período", fmt_clp_largo(ingresos_kpi), "100.0%"),
-                ("Total egresos", "Suma de egresos del período", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
-                ("Total neto", "Ingresos menos egresos", fmt_clp_largo(utilidad_operativa), f"{margen_neto:.1%}"),
-                ("Neto acumulado", "Suma histórica del neto", fmt_clp_largo(posicion_neta), "-"),
-                ("Margen neto", "Neto dividido por ingresos", f"{margen_neto:.1%}", "-"),
-            ],
-            [
-                ("Ingresos 12M", f"{ingresos_12m_growth:+.1%}", "Total ingresos vs 12 previos"),
-                ("Canon 12M", f"{canon_12m_growth:+.1%}", "Canon mensual vs 12 previos"),
-                ("Egresos 12M", f"{egresos_12m_growth:+.1%}", "Egresos pagados vs 12 previos"),
-            ],
-            {
-                "score": health_score,
-                "status": estado_txt,
-                "cash": runway_txt,
-                "margin": f"{margen_neto:.1%} sobre ingresos",
-                "capex": f"{cobertura_capex:.1%} recuperado",
-            },
-            f"{top_concentration_txt}. {pressure_txt}. Base móvil sobre registros pagados y abonados.",
-            (
-                "Revisar canon, cobranza y postergar CAPEX no crítico"
-                if health_score < 70
-                else "Mantener control de caja y ocupación"
-            ),
-            overview_chart_png,
-        )
-        overview_pdf_uri = "data:application/pdf;base64," + base64.b64encode(overview_pdf_bytes).decode("utf-8")
-        components.html(
-            f"""
-            <script>
-            (function () {{
-                const btn = window.parent.document.getElementById("overview-download-report");
-                if (!btn) return;
-                btn.href = "{overview_pdf_uri}";
-                btn.download = "overview_ejecutivo_bodegas_balmaceda.pdf";
-            }})();
-            </script>
-            """,
-            height=0,
-        )
         st.plotly_chart(
             fig_flow,
             use_container_width=True,
@@ -3655,6 +3459,116 @@ if active_section == "🏠 Overview Ejecutivo":
             height=384,
             scrolling=False,
         )
+
+    components.html(
+        """
+        <script>
+        (function () {
+            const win = window.parent;
+            const doc = win.document;
+            const btn = doc.getElementById("overview-download-report");
+            if (!btn || btn.dataset.captureHandlerAttached === "1") return;
+            btn.dataset.captureHandlerAttached = "1";
+
+            function loadScript(src) {
+                return new Promise(function (resolve, reject) {
+                    const existing = doc.querySelector('script[src="' + src + '"]');
+                    if (existing) {
+                        existing.addEventListener("load", resolve, { once: true });
+                        if (existing.dataset.loaded === "1") resolve();
+                        return;
+                    }
+                    const script = doc.createElement("script");
+                    script.src = src;
+                    script.onload = function () {
+                        script.dataset.loaded = "1";
+                        resolve();
+                    };
+                    script.onerror = reject;
+                    doc.head.appendChild(script);
+                });
+            }
+
+            async function downloadOverviewPdf(event) {
+                event.preventDefault();
+                const originalText = btn.textContent;
+                btn.textContent = "Generando PDF...";
+                btn.style.pointerEvents = "none";
+
+                const hidden = [];
+                function hide(selector) {
+                    doc.querySelectorAll(selector).forEach(function (node) {
+                        hidden.push([node, node.style.display]);
+                        node.style.display = "none";
+                    });
+                }
+
+                try {
+                    await loadScript("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js");
+                    await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+
+                    const target = doc.querySelector("section.main .block-container")
+                        || doc.querySelector('[data-testid="stMainBlockContainer"]')
+                        || doc.querySelector(".block-container");
+                    if (!target) throw new Error("No se encontró el contenido del reporte.");
+
+                    hide("section[data-testid='stSidebar']");
+                    hide("aside[data-testid='stSidebar']");
+                    hide(".bodegas-sidebar-toggle");
+                    hide(".tab-actions");
+                    hide("header[data-testid='stHeader']");
+                    hide("div[data-testid='stToolbar']");
+
+                    const canvas = await win.html2canvas(target, {
+                        backgroundColor: "#ffffff",
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        windowWidth: Math.max(target.scrollWidth, doc.documentElement.clientWidth),
+                        windowHeight: Math.max(target.scrollHeight, doc.documentElement.clientHeight)
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new win.jspdf.jsPDF({
+                        orientation: "landscape",
+                        unit: "pt",
+                        format: "a4"
+                    });
+                    const pageW = pdf.internal.pageSize.getWidth();
+                    const pageH = pdf.internal.pageSize.getHeight();
+                    const margin = 10;
+                    const usableW = pageW - margin * 2;
+                    const imgH = canvas.height * usableW / canvas.width;
+                    let y = margin;
+                    let remaining = imgH;
+
+                    pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                    remaining -= pageH - margin * 2;
+                    while (remaining > 0) {
+                        pdf.addPage();
+                        y = margin - (imgH - remaining);
+                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                        remaining -= pageH - margin * 2;
+                    }
+                    pdf.save("overview_ejecutivo_bodegas_balmaceda.pdf");
+                } catch (err) {
+                    win.alert("No se pudo generar el PDF visual. Intenta nuevamente cuando la página termine de cargar.");
+                } finally {
+                    hidden.forEach(function (entry) {
+                        entry[0].style.display = entry[1];
+                    });
+                    btn.textContent = originalText;
+                    btn.style.pointerEvents = "";
+                }
+            }
+
+            btn.addEventListener("click", downloadOverviewPdf);
+        })();
+        </script>
+        """,
+        height=0,
+    )
 
     st.stop()
 

@@ -113,7 +113,7 @@ body.bodegas-sidebar-collapsed aside[data-testid="stSidebar"] {
     width: 0 !important;
     min-width: 0 !important;
     max-width: 0 !important;
-    margin-left: -252px !important;
+    margin-left: 0 !important;
     opacity: 0 !important;
     overflow: hidden !important;
     border-right: 0 !important;

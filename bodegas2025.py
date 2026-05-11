@@ -2109,8 +2109,8 @@ def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: 
 
 def _print_pdf_action_html(label: str, css_class: str) -> str:
     return (
-        f'<a class="{css_class}" href="#" '
-        f'onclick="window.print(); return false;">{label}</a>'
+        f'<a id="overview-print-report" class="{css_class}" href="#" '
+        f'role="button">{label}</a>'
     )
 
 
@@ -3096,6 +3096,24 @@ if active_section == "🏠 Overview Ejecutivo":
         </div>
         """,
         unsafe_allow_html=True,
+    )
+    components.html(
+        """
+        <script>
+        (function () {
+            const doc = window.parent.document;
+            const btn = doc.getElementById("overview-print-report");
+            if (!btn || btn.dataset.printHandlerAttached === "1") return;
+            btn.dataset.printHandlerAttached = "1";
+            btn.addEventListener("click", function (event) {
+                event.preventDefault();
+                window.parent.focus();
+                window.parent.print();
+            });
+        })();
+        </script>
+        """,
+        height=0,
     )
 
     chart_left = st.container()

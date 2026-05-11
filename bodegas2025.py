@@ -59,12 +59,12 @@ main {
 }
 .block-container {
     max-width: 1680px;
-    padding: 1.2rem 1rem 0.5rem 1rem !important;
+    padding: 0.2rem 1rem 0.5rem 1rem !important;
 }
 section.main > div,
 div[data-testid="stMainBlockContainer"],
 div[data-testid="block-container"] {
-    padding-top: 1.2rem !important;
+    padding-top: 0.2rem !important;
 }
 div[data-testid="stAppViewContainer"] {
     padding-top: 0 !important;
@@ -133,7 +133,7 @@ body.bodegas-sidebar-collapsed [data-testid="stAppViewContainer"] {
 .bodegas-sidebar-toggle {
     position: fixed;
     left: 12px;
-    top: 28px;
+    top: 12px;
     z-index: 10000;
     width: 38px;
     height: 38px;
@@ -168,7 +168,7 @@ section[data-testid="stSidebar"] > div {
 }
 section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
 aside[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding-top: 1.2rem !important;
+    padding-top: 0.2rem !important;
 }
 section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
     color: #e5edf7;
@@ -2524,7 +2524,7 @@ st.markdown("""
         display:flex;
         justify-content:space-between;
         align-items:flex-start;
-        margin:22px 0 14px 0;
+        margin:-76px 0 14px 0;
         gap:16px;
     }
     .tab-title-main {

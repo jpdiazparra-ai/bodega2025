@@ -2107,9 +2107,9 @@ def section_heading(icono: str, titulo: str, subtitulo: str = "", weight_class: 
     )
 
 
-def _download_anchor_html(label: str, css_class: str, button_id: str = "overview-download-report") -> str:
+def _download_anchor_html(label: str, css_class: str) -> str:
     return (
-        f'<a id="{button_id}" class="{css_class}" href="#" '
+        f'<a id="overview-download-report" class="{css_class}" href="#" '
         f'role="button">{label}</a>'
     )
 
@@ -2141,120 +2141,6 @@ def tab_header(
         f'<div><div class="tab-title-main">{titulo}</div>{subtitle_html}</div>'
         f'{actions}'
         '</div>'
-    )
-
-
-def render_visual_report_download_script(button_id: str, filename: str) -> None:
-    components.html(
-        f"""
-        <script>
-        (function () {{
-            const win = window.parent;
-            const doc = win.document;
-            const btn = doc.getElementById({button_id!r});
-            if (!btn || btn.dataset.captureHandlerAttached === "1") return;
-            btn.dataset.captureHandlerAttached = "1";
-
-            function loadScript(src) {{
-                return new Promise(function (resolve, reject) {{
-                    const existing = doc.querySelector('script[src="' + src + '"]');
-                    if (existing) {{
-                        existing.addEventListener("load", resolve, {{ once: true }});
-                        if (existing.dataset.loaded === "1") resolve();
-                        return;
-                    }}
-                    const script = doc.createElement("script");
-                    script.src = src;
-                    script.onload = function () {{
-                        script.dataset.loaded = "1";
-                        resolve();
-                    }};
-                    script.onerror = reject;
-                    doc.head.appendChild(script);
-                }});
-            }}
-
-            async function downloadTabPdf(event) {{
-                event.preventDefault();
-                const originalText = btn.textContent;
-                btn.textContent = "Generando PDF...";
-                btn.style.pointerEvents = "none";
-
-                const hidden = [];
-                function hide(selector) {{
-                    doc.querySelectorAll(selector).forEach(function (node) {{
-                        hidden.push([node, node.style.display]);
-                        node.style.display = "none";
-                    }});
-                }}
-
-                try {{
-                    await loadScript("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js");
-                    await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
-
-                    const target = doc.querySelector("section.main .block-container")
-                        || doc.querySelector('[data-testid="stMainBlockContainer"]')
-                        || doc.querySelector(".block-container");
-                    if (!target) throw new Error("No se encontró el contenido del reporte.");
-
-                    hide("section[data-testid='stSidebar']");
-                    hide("aside[data-testid='stSidebar']");
-                    hide(".bodegas-sidebar-toggle");
-                    hide(".tab-actions");
-                    hide(".ie-actions");
-                    hide(".risk-pro-actions");
-                    hide("header[data-testid='stHeader']");
-                    hide("div[data-testid='stToolbar']");
-
-                    const canvas = await win.html2canvas(target, {{
-                        backgroundColor: "#ffffff",
-                        scale: 2,
-                        useCORS: true,
-                        allowTaint: true,
-                        logging: false,
-                        windowWidth: Math.max(target.scrollWidth, doc.documentElement.clientWidth),
-                        windowHeight: Math.max(target.scrollHeight, doc.documentElement.clientHeight)
-                    }});
-
-                    const imgData = canvas.toDataURL("image/png");
-                    const pdf = new win.jspdf.jsPDF({{
-                        orientation: "landscape",
-                        unit: "pt",
-                        format: "a4"
-                    }});
-                    const pageW = pdf.internal.pageSize.getWidth();
-                    const pageH = pdf.internal.pageSize.getHeight();
-                    const margin = 10;
-                    const usableW = pageW - margin * 2;
-                    const imgH = canvas.height * usableW / canvas.width;
-                    let y = margin;
-                    let remaining = imgH;
-
-                    pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
-                    remaining -= pageH - margin * 2;
-                    while (remaining > 0) {{
-                        pdf.addPage();
-                        y = margin - (imgH - remaining);
-                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
-                        remaining -= pageH - margin * 2;
-                    }}
-                    pdf.save({filename!r});
-                }} catch (err) {{
-                    win.alert("No se pudo generar el PDF visual. Intenta nuevamente cuando la página termine de cargar.");
-                }} finally {{
-                    hidden.forEach(function (entry) {{
-                        entry[0].style.display = entry[1];
-                    }});
-                    btn.textContent = originalText;
-                    btn.style.pointerEvents = "";
-                }}
-            }}
-
-            btn.addEventListener("click", downloadTabPdf);
-        }})();
-        </script>
-        """,
-        height=0,
     )
 
 # =========================
@@ -3161,7 +3047,6 @@ if active_section == "🏠 Overview Ejecutivo":
     overview_download_html = _download_anchor_html(
         "⇩ Descargar reporte",
         "tab-action tab-action-primary",
-        "overview-download-report",
     )
 
     st.markdown(
@@ -4412,20 +4297,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
         )
 
               # ---------- Resumen por Responsable (NO PAGADO vs Abonos) ----------
-    riesgo_download_html = _download_anchor_html(
-        "⇩ Descargar reporte",
-        "tab-action tab-action-primary",
-        "riesgo-download-report",
-    )
     st.markdown(
-        tab_header(
-            "Riesgo & Cobranza",
-            "Monitoreo de cobranza, deuda y concentración de montos",
-            download_html=riesgo_download_html,
-        ),
+        tab_header("Riesgo & Cobranza", "Monitoreo de cobranza, deuda y concentración de montos"),
         unsafe_allow_html=True,
     )
-    render_visual_report_download_script("riesgo-download-report", "riesgo_cobranza_bodegas_balmaceda.pdf")
     st.markdown(
         section_heading("📋", "Cuentas por Cobrar / Pagar", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
@@ -5338,20 +5213,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
 # 🏢 TAB 3: CANON ANUAL / MENSUAL
 # =========================================================
 if active_section == "🏢 Canon & Contratos":
-    canon_download_html = _download_anchor_html(
-        "⇩ Descargar reporte",
-        "tab-action tab-action-primary",
-        "canon-download-report",
-    )
     st.markdown(
-        tab_header(
-            "Canon & Contratos",
-            "Evolución de canon, ocupación y valor por metro cuadrado",
-            download_html=canon_download_html,
-        ),
+        tab_header("Canon & Contratos", "Evolución de canon, ocupación y valor por metro cuadrado"),
         unsafe_allow_html=True,
     )
-    render_visual_report_download_script("canon-download-report", "canon_contratos_bodegas_balmaceda.pdf")
     st.markdown(
         section_heading("🏢", "Canon mensual por Año y por Esp", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
@@ -5935,11 +5800,6 @@ if active_section == "🏢 Canon & Contratos":
 # =========================================================
 if active_section == "💰 Ingresos":
     import plotly.graph_objects as go
-    ingresos_download_html = _download_anchor_html(
-        "↓ Descargar reporte",
-        "ie-action ie-action-primary",
-        "ingresos-download-report",
-    )
 
     st.markdown(
         """
@@ -6293,13 +6153,12 @@ if active_section == "💰 Ingresos":
                 <div class="ie-action">↗ Compartir</div>
                 <div class="ie-action">☆</div>
                 <div class="ie-action">⋯</div>
-                {ingresos_download_html}
+                <div class="ie-action ie-action-primary">↓ Descargar reporte</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    render_visual_report_download_script("ingresos-download-report", "ingresos_bodegas_balmaceda.pdf")
 
     df_ing_src = df_f.copy()
     tipo_ing = "Financiero"
@@ -6702,13 +6561,8 @@ if active_section == "💰 Ingresos":
 # 📈 TAB 5: INGRESOS & EGRESOS (Mensual / Anual)
 # =========================================================
 if active_section == "📈 Flujo Operacional":
-    flujo_download_html = _download_anchor_html(
-        "⇩ Descargar reporte",
-        "tab-action tab-action-primary",
-        "flujo-download-report",
-    )
     st.markdown(
-        f"""
+        """
         <style>
         .kpi-card-top {
             display: none !important;
@@ -7164,13 +7018,12 @@ if active_section == "📈 Flujo Operacional":
                 <div class="tab-action">↗ Compartir</div>
                 <div class="tab-action">☆</div>
                 <div class="tab-action">•••</div>
-                {flujo_download_html}
+                <div class="tab-action tab-action-primary">⇩ Descargar reporte</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    render_visual_report_download_script("flujo-download-report", "flujo_operacional_bodegas_balmaceda.pdf")
 
     import plotly.graph_objects as go
 
@@ -8262,16 +8115,12 @@ if active_section == "📈 Flujo Operacional":
                 <div class="risk-pro-action">↗ Compartir</div>
                 <div class="risk-pro-action">☆</div>
                 <div class="risk-pro-action">•••</div>
-                __RIESGO_DETALLE_DOWNLOAD__
+                <div class="risk-pro-action risk-pro-action-primary">⇩ Descargar reporte</div>
             </div>
         </div>
-        """.replace(
-            "__RIESGO_DETALLE_DOWNLOAD__",
-            _download_anchor_html("⇩ Descargar reporte", "risk-pro-action risk-pro-action-primary", "riesgo-detalle-download-report"),
-        ),
+        """,
         unsafe_allow_html=True,
     )
-    render_visual_report_download_script("riesgo-detalle-download-report", "riesgo_concentracion_bodegas_balmaceda.pdf")
     st.markdown(
         '<div class="risk-filter-card"><div class="risk-filter-title">Filtro por centro de costo / situación</div>',
         unsafe_allow_html=True,
@@ -9120,22 +8969,12 @@ if active_section == "📈 Flujo Operacional":
 # ⚡ TAB 6: ELECTRICIDAD (Excel por pestaña)
 # =========================================================
 if active_section == "⚡ Consumos Energéticos":
-    consumos_download_html = _download_anchor_html(
-        "⇩ Descargar reporte",
-        "tab-action tab-action-primary",
-        "consumos-download-report",
-    )
     title_col, btn_col = st.columns([6, 1])
     with title_col:
         st.markdown(
-            tab_header(
-                "Consumos Energéticos",
-                "Liquidación por bodega e inputs de facturación",
-                download_html=consumos_download_html,
-            ),
+            tab_header("Consumos Energéticos", "Liquidación por bodega e inputs de facturación"),
             unsafe_allow_html=True,
         )
-        render_visual_report_download_script("consumos-download-report", "consumos_energeticos_bodegas_balmaceda.pdf")
         st.caption("Vista idéntica al Excel: inputs generales, boleta CGE, inputs por bodega y liquidación.")
     with btn_col:
         st.markdown("")

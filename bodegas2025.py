@@ -3241,7 +3241,7 @@ if active_section == "🏠 Overview Ejecutivo":
         ("↗", "#059669", "#DCFCE7", "Total ingresos", "Ingresos Pagados + Abono", fmt_clp_largo(ingresos_kpi), "100.0%"),
         ("↘", "#DC2626", "#FEE2E2", "Total egresos", "Egresos Pagado", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
         ("=", "#DC2626" if utilidad_operativa < 0 else "#2563EB", "#FEE2E2" if utilidad_operativa < 0 else "#DBEAFE", "Total neto", "Ingresos menos egresos", fmt_clp_largo(utilidad_operativa), f"{margen_neto:.1%}"),
-        ("Σ", "#DC2626" if posicion_neta < 0 else "#1D4ED8", "#FEE2E2" if posicion_neta < 0 else "#DBEAFE", "Neto acumulado", "Suma histórica del neto", fmt_clp_largo(posicion_neta), "-"),
+        ("Σ", "#DC2626" if posicion_neta < 0 else "#1D4ED8", "#FEE2E2" if posicion_neta < 0 else "#DBEAFE", "Neto acumulado", "Suma de Ingresos + Egresos sin incluir Abono", fmt_clp_largo(posicion_neta), "-"),
         ("%", "#DC2626" if margen_neto < 0 else "#B7791F", "#FEE2E2" if margen_neto < 0 else "#FEF3C7", "Margen neto", "Neto dividido por ingresos", f"{margen_neto:.1%}", "-"),
     ]
     with bottom_a:
@@ -7270,7 +7270,7 @@ if active_section == "📈 Flujo Operacional":
                 ie_metric_card(
                     "NETO ACUMULADO",
                     fmt_clp_largo(total_neto_acumulado),
-                    "Suma histórica del neto",
+                    "Suma de Ingresos + Egresos sin incluir Abono",
                     "Σ",
                     "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626",
                     "#f6f9ff" if total_neto_acumulado >= 0 else "#fff7f7",
@@ -7602,7 +7602,7 @@ if active_section == "📈 Flujo Operacional":
             ("↑", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(total_ing), "100.0%"),
             ("↓", "#DC2626", "#FEE2E2", "Total egresos", "Suma de egresos del período", fmt_clp_largo(total_egr), f"{(total_egr / total_ing if total_ing else 0):.1%}"),
             ("=", "#2563EB" if total_neto >= 0 else "#DC2626", "#DBEAFE" if total_neto >= 0 else "#FEE2E2", "Total neto", "Ingresos menos egresos", fmt_clp_largo(total_neto), f"{total_margen:.1%}"),
-            ("Σ", "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626", "#DBEAFE" if total_neto_acumulado >= 0 else "#FEE2E2", "Neto acumulado", "Suma histórica del neto", fmt_clp_largo(total_neto_acumulado), "-"),
+            ("Σ", "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626", "#DBEAFE" if total_neto_acumulado >= 0 else "#FEE2E2", "Neto acumulado", "Suma de Ingresos + Egresos sin incluir Abono", fmt_clp_largo(total_neto_acumulado), "-"),
             ("%", "#B7791F" if total_margen >= 0 else "#DC2626", "#FEF3C7" if total_margen >= 0 else "#FEE2E2", "Margen neto", "Neto dividido por ingresos", f"{total_margen:.1%}", "-"),
         ]
         resumen_periodo_html = "".join(

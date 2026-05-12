@@ -2582,7 +2582,22 @@ st.markdown("""
     .tab-action-primary {
         background:#0B3A86;
         border-color:#0B3A86;
-        color:#ffffff;
+        color:#ffffff !important;
+        text-decoration:none !important;
+    }
+    .tab-action-primary:visited,
+    .tab-action-primary:hover,
+    .tab-action-primary:active,
+    .ie-action-primary,
+    .ie-action-primary:visited,
+    .ie-action-primary:hover,
+    .ie-action-primary:active,
+    .risk-pro-action-primary,
+    .risk-pro-action-primary:visited,
+    .risk-pro-action-primary:hover,
+    .risk-pro-action-primary:active {
+        color:#ffffff !important;
+        text-decoration:none !important;
     }
     @media print {
         @page {

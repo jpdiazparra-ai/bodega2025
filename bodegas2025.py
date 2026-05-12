@@ -7164,10 +7164,10 @@ if active_section == "📈 Flujo Operacional":
                 <div class="tab-action">↗ Compartir</div>
                 <div class="tab-action">☆</div>
                 <div class="tab-action">•••</div>
-                __FLUJO_DOWNLOAD__
+                {flujo_download_html}
             </div>
         </div>
-        """.replace("__FLUJO_DOWNLOAD__", flujo_download_html),
+        """,
         unsafe_allow_html=True,
     )
     render_visual_report_download_script("flujo-download-report", "flujo_operacional_bodegas_balmaceda.pdf")

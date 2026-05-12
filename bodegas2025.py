@@ -3238,8 +3238,8 @@ if active_section == "🏠 Overview Ejecutivo":
 
     bottom_a, bottom_b, bottom_c = st.columns([1.05, 1.2, 1.1])
     resumen_rows = [
-        ("↗", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(ingresos_kpi), "100.0%"),
-        ("↘", "#DC2626", "#FEE2E2", "Total egresos", "Suma de egresos del período", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
+        ("↗", "#059669", "#DCFCE7", "Total ingresos", "Ingresos Pagados + Abono", fmt_clp_largo(ingresos_kpi), "100.0%"),
+        ("↘", "#DC2626", "#FEE2E2", "Total egresos", "Egresos Pagado", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
         ("=", "#DC2626" if utilidad_operativa < 0 else "#2563EB", "#FEE2E2" if utilidad_operativa < 0 else "#DBEAFE", "Total neto", "Ingresos menos egresos", fmt_clp_largo(utilidad_operativa), f"{margen_neto:.1%}"),
         ("Σ", "#DC2626" if posicion_neta < 0 else "#1D4ED8", "#FEE2E2" if posicion_neta < 0 else "#DBEAFE", "Neto acumulado", "Suma histórica del neto", fmt_clp_largo(posicion_neta), "-"),
         ("%", "#DC2626" if margen_neto < 0 else "#B7791F", "#FEE2E2" if margen_neto < 0 else "#FEF3C7", "Margen neto", "Neto dividido por ingresos", f"{margen_neto:.1%}", "-"),

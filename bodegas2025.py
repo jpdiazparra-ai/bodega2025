@@ -3365,14 +3365,13 @@ if active_section == "🏠 Overview Ejecutivo":
         capex_status_color = "#F59E0B" if cobertura_capex < 1 else "#059669"
         recommendation_txt = "Revisar canon, cobranza y postergar CAPEX no crítico" if health_score < 70 else "Mantener control de caja y ocupación"
         score_marker_left = max(0, min(100, health_score))
-        components.html(
+        st.markdown(
             f"""
             <div style="height:380px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
                         padding:16px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
                         position:relative;
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
                 <style>
-                    html, body {{ margin:0; padding:0; }}
                     summary::-webkit-details-marker {{ display:none; }}
                     summary::marker {{ content:""; }}
                 </style>
@@ -3445,8 +3444,7 @@ if active_section == "🏠 Overview Ejecutivo":
                 </details>
             </div>
             """,
-            height=380,
-            scrolling=False,
+            unsafe_allow_html=True,
         )
 
     components.html(

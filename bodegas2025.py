@@ -2128,9 +2128,6 @@ def tab_header(
     )
     actions = (
         '<div class="tab-actions">'
-        '<div class="tab-action">↗ Compartir</div>'
-        '<div class="tab-action">☆</div>'
-        '<div class="tab-action">•••</div>'
         f'{download_action}'
         '</div>'
         if show_download
@@ -6165,9 +6162,6 @@ if active_section == "💰 Ingresos":
                 <div class="ie-subtitle">Control de ingresos, canon, abonos y cobranza</div>
             </div>
             <div class="ie-actions">
-                <div class="ie-action">↗ Compartir</div>
-                <div class="ie-action">☆</div>
-                <div class="ie-action">⋯</div>
                 <div class="ie-action ie-action-primary">↓ Descargar reporte</div>
             </div>
         </div>
@@ -7034,9 +7028,6 @@ if active_section == "📈 Flujo Operacional":
         <div class="tab-title-row">
             <div><div class="tab-title-main">Ingresos & Egresos</div><div class="tab-title-sub">Control de ingresos, egresos y resultado neto</div></div>
             <div class="tab-actions">
-                <div class="tab-action">↗ Compartir</div>
-                <div class="tab-action">☆</div>
-                <div class="tab-action">•••</div>
                 __FLUJO_DOWNLOAD__
             </div>
         </div>
@@ -8240,9 +8231,6 @@ if active_section == "📈 Flujo Operacional":
                 <div class="risk-pro-subtitle">Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza</div>
             </div>
             <div class="risk-pro-actions">
-                <div class="risk-pro-action">↗ Compartir</div>
-                <div class="risk-pro-action">☆</div>
-                <div class="risk-pro-action">•••</div>
                 <div class="risk-pro-action risk-pro-action-primary">⇩ Descargar reporte</div>
             </div>
         </div>

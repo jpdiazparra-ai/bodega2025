@@ -3364,35 +3364,7 @@ if active_section == "🏠 Overview Ejecutivo":
         margen_status_color = "#DC2626" if margen_neto < 0.05 else "#059669"
         capex_status_color = "#F59E0B" if cobertura_capex < 1 else "#059669"
         recommendation_txt = "Revisar canon, cobranza y postergar CAPEX no crítico" if health_score < 70 else "Mantener control de caja y ocupación"
-        fig_gauge = go.Figure(
-            go.Indicator(
-                mode="gauge+number",
-                value=health_score,
-                number={"suffix": "/100", "font": {"size": 24, "color": "#081735"}},
-                gauge={
-                    "axis": {"range": [0, 100], "visible": False},
-                    "bar": {"color": "#F97316", "thickness": 0.22},
-                    "bgcolor": "#F1F5F9",
-                    "borderwidth": 0,
-                    "steps": [
-                        {"range": [0, 40], "color": "#FEE2E2"},
-                        {"range": [40, 70], "color": "#FEF3C7"},
-                        {"range": [70, 100], "color": "#DCFCE7"},
-                    ],
-                },
-                domain={"x": [0.12, 0.88], "y": [0.02, 0.98]},
-            )
-        )
-        fig_gauge.update_layout(
-            height=100,
-            margin=dict(l=0, r=0, t=0, b=0),
-            paper_bgcolor="#FFFFFF",
-        )
-        fig_gauge_html = fig_gauge.to_html(
-            full_html=False,
-            include_plotlyjs=True,
-            config={"displaylogo": False, "displayModeBar": False},
-        )
+        score_marker_left = max(0, min(100, health_score))
         components.html(
             f"""
             <div style="height:380px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
@@ -3404,10 +3376,26 @@ if active_section == "🏠 Overview Ejecutivo":
                     summary::marker {{ content:""; }}
                 </style>
                 <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
-                <div style="height:100px;">{fig_gauge_html}</div>
-                <div style="margin-top:-4px;display:flex;align-items:center;justify-content:center;gap:7px;color:#475569;font-size:9px;font-weight:800;">
+                <div style="margin-top:16px;padding:6px 2px 4px;">
+                    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;">
+                        <div style="font-size:34px;line-height:1;font-weight:950;color:#081735;letter-spacing:0;">{health_score}<span style="font-size:18px;font-weight:900;color:#64748b;">/100</span></div>
+                        <div style="min-width:82px;height:24px;border-radius:8px;background:{estado_color};color:#ffffff;font-size:10px;font-weight:950;display:flex;align-items:center;justify-content:center;">{estado_txt}</div>
+                    </div>
+                    <div style="position:relative;height:42px;margin-top:12px;">
+                        <div style="position:absolute;left:0;right:0;top:12px;height:14px;border-radius:999px;overflow:hidden;display:grid;grid-template-columns:40fr 30fr 30fr;background:#f1f5f9;">
+                            <div style="background:#FEE2E2;"></div>
+                            <div style="background:#FEF3C7;"></div>
+                            <div style="background:#DCFCE7;"></div>
+                        </div>
+                        <div style="position:absolute;left:{score_marker_left}%;top:4px;transform:translateX(-50%);width:4px;height:30px;border-radius:999px;background:{estado_color};box-shadow:0 0 0 3px rgba(255,255,255,0.95),0 5px 12px rgba(15,23,42,0.18);"></div>
+                        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;font-size:8px;font-weight:900;color:#64748b;">
+                            <span>0</span><span>40</span><span>70</span><span>100</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:0;display:flex;align-items:center;justify-content:center;gap:7px;color:#475569;font-size:9px;font-weight:800;">
                     <span>Estado general</span>
-                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:76px;height:20px;border-radius:7px;background:{estado_color};color:#ffffff;font-size:9px;font-weight:950;">{estado_txt}</span>
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:76px;height:20px;border-radius:7px;border:1px solid {estado_color};color:{estado_color};font-size:9px;font-weight:950;background:#ffffff;">{estado_txt}</span>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px;">
                     <div style="border:1px solid #e5ebf3;border-radius:7px;padding:5px 6px;background:#fbfdff;">

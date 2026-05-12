@@ -3372,6 +3372,7 @@ if active_section == "🏠 Overview Ejecutivo":
                         position:relative;
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
                 <style>
+                    html, body {{ margin:0; padding:0; }}
                     summary::-webkit-details-marker {{ display:none; }}
                     summary::marker {{ content:""; }}
                 </style>
@@ -3444,7 +3445,7 @@ if active_section == "🏠 Overview Ejecutivo":
                 </details>
             </div>
             """,
-            height=384,
+            height=380,
             scrolling=False,
         )
 

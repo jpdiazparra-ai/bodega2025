@@ -6561,6 +6561,10 @@ if active_section == "💰 Ingresos":
 # 📈 TAB 5: INGRESOS & EGRESOS (Mensual / Anual)
 # =========================================================
 if active_section == "📈 Flujo Operacional":
+    flujo_download_html = (
+        '<a id="flujo-download-report" class="tab-action tab-action-primary" '
+        'href="#" role="button">⇩ Descargar reporte</a>'
+    )
     st.markdown(
         """
         <style>
@@ -7018,11 +7022,120 @@ if active_section == "📈 Flujo Operacional":
                 <div class="tab-action">↗ Compartir</div>
                 <div class="tab-action">☆</div>
                 <div class="tab-action">•••</div>
-                <div class="tab-action tab-action-primary">⇩ Descargar reporte</div>
+                __FLUJO_DOWNLOAD__
             </div>
         </div>
-        """,
+        """.replace("__FLUJO_DOWNLOAD__", flujo_download_html),
         unsafe_allow_html=True,
+    )
+    components.html(
+        """
+        <script>
+        (function () {
+            const win = window.parent;
+            const doc = win.document;
+            const btn = doc.getElementById("flujo-download-report");
+            if (!btn || btn.dataset.captureHandlerAttached === "1") return;
+            btn.dataset.captureHandlerAttached = "1";
+
+            function loadScript(src) {
+                return new Promise(function (resolve, reject) {
+                    const existing = doc.querySelector('script[src="' + src + '"]');
+                    if (existing) {
+                        existing.addEventListener("load", resolve, { once: true });
+                        if (existing.dataset.loaded === "1") resolve();
+                        return;
+                    }
+                    const script = doc.createElement("script");
+                    script.src = src;
+                    script.onload = function () {
+                        script.dataset.loaded = "1";
+                        resolve();
+                    };
+                    script.onerror = reject;
+                    doc.head.appendChild(script);
+                });
+            }
+
+            async function downloadFlujoPdf(event) {
+                event.preventDefault();
+                const originalText = btn.textContent;
+                btn.textContent = "Generando PDF...";
+                btn.style.pointerEvents = "none";
+
+                const hidden = [];
+                function hide(selector) {
+                    doc.querySelectorAll(selector).forEach(function (node) {
+                        hidden.push([node, node.style.display]);
+                        node.style.display = "none";
+                    });
+                }
+
+                try {
+                    await loadScript("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js");
+                    await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+
+                    const target = doc.querySelector("section.main .block-container")
+                        || doc.querySelector('[data-testid="stMainBlockContainer"]')
+                        || doc.querySelector(".block-container");
+                    if (!target) throw new Error("No se encontró el contenido del reporte.");
+
+                    hide("section[data-testid='stSidebar']");
+                    hide("aside[data-testid='stSidebar']");
+                    hide(".bodegas-sidebar-toggle");
+                    hide(".tab-actions");
+                    hide("header[data-testid='stHeader']");
+                    hide("div[data-testid='stToolbar']");
+
+                    const canvas = await win.html2canvas(target, {
+                        backgroundColor: "#ffffff",
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        windowWidth: Math.max(target.scrollWidth, doc.documentElement.clientWidth),
+                        windowHeight: Math.max(target.scrollHeight, doc.documentElement.clientHeight)
+                    });
+
+                    const imgData = canvas.toDataURL("image/png");
+                    const pdf = new win.jspdf.jsPDF({
+                        orientation: "landscape",
+                        unit: "pt",
+                        format: "a4"
+                    });
+                    const pageW = pdf.internal.pageSize.getWidth();
+                    const pageH = pdf.internal.pageSize.getHeight();
+                    const margin = 10;
+                    const usableW = pageW - margin * 2;
+                    const imgH = canvas.height * usableW / canvas.width;
+                    let y = margin;
+                    let remaining = imgH;
+
+                    pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                    remaining -= pageH - margin * 2;
+                    while (remaining > 0) {
+                        pdf.addPage();
+                        y = margin - (imgH - remaining);
+                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                        remaining -= pageH - margin * 2;
+                    }
+                    pdf.save("flujo_operacional_bodegas_balmaceda.pdf");
+                } catch (err) {
+                    win.alert("No se pudo generar el PDF visual. Intenta nuevamente cuando la página termine de cargar.");
+                } finally {
+                    hidden.forEach(function (entry) {
+                        entry[0].style.display = entry[1];
+                    });
+                    btn.textContent = originalText;
+                    btn.style.pointerEvents = "";
+                }
+            }
+
+            btn.addEventListener("click", downloadFlujoPdf);
+        })();
+        </script>
+        """,
+        height=0,
     )
 
     import plotly.graph_objects as go

@@ -44,6 +44,7 @@ section_options = [
     "📈 Flujo Operacional",
     "⚠️ Riesgo & Cobranza",
     "🏢 Canon & Contratos",
+    "🏗️ Capex",
     "⚡ Consumos Energéticos",
 ]
 
@@ -613,6 +614,7 @@ components.html(
 # Carga de datos
 # =========================
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuoX_V5rYls-pBu7F3_VP2APS3FL7-eYbn9uDWUGJQZbxNfQTm9gRlyDlE69wWJjsDQpDzi2lt31Ak/pub?gid=1154929321&single=true&output=csv"
+CAPEX_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuoX_V5rYls-pBu7F3_VP2APS3FL7-eYbn9uDWUGJQZbxNfQTm9gRlyDlE69wWJjsDQpDzi2lt31Ak/pub?gid=1467494223&single=true&output=csv"
 
 st.sidebar.markdown(
     f"""
@@ -663,6 +665,60 @@ def load_data(url: str) -> pd.DataFrame:
     return df
 
 df = load_data(CSV_URL)
+
+
+@st.cache_data(show_spinner=False)
+def load_capex_data(url: str) -> pd.DataFrame:
+    df_capex = pd.read_csv(url)
+    df_capex.columns = [str(c).strip() for c in df_capex.columns]
+    df_capex = df_capex.dropna(axis=1, how="all")
+
+    expected_cols = ["Año", "Periodo", "Situación", "CCCC", "Estado", "Monto"]
+    for col in expected_cols:
+        if col not in df_capex.columns:
+            df_capex[col] = pd.NA
+    df_capex = df_capex[expected_cols].copy()
+
+    month_map = {
+        "enero": 1,
+        "febrero": 2,
+        "marzo": 3,
+        "abril": 4,
+        "mayo": 5,
+        "junio": 6,
+        "julio": 7,
+        "agosto": 8,
+        "septiembre": 9,
+        "setiembre": 9,
+        "octubre": 10,
+        "noviembre": 11,
+        "diciembre": 12,
+    }
+    df_capex["Año"] = pd.to_numeric(df_capex["Año"], errors="coerce").astype("Int64")
+    df_capex["Periodo"] = df_capex["Periodo"].astype(str).str.strip()
+    df_capex["Mes_num"] = df_capex["Periodo"].str.lower().map(month_map)
+    df_capex["Periodo_ref"] = pd.to_datetime(
+        dict(
+            year=df_capex["Año"].fillna(1900).astype(int),
+            month=df_capex["Mes_num"].fillna(1).astype(int),
+            day=1,
+        ),
+        errors="coerce",
+    )
+    df_capex.loc[df_capex["Año"].isna() | df_capex["Mes_num"].isna(), "Periodo_ref"] = pd.NaT
+    df_capex["Monto"] = pd.to_numeric(
+        df_capex["Monto"].astype(str).str.replace(r"[^\d\.-]", "", regex=True),
+        errors="coerce",
+    )
+    for col in ["Situación", "CCCC", "Estado"]:
+        df_capex[col] = df_capex[col].astype(str).str.strip()
+    df_capex["Estado_norm"] = df_capex["Estado"].str.upper()
+    df_capex["CCCC_norm"] = df_capex["CCCC"].str.upper()
+    df_capex = df_capex.dropna(subset=["Año", "Periodo_ref", "Monto"])
+    return df_capex
+
+
+capex_df = load_capex_data(CAPEX_CSV_URL)
 
 def _month_number(series) -> pd.Series:
     if series is None:
@@ -9082,7 +9138,316 @@ if active_section == "📈 Flujo Operacional":
         )
 
 # =========================================================
-# ⚡ TAB 6: ELECTRICIDAD (Excel por pestaña)
+# 🏗️ TAB 6: CAPEX
+# =========================================================
+if active_section == "🏗️ Capex":
+    import plotly.graph_objects as go
+
+    st.markdown(
+        tab_header("Capex", "Inversión histórica del activo desde Google Sheets", show_download=False),
+        unsafe_allow_html=True,
+    )
+
+    capex_base = capex_df.copy()
+    st.markdown(
+        """
+        <style>
+        .capex-filter-note {
+            margin:-2px 0 10px 0;
+            color:#475569;
+            font-size:12px;
+            font-weight:650;
+        }
+        .capex-kpi-grid {
+            display:grid;
+            grid-template-columns:repeat(5, minmax(0, 1fr));
+            gap:9px;
+            margin:8px 0 12px 0;
+        }
+        .capex-kpi {
+            min-height:92px;
+            border:1px solid var(--border);
+            border-radius:10px;
+            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+            padding:11px 12px;
+            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+        }
+        .capex-kpi-label {
+            color:#475569;
+            font-size:10px;
+            font-weight:900;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+            margin-bottom:8px;
+        }
+        .capex-kpi-value {
+            color:var(--accent);
+            font-size:21px;
+            line-height:1.05;
+            font-weight:950;
+            letter-spacing:-.025em;
+            font-variant-numeric:tabular-nums;
+        }
+        .capex-kpi-sub {
+            margin-top:6px;
+            color:#64748b;
+            font-size:10.5px;
+            line-height:1.22;
+            font-weight:720;
+        }
+        .capex-analysis-grid {
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:9px;
+            margin:8px 0 13px 0;
+        }
+        .capex-analysis {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:12px 13px;
+            min-height:106px;
+            box-shadow:0 10px 24px rgba(15,23,42,0.035);
+        }
+        .capex-analysis-title {
+            color:#081735;
+            font-size:12px;
+            line-height:1.18;
+            font-weight:950;
+            margin-bottom:7px;
+        }
+        .capex-analysis-body {
+            color:#475569;
+            font-size:11px;
+            line-height:1.32;
+            font-weight:650;
+        }
+        @media (max-width: 1280px) {
+            .capex-kpi-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+            .capex-analysis-grid { grid-template-columns:1fr; }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if capex_base.empty:
+        st.warning("La fuente Capex no tiene datos válidos para mostrar.")
+        st.stop()
+
+    years = sorted([int(y) for y in capex_base["Año"].dropna().unique()])
+    estados = sorted([e for e in capex_base["Estado"].dropna().unique() if str(e).strip()])
+    categorias = sorted([c for c in capex_base["CCCC"].dropna().unique() if str(c).strip()])
+
+    f1, f2, f3 = st.columns([1, 1, 2])
+    with f1:
+        sel_years = st.multiselect("Año", years, default=years, key="capex_years")
+    with f2:
+        sel_estados = st.multiselect("Estado", estados, default=estados, key="capex_estados")
+    with f3:
+        sel_categorias = st.multiselect("Categoría CCCC", categorias, default=categorias, key="capex_categorias")
+
+    capex_view = capex_base[
+        capex_base["Año"].isin(sel_years)
+        & capex_base["Estado"].isin(sel_estados)
+        & capex_base["CCCC"].isin(sel_categorias)
+    ].copy()
+
+    st.markdown(
+        f'<div class="capex-filter-note">Fuente viva: Google Sheets CSV · registros filtrados: {len(capex_view):,}</div>',
+        unsafe_allow_html=True,
+    )
+
+    total_capex_view = float(capex_view["Monto"].sum()) if not capex_view.empty else 0.0
+    costo_total = float(capex_view.loc[capex_view["Estado_norm"].eq("COSTO"), "Monto"].sum()) if not capex_view.empty else 0.0
+    gasto_total = float(capex_view.loc[capex_view["Estado_norm"].eq("GASTO"), "Monto"].sum()) if not capex_view.empty else 0.0
+    top_cat = (
+        capex_view.groupby("CCCC", as_index=False)["Monto"].sum().sort_values("Monto", ascending=False)
+        if not capex_view.empty else pd.DataFrame(columns=["CCCC", "Monto"])
+    )
+    top_cat_name = str(top_cat.iloc[0]["CCCC"]) if not top_cat.empty else "Sin datos"
+    top_cat_value = float(top_cat.iloc[0]["Monto"]) if not top_cat.empty else 0.0
+    capex_declared = 127_742_570
+    capex_delta = total_capex_view - capex_declared
+
+    st.markdown(
+        f"""
+        <div class="capex-kpi-grid">
+            <div class="capex-kpi" style="--accent:#0B3A86;--soft:#f6f9ff;--border:#d4e1f6;">
+                <div class="capex-kpi-label">CAPEX filtrado</div>
+                <div class="capex-kpi-value">{fmt_clp_largo(total_capex_view)}</div>
+                <div class="capex-kpi-sub">Suma normalizada de la columna Monto.</div>
+            </div>
+            <div class="capex-kpi" style="--accent:#B7791F;--soft:#fffaf0;--border:#eadfbd;">
+                <div class="capex-kpi-label">Costo</div>
+                <div class="capex-kpi-value">{fmt_clp_largo(costo_total)}</div>
+                <div class="capex-kpi-sub">{(costo_total / total_capex_view if total_capex_view else 0):.1%} del total filtrado.</div>
+            </div>
+            <div class="capex-kpi" style="--accent:#DC2626;--soft:#fff7f7;--border:#f1caca;">
+                <div class="capex-kpi-label">Gasto</div>
+                <div class="capex-kpi-value">{fmt_clp_largo(gasto_total)}</div>
+                <div class="capex-kpi-sub">{(gasto_total / total_capex_view if total_capex_view else 0):.1%} del total filtrado.</div>
+            </div>
+            <div class="capex-kpi" style="--accent:#047857;--soft:#f6fffb;--border:#cfe9de;">
+                <div class="capex-kpi-label">Principal CCCC</div>
+                <div class="capex-kpi-value">{fmt_short(top_cat_value)}</div>
+                <div class="capex-kpi-sub">{escape(top_cat_name)} · {(top_cat_value / total_capex_view if total_capex_view else 0):.1%}.</div>
+            </div>
+            <div class="capex-kpi" style="--accent:#6D28D9;--soft:#fbf8ff;--border:#e0d3f5;">
+                <div class="capex-kpi-label">Control vs hoja</div>
+                <div class="capex-kpi-value">{fmt_clp_largo(capex_delta)}</div>
+                <div class="capex-kpi-sub">Diferencia contra total publicado {fmt_clp_largo(capex_declared)}.</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if capex_view.empty:
+        st.info("No hay movimientos Capex para los filtros seleccionados.")
+        st.stop()
+
+    top3_sum = float(top_cat.head(3)["Monto"].sum()) if not top_cat.empty else 0.0
+    cost_share = costo_total / total_capex_view if total_capex_view else 0.0
+    first_period = capex_view["Periodo_ref"].min()
+    last_period = capex_view["Periodo_ref"].max()
+    period_txt = (
+        f"{first_period.strftime('%b %Y')} a {last_period.strftime('%b %Y')}"
+        if pd.notna(first_period) and pd.notna(last_period)
+        else "sin período válido"
+    )
+    st.markdown(
+        f"""
+        <div class="capex-analysis-grid">
+            <div class="capex-analysis">
+                <div class="capex-analysis-title">Lectura técnica de concentración</div>
+                <div class="capex-analysis-body">Las 3 categorías principales explican {top3_sum / total_capex_view:.1%} del Capex filtrado. Esto permite auditar primero los rubros estructurales y luego revisar partidas menores por excepción.</div>
+            </div>
+            <div class="capex-analysis">
+                <div class="capex-analysis-title">Clasificación contable</div>
+                <div class="capex-analysis-body">La fuente separa Costo y Gasto. En la vista actual, Costo representa {cost_share:.1%}; conviene mantener esa taxonomía porque afecta capitalización, depreciación y lectura tributaria.</div>
+            </div>
+            <div class="capex-analysis">
+                <div class="capex-analysis-title">Calidad de dato</div>
+                <div class="capex-analysis-body">El CSV trae columnas residuales vacías desde Google Sheets. La carga las elimina y valida período, monto y año antes de graficar. Cobertura temporal: {period_txt}.</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    monthly = (
+        capex_view.groupby(["Periodo_ref", "Estado"], as_index=False)["Monto"].sum()
+        .sort_values("Periodo_ref")
+    )
+    fig_month = px.bar(
+        monthly,
+        x="Periodo_ref",
+        y="Monto",
+        color="Estado",
+        color_discrete_map={"Costo": CHART_TEAL, "Gasto": CHART_RED},
+        title="Evolución mensual Capex por clasificación",
+    )
+    fig_month.update_layout(
+        height=380,
+        barmode="stack",
+        margin=dict(l=20, r=20, t=52, b=20),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#F8FAFC",
+        legend=dict(orientation="h", y=1.04, x=0),
+        xaxis_title="Periodo",
+        yaxis_title="Monto (CLP)",
+        yaxis_tickprefix="$",
+        yaxis_separatethousands=True,
+    )
+
+    top_categories = top_cat.head(15).sort_values("Monto", ascending=True)
+    fig_cat = px.bar(
+        top_categories,
+        x="Monto",
+        y="CCCC",
+        orientation="h",
+        title="Top 15 categorías CCCC por inversión",
+        color_discrete_sequence=["#0B3A86"],
+    )
+    fig_cat.update_layout(
+        height=380,
+        margin=dict(l=20, r=20, t=52, b=20),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#F8FAFC",
+        xaxis_title="Monto (CLP)",
+        yaxis_title="",
+        xaxis_tickprefix="$",
+        xaxis_separatethousands=True,
+    )
+
+    c1, c2 = st.columns([1.15, 1])
+    with c1:
+        st.plotly_chart(fig_month, use_container_width=True)
+    with c2:
+        st.plotly_chart(fig_cat, use_container_width=True)
+
+    pareto = top_cat.copy()
+    pareto["Participación"] = pareto["Monto"] / total_capex_view if total_capex_view else 0.0
+    pareto["Acumulado"] = pareto["Participación"].cumsum()
+    pareto_top = pareto.head(12)
+    fig_pareto = go.Figure()
+    fig_pareto.add_trace(
+        go.Bar(
+            x=pareto_top["CCCC"],
+            y=pareto_top["Monto"],
+            name="Monto",
+            marker_color="#7FA6A2",
+            hovertemplate="<b>%{x}</b><br>Monto: $%{y:,.0f}<extra></extra>",
+        )
+    )
+    fig_pareto.add_trace(
+        go.Scatter(
+            x=pareto_top["CCCC"],
+            y=pareto_top["Acumulado"],
+            name="Acumulado",
+            yaxis="y2",
+            mode="lines+markers",
+            line=dict(color="#4B5563", width=3),
+            marker=dict(size=7),
+            hovertemplate="<b>%{x}</b><br>Acumulado: %{y:.1%}<extra></extra>",
+        )
+    )
+    fig_pareto.update_layout(
+        title="Pareto Capex por CCCC",
+        height=420,
+        margin=dict(l=20, r=30, t=52, b=92),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#F8FAFC",
+        xaxis=dict(tickangle=-28),
+        yaxis=dict(title="Monto (CLP)", tickprefix="$", separatethousands=True),
+        yaxis2=dict(title="Acumulado", overlaying="y", side="right", tickformat=".0%", range=[0, 1.05]),
+        legend=dict(orientation="h", y=1.04, x=0),
+    )
+    st.plotly_chart(fig_pareto, use_container_width=True)
+
+    capex_export = capex_view[
+        ["Año", "Periodo", "Situación", "CCCC", "Estado", "Monto", "Periodo_ref"]
+    ].sort_values(["Periodo_ref", "CCCC", "Situación"]).copy()
+    capex_export["Periodo_ref"] = capex_export["Periodo_ref"].dt.strftime("%Y-%m")
+    csv_capex = capex_export.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "⬇️ Descargar CSV Capex filtrado",
+        data=csv_capex,
+        file_name="capex_filtrado_bodegas2025.csv",
+        mime="text/csv",
+        key="download_capex_csv",
+    )
+
+    capex_table = capex_export.rename(columns={"Periodo_ref": "Periodo normalizado"})
+    st.dataframe(
+        capex_table.style.format({"Monto": "${:,.0f}"}),
+        use_container_width=True,
+        height=430,
+    )
+
+# =========================================================
+# ⚡ TAB 7: ELECTRICIDAD (Excel por pestaña)
 # =========================================================
 if active_section == "⚡ Consumos Energéticos":
     title_col, btn_col = st.columns([6, 1])

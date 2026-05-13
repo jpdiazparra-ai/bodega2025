@@ -2199,7 +2199,8 @@ def tab_header(
 # =========================
 # KPI base (cálculos comunes)
 # =========================
-CAPEX = 151_834_571
+CAPEX_FALLBACK = 151_834_571
+CAPEX = float(capex_df["Monto"].sum()) if not capex_df.empty else float(CAPEX_FALLBACK)
 
 @st.cache_data(show_spinner=False)
 def compute_base_kpis(df_in: pd.DataFrame, capex: float) -> dict[str, float]:

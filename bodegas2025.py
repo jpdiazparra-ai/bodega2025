@@ -9144,6 +9144,746 @@ if active_section == "📈 Flujo Operacional":
 if active_section == "🏗️ Capex":
     import plotly.graph_objects as go
 
+    capex_view = capex_df.copy()
+    if capex_view.empty:
+        st.warning("La fuente Capex no tiene datos válidos para mostrar.")
+        st.stop()
+
+    def fmt_m(v: float) -> str:
+        return f"${float(v) / 1_000_000:.1f}M"
+
+    total_capex_view = float(capex_view["Monto"].sum())
+    costo_total = float(capex_view.loc[capex_view["Estado_norm"].eq("COSTO"), "Monto"].sum())
+    gasto_total = float(capex_view.loc[capex_view["Estado_norm"].eq("GASTO"), "Monto"].sum())
+    cost_share = costo_total / total_capex_view if total_capex_view else 0.0
+    gasto_share = gasto_total / total_capex_view if total_capex_view else 0.0
+
+    top_cat = capex_view.groupby("CCCC", as_index=False)["Monto"].sum().sort_values("Monto", ascending=False)
+    top_cat_name = str(top_cat.iloc[0]["CCCC"]) if not top_cat.empty else "Sin datos"
+    top_cat_value = float(top_cat.iloc[0]["Monto"]) if not top_cat.empty else 0.0
+    top_share = top_cat_value / total_capex_view if total_capex_view else 0.0
+    top3_sum = float(top_cat.head(3)["Monto"].sum()) if not top_cat.empty else 0.0
+    top5_sum = float(top_cat.head(5)["Monto"].sum()) if not top_cat.empty else 0.0
+
+    capex_export = capex_view[
+        ["Año", "Periodo", "Situación", "CCCC", "Estado", "Monto", "Periodo_ref"]
+    ].sort_values(["Periodo_ref", "CCCC", "Situación"]).copy()
+    capex_export["Periodo_ref"] = capex_export["Periodo_ref"].dt.strftime("%Y-%m")
+    csv_b64 = base64.b64encode(capex_export.to_csv(index=False).encode("utf-8")).decode()
+
+    monthly = (
+        capex_view.groupby(["Periodo_ref", "Estado"], as_index=False)["Monto"].sum()
+        .sort_values("Periodo_ref")
+    )
+    monthly_pivot = (
+        monthly.pivot_table(index="Periodo_ref", columns="Estado", values="Monto", aggfunc="sum", fill_value=0)
+        .sort_index()
+    )
+    for col in ["Costo", "Gasto"]:
+        if col not in monthly_pivot.columns:
+            monthly_pivot[col] = 0
+    monthly_pivot["Total"] = monthly_pivot[["Costo", "Gasto"]].sum(axis=1)
+    monthly_pivot["Acumulado"] = monthly_pivot["Total"].cumsum()
+    monthly_plot = monthly_pivot.reset_index()
+    first_month_total = float(monthly_plot["Total"].iloc[0]) if not monthly_plot.empty else 0.0
+    last_month_total = float(monthly_plot["Total"].iloc[-1]) if not monthly_plot.empty else 0.0
+    period_delta = (last_month_total / first_month_total - 1) if first_month_total else 0.0
+
+    fig_month = go.Figure()
+    fig_month.add_trace(go.Bar(
+        x=monthly_plot["Periodo_ref"],
+        y=monthly_plot["Costo"],
+        name="Costo (Capitalizable)",
+        marker_color="#20C978",
+        hovertemplate="<b>%{x|%b %Y}</b><br>Costo: $%{y:,.0f}<extra></extra>",
+    ))
+    fig_month.add_trace(go.Bar(
+        x=monthly_plot["Periodo_ref"],
+        y=monthly_plot["Gasto"],
+        name="Gasto (Operacional)",
+        marker_color="#FF343E",
+        hovertemplate="<b>%{x|%b %Y}</b><br>Gasto: $%{y:,.0f}<extra></extra>",
+    ))
+    fig_month.add_trace(go.Scatter(
+        x=monthly_plot["Periodo_ref"],
+        y=monthly_plot["Acumulado"],
+        yaxis="y2",
+        mode="lines+markers",
+        name="Total CAPEX (Tendencia)",
+        line=dict(color="#001A5A", width=2.5),
+        marker=dict(size=7, color="#001A5A", line=dict(color="#FFFFFF", width=1.2)),
+        hovertemplate="<b>%{x|%b %Y}</b><br>Acumulado: $%{y:,.0f}<extra></extra>",
+    ))
+    fig_month.update_layout(
+        height=390,
+        barmode="stack",
+        margin=dict(l=10, r=12, t=10, b=28),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#FFFFFF",
+        legend=dict(orientation="h", y=1.15, x=0, font=dict(size=12, color="#14244A")),
+        xaxis=dict(title="Periodo", tickformat="%b %Y", showgrid=False, color="#22345F"),
+        yaxis=dict(title="Monto (CLP)", tickprefix="$", separatethousands=True, gridcolor="#E5EAF2", color="#22345F"),
+        yaxis2=dict(
+            title="Total (CLP)",
+            overlaying="y",
+            side="right",
+            tickprefix="$",
+            separatethousands=True,
+            gridcolor="rgba(0,0,0,0)",
+            color="#22345F",
+        ),
+    )
+
+    donut_values = [top3_sum, max(top5_sum - top3_sum, 0), max(total_capex_view - top5_sum, 0)]
+    fig_donut = go.Figure(data=[go.Pie(
+        values=donut_values,
+        labels=["Top 3 categorías", "Top 5 categorías", "Resto de categorías"],
+        hole=0.62,
+        marker=dict(colors=["#20C978", "#001A5A", "#9B5CF6"], line=dict(color="#FFFFFF", width=2)),
+        textinfo="none",
+        hovertemplate="%{label}<br>$%{value:,.0f}<extra></extra>",
+    )])
+    fig_donut.update_layout(
+        height=240,
+        showlegend=False,
+        margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor="rgba(0,0,0,0)",
+        annotations=[dict(
+            text=f"<b>{top3_sum / total_capex_view:.0%}</b><br><span style='font-size:12px'>Top 3 categorías</span>",
+            x=0.5,
+            y=0.5,
+            font=dict(size=24, color="#001133"),
+            showarrow=False,
+        )],
+    )
+
+    top_rows = []
+    top_max = float(top_cat["Monto"].max()) if not top_cat.empty else 1.0
+    for i, row in enumerate(top_cat.head(10).itertuples(index=False), start=1):
+        width = (float(row.Monto) / top_max) * 100 if top_max else 0
+        share = float(row.Monto) / total_capex_view if total_capex_view else 0
+        top_rows.append(
+            f"""
+            <div class="capex-rank-row">
+                <div class="capex-rank-num">{i}</div>
+                <div class="capex-rank-name">{escape(str(row.CCCC))}</div>
+                <div class="capex-rank-track"><div style="width:{width:.1f}%"></div></div>
+                <div class="capex-rank-value">{fmt_m(float(row.Monto))} ({share:.1%})</div>
+            </div>
+            """
+        )
+
+    heat = capex_view.groupby(["Año", "Mes_num"], as_index=False)["Monto"].sum().dropna(subset=["Año", "Mes_num"])
+    heat_lookup = {(int(r["Año"]), int(r["Mes_num"])): float(r["Monto"]) for _, r in heat.iterrows()}
+    heat_max = max(heat_lookup.values()) if heat_lookup else 1.0
+    month_labels = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+    heat_rows = []
+    for year in sorted(capex_view["Año"].dropna().astype(int).unique()):
+        cells = []
+        for month in range(1, 13):
+            val = heat_lookup.get((year, month), 0.0)
+            alpha = 0.08 + 0.82 * (val / heat_max if heat_max else 0)
+            cells.append(f'<div class="capex-heat-cell" title="{year}-{month:02d}: {fmt_clp_largo(val)}" style="background:rgba(32,201,120,{alpha:.2f});"></div>')
+        heat_rows.append(f'<div class="capex-heat-year">{year}</div>{"".join(cells)}')
+    heat_months = "".join([f"<div>{m}</div>" for m in month_labels])
+    last_update = pd.Timestamp.now().strftime("%d de %B de %Y, %H:%M")
+
+    st.markdown(
+        """
+        <style>
+        .capex-page {
+            color:#001133;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding:0 2px 18px 2px;
+        }
+        .capex-hero {
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:18px;
+            margin:-64px 0 20px 0;
+        }
+        .capex-title {
+            font-size:38px;
+            line-height:1;
+            font-weight:950;
+            color:#001133;
+            letter-spacing:-0.025em;
+        }
+        .capex-subtitle {
+            color:#65719A;
+            font-size:15px;
+            font-weight:650;
+            margin-top:10px;
+        }
+        .capex-actions {
+            display:flex;
+            gap:12px;
+            align-items:center;
+            flex-wrap:wrap;
+            justify-content:flex-end;
+        }
+        .capex-action {
+            height:48px;
+            min-width:48px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border:1px solid #E1E7F0;
+            border-radius:10px;
+            background:#FFFFFF;
+            color:#001A5A;
+            box-shadow:0 8px 22px rgba(15,23,42,0.04);
+            font-size:18px;
+            font-weight:900;
+            text-decoration:none;
+        }
+        .capex-action-share {
+            padding:0 18px;
+            gap:9px;
+            font-size:14px;
+        }
+        .capex-action-primary {
+            min-width:188px;
+            padding:0 18px;
+            gap:10px;
+            border-color:#0A55F7;
+            background:#0B5AF4;
+            color:#FFFFFF !important;
+            font-size:14px;
+            box-shadow:0 14px 28px rgba(11,90,244,0.22);
+        }
+        .capex-kpi-grid {
+            display:grid;
+            grid-template-columns:1.04fr .92fr 1.04fr 1.2fr;
+            gap:14px;
+            margin-bottom:14px;
+        }
+        .capex-card {
+            border:1px solid #E1E7F0;
+            border-radius:12px;
+            background:#FFFFFF;
+            box-shadow:0 12px 28px rgba(15,23,42,0.045);
+        }
+        .capex-kpi {
+            min-height:170px;
+            display:grid;
+            grid-template-columns:58px 1fr;
+            gap:18px;
+            padding:30px 28px;
+            box-sizing:border-box;
+        }
+        .capex-kpi-icon {
+            width:54px;
+            height:54px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--halo);
+            color:var(--accent);
+            font-size:27px;
+            font-weight:950;
+        }
+        .capex-kpi-label {
+            color:#001133;
+            font-size:13px;
+            font-weight:950;
+            letter-spacing:.02em;
+            text-transform:uppercase;
+            margin-bottom:14px;
+        }
+        .capex-kpi-value {
+            color:var(--accent);
+            font-size:34px;
+            line-height:1;
+            font-weight:950;
+            letter-spacing:-0.035em;
+            white-space:nowrap;
+        }
+        .capex-kpi-copy {
+            color:#334675;
+            font-size:14px;
+            font-weight:650;
+            margin-top:16px;
+        }
+        .capex-pill {
+            display:inline-flex;
+            align-items:center;
+            gap:7px;
+            height:28px;
+            border-radius:999px;
+            padding:0 12px;
+            margin-top:18px;
+            background:#EEF2F7;
+            color:#001133;
+            font-size:12px;
+            font-weight:800;
+        }
+        .capex-progress {
+            height:12px;
+            width:100%;
+            border-radius:999px;
+            background:#E2E7EF;
+            overflow:hidden;
+            margin-top:26px;
+        }
+        .capex-progress > div {
+            height:100%;
+            border-radius:999px;
+            background:var(--accent);
+            box-shadow:inset 0 0 0 2px rgba(0,0,0,0.04);
+        }
+        .capex-insights {
+            padding:14px 16px 18px 16px;
+            margin-bottom:14px;
+        }
+        .capex-section-title {
+            color:#001133;
+            font-size:18px;
+            font-weight:950;
+            margin-bottom:14px;
+        }
+        .capex-insight-grid {
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:16px;
+        }
+        .capex-insight {
+            min-height:120px;
+            display:grid;
+            grid-template-columns:60px 1fr;
+            gap:18px;
+            padding:20px;
+            border:1px solid var(--border);
+            border-radius:10px;
+            background:linear-gradient(135deg, #FFFFFF 0%, var(--soft) 100%);
+        }
+        .capex-insight-icon {
+            width:56px;
+            height:56px;
+            border-radius:999px;
+            background:var(--halo);
+            color:var(--accent);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            font-weight:950;
+        }
+        .capex-insight-title {
+            color:var(--accent);
+            font-size:16px;
+            font-weight:950;
+            margin-bottom:10px;
+        }
+        .capex-insight-copy {
+            color:#061948;
+            font-size:14px;
+            line-height:1.55;
+            font-weight:620;
+        }
+        .capex-chart-frame {
+            border:1px solid #E1E7F0;
+            border-radius:12px;
+            background:#FFFFFF;
+            box-shadow:0 12px 28px rgba(15,23,42,0.045);
+            padding:18px 22px 10px 22px;
+            min-height:450px;
+            margin-bottom:14px;
+        }
+        .capex-card-head {
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            align-items:center;
+            color:#001133;
+            font-size:18px;
+            font-weight:950;
+            margin-bottom:8px;
+        }
+        .capex-dots {
+            color:#001A5A;
+            letter-spacing:3px;
+            font-size:18px;
+            font-weight:950;
+        }
+        .capex-rank-list {
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            padding:20px 8px 4px 8px;
+        }
+        .capex-rank-row {
+            display:grid;
+            grid-template-columns:26px 180px minmax(120px,1fr) 126px;
+            gap:12px;
+            align-items:center;
+            color:#061948;
+            font-size:13px;
+            font-weight:750;
+        }
+        .capex-rank-num {
+            width:22px;
+            height:22px;
+            border-radius:999px;
+            background:#EFF5F7;
+            border:1px solid #D8E5EC;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#52627D;
+            font-size:12px;
+            font-weight:900;
+        }
+        .capex-rank-track {
+            height:15px;
+            border-radius:4px;
+            background:transparent;
+        }
+        .capex-rank-track div {
+            height:100%;
+            border-radius:4px;
+            background:#20C978;
+            box-shadow:inset 0 0 0 2px rgba(0,0,0,0.04);
+        }
+        .capex-rank-value {
+            color:#24375F;
+            white-space:nowrap;
+            font-weight:800;
+        }
+        .capex-small-card {
+            min-height:305px;
+            padding:18px 22px;
+            box-sizing:border-box;
+        }
+        .capex-donut-grid {
+            display:grid;
+            grid-template-columns:210px 1fr;
+            gap:8px;
+            align-items:center;
+        }
+        .capex-legend {
+            display:flex;
+            flex-direction:column;
+            gap:20px;
+            color:#24375F;
+            font-size:14px;
+            font-weight:750;
+        }
+        .capex-legend-row {
+            display:grid;
+            grid-template-columns:14px 1fr auto;
+            gap:10px;
+            align-items:start;
+        }
+        .capex-dot {
+            width:10px;
+            height:10px;
+            border-radius:999px;
+            margin-top:5px;
+            background:var(--dot);
+        }
+        .capex-legend-val {
+            color:#001133;
+            font-size:17px;
+            font-weight:950;
+            text-align:right;
+        }
+        .capex-legend-val span {
+            display:block;
+            color:#65719A;
+            font-size:11px;
+            font-weight:750;
+            margin-top:3px;
+        }
+        .capex-callout {
+            color:#0B5AF4;
+            font-size:13px;
+            font-weight:850;
+            margin-top:10px;
+        }
+        .capex-heat {
+            margin-top:28px;
+        }
+        .capex-heat-grid {
+            display:grid;
+            grid-template-columns:52px repeat(12, 1fr);
+            gap:3px;
+            align-items:center;
+        }
+        .capex-heat-year {
+            color:#334675;
+            font-size:13px;
+            font-weight:800;
+            text-align:right;
+            padding-right:10px;
+        }
+        .capex-heat-cell {
+            height:28px;
+            border-radius:1px;
+            border:1px solid rgba(255,255,255,0.88);
+        }
+        .capex-heat-months {
+            display:grid;
+            grid-template-columns:52px repeat(12, 1fr);
+            gap:3px;
+            margin-top:10px;
+            color:#334675;
+            font-size:12px;
+            font-weight:750;
+            text-align:center;
+        }
+        .capex-heat-scale {
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:12px;
+            margin-top:32px;
+            color:#334675;
+            font-size:12px;
+            font-weight:750;
+        }
+        .capex-gradient {
+            width:225px;
+            height:14px;
+            border-radius:3px;
+            background:linear-gradient(90deg, rgba(32,201,120,.08), rgba(32,201,120,.22), rgba(32,201,120,.45), rgba(32,201,120,.7), rgba(32,201,120,.95));
+        }
+        .capex-summary-grid {
+            display:grid;
+            grid-template-columns:repeat(3, 1fr);
+            gap:0;
+            margin-top:28px;
+        }
+        .capex-summary-item {
+            padding:0 22px;
+            border-right:1px solid #E2E7EF;
+        }
+        .capex-summary-item:last-child {
+            border-right:0;
+        }
+        .capex-summary-icon {
+            width:44px;
+            height:44px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--accent);
+            background:var(--halo);
+            font-weight:950;
+            font-size:20px;
+            margin-bottom:18px;
+        }
+        .capex-summary-label {
+            color:#001133;
+            font-size:13px;
+            font-weight:950;
+            margin-bottom:15px;
+        }
+        .capex-summary-value {
+            color:var(--accent);
+            font-size:28px;
+            line-height:1;
+            font-weight:950;
+            letter-spacing:-0.025em;
+        }
+        .capex-summary-sub {
+            color:#65719A;
+            font-size:13px;
+            font-weight:650;
+            margin-top:13px;
+        }
+        .capex-info {
+            margin-top:24px;
+            border:1px solid #CFE0FF;
+            background:#F2F7FF;
+            color:#0B5AF4;
+            border-radius:8px;
+            padding:13px 16px;
+            font-size:13px;
+            font-weight:850;
+        }
+        .capex-footer {
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+            color:#65719A;
+            font-size:13px;
+            font-weight:750;
+            margin:22px 0 0 0;
+        }
+        @media (max-width: 1320px) {
+            .capex-kpi-grid, .capex-insight-grid { grid-template-columns:1fr; }
+            .capex-hero { margin-top:-42px; flex-direction:column; }
+            .capex-rank-row { grid-template-columns:26px 150px minmax(120px,1fr) 116px; }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        <div class="capex-page">
+            <div class="capex-hero">
+                <div>
+                    <div class="capex-title">CAPEX Intelligence</div>
+                    <div class="capex-subtitle">Análisis y control de inversiones en infraestructura</div>
+                </div>
+                <div class="capex-actions">
+                    <div class="capex-action capex-action-share">⌯ Compartir</div>
+                    <div class="capex-action">☆</div>
+                    <div class="capex-action">...</div>
+                    <a class="capex-action capex-action-primary" href="data:text/csv;base64,{csv_b64}" download="capex_filtrado_bodegas2025.csv">⇩ Descargar reporte</a>
+                </div>
+            </div>
+            <div class="capex-kpi-grid">
+                <div class="capex-card capex-kpi" style="--accent:#0B5AF4;--halo:#EAF2FF;">
+                    <div class="capex-kpi-icon">$</div>
+                    <div>
+                        <div class="capex-kpi-label">CAPEX TOTAL FILTRADO</div>
+                        <div class="capex-kpi-value">{fmt_m(total_capex_view)}</div>
+                        <div class="capex-kpi-copy">CAPEX consolidado filtrado</div>
+                        <div class="capex-pill" style="color:{'#06A861' if period_delta >= 0 else '#DC2626'};">↗ {period_delta:+.1%} vs período anterior</div>
+                    </div>
+                </div>
+                <div class="capex-card capex-kpi" style="--accent:#14B86A;--halo:#E9F8F0;">
+                    <div class="capex-kpi-icon">♣</div>
+                    <div>
+                        <div class="capex-kpi-label">COSTO CAPITALIZABLE</div>
+                        <div class="capex-kpi-value">{cost_share:.1%}</div>
+                        <div class="capex-kpi-copy">Activo depreciable</div>
+                        <div class="capex-progress"><div style="width:{min(cost_share * 100, 100):.1f}%"></div></div>
+                    </div>
+                </div>
+                <div class="capex-card capex-kpi" style="--accent:#F01822;--halo:#FFF0F1;">
+                    <div class="capex-kpi-icon">●</div>
+                    <div>
+                        <div class="capex-kpi-label">GASTO OPERACIONAL</div>
+                        <div class="capex-kpi-value">{gasto_share:.1%}</div>
+                        <div class="capex-kpi-copy">Impacto inmediato en resultado</div>
+                        <div class="capex-progress"><div style="width:{min(gasto_share * 100, 100):.1f}%"></div></div>
+                    </div>
+                </div>
+                <div class="capex-card capex-kpi" style="--accent:#7C2CF4;--halo:#F2E9FF;">
+                    <div class="capex-kpi-icon">↑</div>
+                    <div>
+                        <div class="capex-kpi-label">PRINCIPAL DRIVER</div>
+                        <div class="capex-kpi-value" style="font-size:28px;">{escape(top_cat_name)}</div>
+                        <div class="capex-kpi-copy">{top_share:.1%} del CAPEX total</div>
+                        <div class="capex-progress"><div style="width:{min(top_share * 100, 100):.1f}%"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="capex-card capex-insights">
+                <div class="capex-section-title">Insights ejecutivos</div>
+                <div class="capex-insight-grid">
+                    <div class="capex-insight" style="--accent:#0B5AF4;--halo:#EAF2FF;--soft:#FAFCFF;--border:#DCEAFF;">
+                        <div class="capex-insight-icon">◌</div>
+                        <div><div class="capex-insight-title">Lectura técnica</div><div class="capex-insight-copy">Las 3 categorías principales concentran {top3_sum / total_capex_view:.1%} del CAPEX, evidenciando una estructura focalizada en activos estructurales.</div></div>
+                    </div>
+                    <div class="capex-insight" style="--accent:#14B86A;--halo:#E9F8F0;--soft:#FBFFFD;--border:#DCEFE7;">
+                        <div class="capex-insight-icon">▤</div>
+                        <div><div class="capex-insight-title">Clasificación contable</div><div class="capex-insight-copy">La separación entre costo y gasto permite distinguir partidas capitalizables de impacto operacional inmediato y optimizar la capitalización.</div></div>
+                    </div>
+                    <div class="capex-insight" style="--accent:#7C2CF4;--halo:#F2E9FF;--soft:#FEFBFF;--border:#E9DDFC;">
+                        <div class="capex-insight-icon">◇</div>
+                        <div><div class="capex-insight-title">Calidad de datos</div><div class="capex-insight-copy">El dataset presenta validación automática de períodos, montos y normalización de registros para garantizar integridad y trazabilidad.</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    c1, c2 = st.columns([0.95, 1.05])
+    with c1:
+        st.markdown('<div class="capex-chart-frame"><div class="capex-card-head"><span>Evolución mensual CAPEX por clasificación</span><span class="capex-dots">⋮</span></div>', unsafe_allow_html=True)
+        st.plotly_chart(fig_month, use_container_width=True, config={"displayModeBar": False})
+        st.markdown("</div>", unsafe_allow_html=True)
+    with c2:
+        st.markdown(
+            f"""
+            <div class="capex-chart-frame">
+                <div class="capex-card-head"><span>Top 15 categorías CCCC por inversión</span><span class="capex-dots">⋮</span></div>
+                <div class="capex-rank-list">{''.join(top_rows)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    b1, b2, b3 = st.columns([0.9, 0.9, 1.05])
+    with b1:
+        st.markdown('<div class="capex-card capex-small-card"><div class="capex-card-head"><span>Concentración de inversión</span><span class="capex-dots">⋮</span></div><div class="capex-donut-grid">', unsafe_allow_html=True)
+        st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
+        st.markdown(
+            f"""
+                <div class="capex-legend">
+                    <div class="capex-legend-row"><div class="capex-dot" style="--dot:#20C978;"></div><div>Top 3 categorías</div><div class="capex-legend-val">{top3_sum / total_capex_view:.0%}<span>{fmt_m(top3_sum)}</span></div></div>
+                    <div class="capex-legend-row"><div class="capex-dot" style="--dot:#001A5A;"></div><div>Top 5 categorías</div><div class="capex-legend-val">{top5_sum / total_capex_view:.0%}<span>{fmt_m(top5_sum)}</span></div></div>
+                    <div class="capex-legend-row"><div class="capex-dot" style="--dot:#9B5CF6;"></div><div>Resto de categorías</div><div class="capex-legend-val">{(total_capex_view - top5_sum) / total_capex_view:.0%}<span>{fmt_m(total_capex_view - top5_sum)}</span></div></div>
+                </div>
+            </div>
+            <div class="capex-callout">ⓘ Alta concentración en categorías estratégicas.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with b2:
+        st.markdown(
+            f"""
+            <div class="capex-card capex-small-card">
+                <div class="capex-card-head"><span>Timeline de inversión (intensidad mensual)</span><span class="capex-dots">⋮</span></div>
+                <div class="capex-heat">
+                    <div class="capex-heat-grid">{''.join(heat_rows)}</div>
+                    <div class="capex-heat-months"><div></div>{heat_months}</div>
+                    <div class="capex-heat-scale"><span>Baja inversión</span><div class="capex-gradient"></div><span>Alta inversión</span></div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with b3:
+        st.markdown(
+            f"""
+            <div class="capex-card capex-small-card">
+                <div class="capex-card-head"><span>Resumen del período</span></div>
+                <div class="capex-summary-grid">
+                    <div class="capex-summary-item" style="--accent:#001133;--halo:#E9F8F0;">
+                        <div class="capex-summary-icon">↟</div>
+                        <div class="capex-summary-label">Total filtrado</div>
+                        <div class="capex-summary-value">{fmt_m(total_capex_view)}</div>
+                        <div class="capex-summary-sub">100% del total</div>
+                    </div>
+                    <div class="capex-summary-item" style="--accent:#001133;--halo:#FFF7E8;">
+                        <div class="capex-summary-icon" style="color:#F3A417;">◎</div>
+                        <div class="capex-summary-label">Costo capitalizable</div>
+                        <div class="capex-summary-value">{fmt_m(costo_total)}</div>
+                        <div class="capex-summary-sub">{cost_share:.1%} del total</div>
+                    </div>
+                    <div class="capex-summary-item" style="--accent:#F01822;--halo:#FFF0F1;">
+                        <div class="capex-summary-icon">♢</div>
+                        <div class="capex-summary-label">Gasto operacional</div>
+                        <div class="capex-summary-value">{fmt_m(gasto_total)}</div>
+                        <div class="capex-summary-sub">{gasto_share:.1%} del total</div>
+                    </div>
+                </div>
+                <div class="capex-info">ⓘ El costo capitalizable representa el {cost_share:.1%} del CAPEX total filtrado.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(f'<div class="capex-footer">↻ Última actualización: {last_update}</div>', unsafe_allow_html=True)
+    with st.expander("Ver detalle de movimientos CAPEX"):
+        capex_table = capex_export.rename(columns={"Periodo_ref": "Periodo normalizado"})
+        st.dataframe(capex_table.style.format({"Monto": "${:,.0f}"}), use_container_width=True, height=430)
+    st.stop()
+
     st.markdown(
         tab_header("Capex", "Inversión histórica del activo desde Google Sheets", show_download=False),
         unsafe_allow_html=True,

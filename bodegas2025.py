@@ -9294,7 +9294,7 @@ if active_section == "🏗️ Capex":
         <style>
         .capex-page {
             color:#001133;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: inherit;
             padding:0 2px 8px 2px;
         }
         .capex-hero {

@@ -9804,9 +9804,12 @@ if active_section == "🏗️ Capex":
 
     c1, c2 = st.columns([0.95, 1.05])
     with c1:
-        st.markdown('<div class="capex-chart-frame"><div class="capex-card-head"><span>Evolución mensual CAPEX por clasificación</span><span class="capex-dots">⋮</span></div>', unsafe_allow_html=True)
-        st.plotly_chart(fig_month, use_container_width=True, config={"displayModeBar": False})
-        st.markdown("</div>", unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown(
+                '<div class="capex-card-head"><span>Evolución mensual CAPEX por clasificación</span><span class="capex-dots">⋮</span></div>',
+                unsafe_allow_html=True,
+            )
+            st.plotly_chart(fig_month, use_container_width=True, config={"displayModeBar": False})
     with c2:
         st.markdown(
             f"""
@@ -9820,21 +9823,26 @@ if active_section == "🏗️ Capex":
 
     b1, b2, b3 = st.columns([0.9, 0.9, 1.05])
     with b1:
-        st.markdown('<div class="capex-card capex-small-card"><div class="capex-card-head"><span>Concentración de inversión</span><span class="capex-dots">⋮</span></div><div class="capex-donut-grid">', unsafe_allow_html=True)
-        st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
-        st.markdown(
-            f"""
-                <div class="capex-legend">
-                    <div class="capex-legend-row"><div class="capex-dot" style="--dot:#20C978;"></div><div>Top 3 categorías</div><div class="capex-legend-val">{top3_sum / total_capex_view:.0%}<span>{fmt_m(top3_sum)}</span></div></div>
-                    <div class="capex-legend-row"><div class="capex-dot" style="--dot:#001A5A;"></div><div>Top 5 categorías</div><div class="capex-legend-val">{top5_sum / total_capex_view:.0%}<span>{fmt_m(top5_sum)}</span></div></div>
-                    <div class="capex-legend-row"><div class="capex-dot" style="--dot:#9B5CF6;"></div><div>Resto de categorías</div><div class="capex-legend-val">{(total_capex_view - top5_sum) / total_capex_view:.0%}<span>{fmt_m(total_capex_view - top5_sum)}</span></div></div>
-                </div>
-            </div>
-            <div class="capex-callout">ⓘ Alta concentración en categorías estratégicas.</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        with st.container(border=True):
+            st.markdown(
+                '<div class="capex-card-head"><span>Concentración de inversión</span><span class="capex-dots">⋮</span></div>',
+                unsafe_allow_html=True,
+            )
+            donut_col, legend_col = st.columns([0.95, 1])
+            with donut_col:
+                st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
+            with legend_col:
+                st.markdown(
+                    f"""
+                    <div class="capex-legend">
+                        <div class="capex-legend-row"><div class="capex-dot" style="--dot:#20C978;"></div><div>Top 3 categorías</div><div class="capex-legend-val">{top3_sum / total_capex_view:.0%}<span>{fmt_m(top3_sum)}</span></div></div>
+                        <div class="capex-legend-row"><div class="capex-dot" style="--dot:#001A5A;"></div><div>Top 5 categorías</div><div class="capex-legend-val">{top5_sum / total_capex_view:.0%}<span>{fmt_m(top5_sum)}</span></div></div>
+                        <div class="capex-legend-row"><div class="capex-dot" style="--dot:#9B5CF6;"></div><div>Resto de categorías</div><div class="capex-legend-val">{(total_capex_view - top5_sum) / total_capex_view:.0%}<span>{fmt_m(total_capex_view - top5_sum)}</span></div></div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            st.markdown('<div class="capex-callout">ⓘ Alta concentración en categorías estratégicas.</div>', unsafe_allow_html=True)
     with b2:
         st.markdown(
             f"""

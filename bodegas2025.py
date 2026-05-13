@@ -9215,22 +9215,23 @@ if active_section == "🏗️ Capex":
         hovertemplate="<b>%{x|%b %Y}</b><br>Acumulado: $%{y:,.0f}<extra></extra>",
     ))
     fig_month.update_layout(
-        height=390,
+        height=215,
         barmode="stack",
-        margin=dict(l=10, r=12, t=10, b=28),
+        margin=dict(l=8, r=8, t=4, b=18),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#FFFFFF",
-        legend=dict(orientation="h", y=1.15, x=0, font=dict(size=12, color="#14244A")),
-        xaxis=dict(title="Periodo", tickformat="%b %Y", showgrid=False, color="#22345F"),
-        yaxis=dict(title="Monto (CLP)", tickprefix="$", separatethousands=True, gridcolor="#E5EAF2", color="#22345F"),
+        legend=dict(orientation="h", y=1.18, x=0, font=dict(size=10, color="#14244A")),
+        xaxis=dict(title="", tickformat="%b %Y", showgrid=False, color="#22345F", tickfont=dict(size=10)),
+        yaxis=dict(title="", tickprefix="$", separatethousands=True, gridcolor="#E5EAF2", color="#22345F", tickfont=dict(size=10)),
         yaxis2=dict(
-            title="Total (CLP)",
+            title="",
             overlaying="y",
             side="right",
             tickprefix="$",
             separatethousands=True,
             gridcolor="rgba(0,0,0,0)",
             color="#22345F",
+            tickfont=dict(size=10),
         ),
     )
 
@@ -9244,15 +9245,15 @@ if active_section == "🏗️ Capex":
         hovertemplate="%{label}<br>$%{value:,.0f}<extra></extra>",
     )])
     fig_donut.update_layout(
-        height=240,
+        height=128,
         showlegend=False,
         margin=dict(l=0, r=0, t=0, b=0),
         paper_bgcolor="rgba(0,0,0,0)",
         annotations=[dict(
-            text=f"<b>{top3_sum / total_capex_view:.0%}</b><br><span style='font-size:12px'>Top 3 categorías</span>",
+            text=f"<b>{top3_sum / total_capex_view:.0%}</b><br><span style='font-size:9px'>Top 3</span>",
             x=0.5,
             y=0.5,
-            font=dict(size=24, color="#001133"),
+            font=dict(size=18, color="#001133"),
             showarrow=False,
         )],
     )
@@ -9294,17 +9295,17 @@ if active_section == "🏗️ Capex":
         .capex-page {
             color:#001133;
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            padding:0 2px 18px 2px;
+            padding:0 2px 8px 2px;
         }
         .capex-hero {
             display:flex;
             align-items:flex-start;
             justify-content:space-between;
-            gap:18px;
-            margin:-64px 0 20px 0;
+            gap:12px;
+            margin:-68px 0 8px 0;
         }
         .capex-title {
-            font-size:38px;
+            font-size:28px;
             line-height:1;
             font-weight:950;
             color:#001133;
@@ -9312,121 +9313,122 @@ if active_section == "🏗️ Capex":
         }
         .capex-subtitle {
             color:#65719A;
-            font-size:15px;
+            font-size:12px;
             font-weight:650;
-            margin-top:10px;
+            margin-top:6px;
         }
         .capex-actions {
             display:flex;
-            gap:12px;
+            gap:7px;
             align-items:center;
             flex-wrap:wrap;
             justify-content:flex-end;
         }
         .capex-action {
-            height:48px;
-            min-width:48px;
+            height:34px;
+            min-width:34px;
             display:flex;
             align-items:center;
             justify-content:center;
             border:1px solid #E1E7F0;
-            border-radius:10px;
+            border-radius:8px;
             background:#FFFFFF;
             color:#001A5A;
             box-shadow:0 8px 22px rgba(15,23,42,0.04);
-            font-size:18px;
+            font-size:13px;
             font-weight:900;
             text-decoration:none;
         }
         .capex-action-share {
-            padding:0 18px;
-            gap:9px;
-            font-size:14px;
+            padding:0 12px;
+            gap:6px;
+            font-size:12px;
         }
         .capex-action-primary {
-            min-width:188px;
-            padding:0 18px;
-            gap:10px;
+            min-width:142px;
+            padding:0 12px;
+            gap:6px;
             border-color:#0A55F7;
             background:#0B5AF4;
             color:#FFFFFF !important;
-            font-size:14px;
+            font-size:12px;
             box-shadow:0 14px 28px rgba(11,90,244,0.22);
         }
         .capex-kpi-grid {
             display:grid;
-            grid-template-columns:1.04fr .92fr 1.04fr 1.2fr;
-            gap:14px;
-            margin-bottom:14px;
+            grid-template-columns:repeat(4, minmax(0, 1fr));
+            gap:8px;
+            margin-bottom:8px;
         }
         .capex-card {
             border:1px solid #E1E7F0;
-            border-radius:12px;
+            border-radius:9px;
             background:#FFFFFF;
-            box-shadow:0 12px 28px rgba(15,23,42,0.045);
+            box-shadow:0 8px 18px rgba(15,23,42,0.04);
         }
         .capex-kpi {
-            min-height:170px;
+            min-height:100px;
             display:grid;
-            grid-template-columns:58px 1fr;
-            gap:18px;
-            padding:30px 28px;
+            grid-template-columns:40px minmax(0,1fr);
+            gap:10px;
+            padding:14px 15px;
             box-sizing:border-box;
         }
         .capex-kpi-icon {
-            width:54px;
-            height:54px;
+            width:38px;
+            height:38px;
             border-radius:999px;
             display:flex;
             align-items:center;
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:27px;
+            font-size:19px;
             font-weight:950;
         }
         .capex-kpi-label {
             color:#001133;
-            font-size:13px;
+            font-size:10.5px;
             font-weight:950;
             letter-spacing:.02em;
             text-transform:uppercase;
-            margin-bottom:14px;
+            margin-bottom:7px;
         }
         .capex-kpi-value {
             color:var(--accent);
-            font-size:34px;
+            font-size:25px;
             line-height:1;
             font-weight:950;
             letter-spacing:-0.035em;
-            white-space:nowrap;
+            white-space:normal;
+            overflow-wrap:anywhere;
         }
         .capex-kpi-copy {
             color:#334675;
-            font-size:14px;
+            font-size:11px;
             font-weight:650;
-            margin-top:16px;
+            margin-top:8px;
         }
         .capex-pill {
             display:inline-flex;
             align-items:center;
-            gap:7px;
-            height:28px;
+            gap:5px;
+            height:22px;
             border-radius:999px;
-            padding:0 12px;
-            margin-top:18px;
+            padding:0 9px;
+            margin-top:8px;
             background:#EEF2F7;
             color:#001133;
-            font-size:12px;
+            font-size:10px;
             font-weight:800;
         }
         .capex-progress {
-            height:12px;
+            height:8px;
             width:100%;
             border-radius:999px;
             background:#E2E7EF;
             overflow:hidden;
-            margin-top:26px;
+            margin-top:13px;
         }
         .capex-progress > div {
             height:100%;
@@ -9435,62 +9437,62 @@ if active_section == "🏗️ Capex":
             box-shadow:inset 0 0 0 2px rgba(0,0,0,0.04);
         }
         .capex-insights {
-            padding:14px 16px 18px 16px;
-            margin-bottom:14px;
+            padding:9px 12px 11px 12px;
+            margin-bottom:8px;
         }
         .capex-section-title {
             color:#001133;
-            font-size:18px;
+            font-size:14px;
             font-weight:950;
-            margin-bottom:14px;
+            margin-bottom:8px;
         }
         .capex-insight-grid {
             display:grid;
             grid-template-columns:repeat(3, minmax(0, 1fr));
-            gap:16px;
+            gap:9px;
         }
         .capex-insight {
-            min-height:120px;
+            min-height:74px;
             display:grid;
-            grid-template-columns:60px 1fr;
-            gap:18px;
-            padding:20px;
+            grid-template-columns:38px minmax(0,1fr);
+            gap:10px;
+            padding:12px;
             border:1px solid var(--border);
-            border-radius:10px;
+            border-radius:8px;
             background:linear-gradient(135deg, #FFFFFF 0%, var(--soft) 100%);
         }
         .capex-insight-icon {
-            width:56px;
-            height:56px;
+            width:36px;
+            height:36px;
             border-radius:999px;
             background:var(--halo);
             color:var(--accent);
             display:flex;
             align-items:center;
             justify-content:center;
-            font-size:25px;
+            font-size:16px;
             font-weight:950;
         }
         .capex-insight-title {
             color:var(--accent);
-            font-size:16px;
+            font-size:13px;
             font-weight:950;
-            margin-bottom:10px;
+            margin-bottom:5px;
         }
         .capex-insight-copy {
             color:#061948;
-            font-size:14px;
-            line-height:1.55;
+            font-size:11px;
+            line-height:1.32;
             font-weight:620;
         }
         .capex-chart-frame {
             border:1px solid #E1E7F0;
-            border-radius:12px;
+            border-radius:9px;
             background:#FFFFFF;
-            box-shadow:0 12px 28px rgba(15,23,42,0.045);
-            padding:18px 22px 10px 22px;
-            min-height:450px;
-            margin-bottom:14px;
+            box-shadow:0 8px 18px rgba(15,23,42,0.04);
+            padding:10px 13px 5px 13px;
+            min-height:276px;
+            margin-bottom:8px;
         }
         .capex-card-head {
             display:flex;
@@ -9498,34 +9500,34 @@ if active_section == "🏗️ Capex":
             gap:10px;
             align-items:center;
             color:#001133;
-            font-size:18px;
+            font-size:14px;
             font-weight:950;
-            margin-bottom:8px;
+            margin-bottom:5px;
         }
         .capex-dots {
             color:#001A5A;
             letter-spacing:3px;
-            font-size:18px;
+            font-size:14px;
             font-weight:950;
         }
         .capex-rank-list {
             display:flex;
             flex-direction:column;
-            gap:10px;
-            padding:20px 8px 4px 8px;
+            gap:4px;
+            padding:8px 4px 2px 4px;
         }
         .capex-rank-row {
             display:grid;
-            grid-template-columns:26px 180px minmax(120px,1fr) 126px;
-            gap:12px;
+            grid-template-columns:20px 148px minmax(90px,1fr) 105px;
+            gap:8px;
             align-items:center;
             color:#061948;
-            font-size:13px;
+            font-size:10.5px;
             font-weight:750;
         }
         .capex-rank-num {
-            width:22px;
-            height:22px;
+            width:18px;
+            height:18px;
             border-radius:999px;
             background:#EFF5F7;
             border:1px solid #D8E5EC;
@@ -9533,11 +9535,11 @@ if active_section == "🏗️ Capex":
             align-items:center;
             justify-content:center;
             color:#52627D;
-            font-size:12px;
+            font-size:10px;
             font-weight:900;
         }
         .capex-rank-track {
-            height:15px;
+            height:12px;
             border-radius:4px;
             background:transparent;
         }
@@ -9553,84 +9555,84 @@ if active_section == "🏗️ Capex":
             font-weight:800;
         }
         .capex-small-card {
-            min-height:305px;
-            padding:18px 22px;
+            min-height:192px;
+            padding:10px 13px;
             box-sizing:border-box;
         }
         .capex-donut-grid {
             display:grid;
-            grid-template-columns:210px 1fr;
-            gap:8px;
+            grid-template-columns:125px 1fr;
+            gap:5px;
             align-items:center;
         }
         .capex-legend {
             display:flex;
             flex-direction:column;
-            gap:20px;
+            gap:8px;
             color:#24375F;
-            font-size:14px;
+            font-size:10.5px;
             font-weight:750;
         }
         .capex-legend-row {
             display:grid;
-            grid-template-columns:14px 1fr auto;
-            gap:10px;
+            grid-template-columns:10px 1fr auto;
+            gap:6px;
             align-items:start;
         }
         .capex-dot {
-            width:10px;
-            height:10px;
+            width:8px;
+            height:8px;
             border-radius:999px;
-            margin-top:5px;
+            margin-top:4px;
             background:var(--dot);
         }
         .capex-legend-val {
             color:#001133;
-            font-size:17px;
+            font-size:12px;
             font-weight:950;
             text-align:right;
         }
         .capex-legend-val span {
             display:block;
             color:#65719A;
-            font-size:11px;
+            font-size:9px;
             font-weight:750;
-            margin-top:3px;
+            margin-top:1px;
         }
         .capex-callout {
             color:#0B5AF4;
-            font-size:13px;
+            font-size:10px;
             font-weight:850;
-            margin-top:10px;
+            margin-top:4px;
         }
         .capex-heat {
-            margin-top:28px;
+            margin-top:13px;
         }
         .capex-heat-grid {
             display:grid;
-            grid-template-columns:52px repeat(12, 1fr);
-            gap:3px;
+            grid-template-columns:38px repeat(12, 1fr);
+            gap:2px;
             align-items:center;
         }
         .capex-heat-year {
             color:#334675;
-            font-size:13px;
+            font-size:10px;
             font-weight:800;
             text-align:right;
-            padding-right:10px;
+            padding-right:6px;
         }
         .capex-heat-cell {
-            height:28px;
+            height:18px;
             border-radius:1px;
             border:1px solid rgba(255,255,255,0.88);
         }
         .capex-heat-months {
             display:grid;
-            grid-template-columns:52px repeat(12, 1fr);
-            gap:3px;
-            margin-top:10px;
+            grid-template-columns:38px repeat(12, 1fr);
+            gap:2px;
+            margin-top:5px;
             color:#334675;
-            font-size:12px;
+            font-size:9px;
             font-weight:750;
             text-align:center;
         }
@@ -9638,15 +9640,15 @@ if active_section == "🏗️ Capex":
             display:flex;
             align-items:center;
             justify-content:center;
-            gap:12px;
-            margin-top:32px;
+            gap:8px;
+            margin-top:14px;
             color:#334675;
-            font-size:12px;
+            font-size:9.5px;
             font-weight:750;
         }
         .capex-gradient {
-            width:225px;
-            height:14px;
+            width:145px;
+            height:10px;
             border-radius:3px;
             background:linear-gradient(90deg, rgba(32,201,120,.08), rgba(32,201,120,.22), rgba(32,201,120,.45), rgba(32,201,120,.7), rgba(32,201,120,.95));
         }
@@ -9654,18 +9656,18 @@ if active_section == "🏗️ Capex":
             display:grid;
             grid-template-columns:repeat(3, 1fr);
             gap:0;
-            margin-top:28px;
+            margin-top:12px;
         }
         .capex-summary-item {
-            padding:0 22px;
+            padding:0 10px;
             border-right:1px solid #E2E7EF;
         }
         .capex-summary-item:last-child {
             border-right:0;
         }
         .capex-summary-icon {
-            width:44px;
-            height:44px;
+            width:30px;
+            height:30px;
             border-radius:999px;
             display:flex;
             align-items:center;
@@ -9673,36 +9675,36 @@ if active_section == "🏗️ Capex":
             color:var(--accent);
             background:var(--halo);
             font-weight:950;
-            font-size:20px;
-            margin-bottom:18px;
+            font-size:14px;
+            margin-bottom:9px;
         }
         .capex-summary-label {
             color:#001133;
-            font-size:13px;
+            font-size:10.5px;
             font-weight:950;
-            margin-bottom:15px;
+            margin-bottom:7px;
         }
         .capex-summary-value {
             color:var(--accent);
-            font-size:28px;
+            font-size:20px;
             line-height:1;
             font-weight:950;
             letter-spacing:-0.025em;
         }
         .capex-summary-sub {
             color:#65719A;
-            font-size:13px;
+            font-size:10px;
             font-weight:650;
-            margin-top:13px;
+            margin-top:7px;
         }
         .capex-info {
-            margin-top:24px;
+            margin-top:13px;
             border:1px solid #CFE0FF;
             background:#F2F7FF;
             color:#0B5AF4;
-            border-radius:8px;
-            padding:13px 16px;
-            font-size:13px;
+            border-radius:6px;
+            padding:8px 10px;
+            font-size:10.5px;
             font-weight:850;
         }
         .capex-footer {
@@ -9711,9 +9713,9 @@ if active_section == "🏗️ Capex":
             align-items:center;
             gap:10px;
             color:#65719A;
-            font-size:13px;
+            font-size:10.5px;
             font-weight:750;
-            margin:22px 0 0 0;
+            margin:8px 0 0 0;
         }
         @media (max-width: 1320px) {
             .capex-kpi-grid, .capex-insight-grid { grid-template-columns:1fr; }
@@ -9772,7 +9774,7 @@ if active_section == "🏗️ Capex":
                     <div class="capex-kpi-icon">↑</div>
                     <div>
                         <div class="capex-kpi-label">PRINCIPAL DRIVER</div>
-                        <div class="capex-kpi-value" style="font-size:28px;">{escape(top_cat_name)}</div>
+                        <div class="capex-kpi-value" style="font-size:22px;line-height:1.05;">{escape(top_cat_name)}</div>
                         <div class="capex-kpi-copy">{top_share:.1%} del CAPEX total</div>
                         <div class="capex-progress"><div style="width:{min(top_share * 100, 100):.1f}%"></div></div>
                     </div>

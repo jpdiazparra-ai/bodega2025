@@ -41,6 +41,7 @@ HERO_URI = data_uri("IMG_7331.jpeg")
 
 section_options = [
     "🏠 Overview Ejecutivo",
+    "🏠 Overview Ejecutivo 2",
     "📈 Flujo Operacional",
     "⚠️ Riesgo & Cobranza",
     "🏢 Canon & Contratos",
@@ -56,7 +57,11 @@ st.markdown("""
 /* Quitar espacio superior global */
 main {
     padding-top: 0rem !important;
-    background: #f3f7fb;
+    background: #F7F9FC;
+}
+.stApp,
+div[data-testid="stAppViewContainer"] {
+    background: #F7F9FC !important;
 }
 .block-container {
     max-width: 1680px;
@@ -89,6 +94,34 @@ footer {
     padding: 0 !important;
     overflow: hidden !important;
     pointer-events: none !important;
+}
+iframe[title="flujo-selector-scroll"] {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+}
+iframe[height="0"] {
+    display: block !important;
+    height: 0 !important;
+    min-height: 0 !important;
+}
+div[data-testid="stElementContainer"]:has(iframe[height="0"]),
+div[data-testid="stIFrame"]:has(iframe[height="0"]) {
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+div[data-testid="stElementContainer"]:has(iframe[title="flujo-selector-scroll"]),
+div[data-testid="stIFrame"]:has(iframe[title="flujo-selector-scroll"]) {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
 }
 section[data-testid="stSidebar"],
 aside[data-testid="stSidebar"] {
@@ -229,9 +262,9 @@ section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] >
     border-color: rgba(147, 197, 253, 0.14);
 }
 section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) {
-    background: linear-gradient(135deg, #2b6fd6 0%, #174a9b 100%);
-    border-color: rgba(191, 219, 254, 0.24);
-    box-shadow: 0 12px 26px rgba(29, 78, 216, 0.28);
+    background: linear-gradient(135deg, #1D4ED8 0%, #163A8A 100%);
+    border-color: rgba(191, 219, 254, 0.16);
+    box-shadow: 0 0 24px rgba(37,99,235,0.25), 0 12px 26px rgba(29, 78, 216, 0.18);
 }
 section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label > div:last-child {
     color: #dbeafe;
@@ -2836,19 +2869,25 @@ if active_section == "🏠 Overview Ejecutivo":
         .asset-kpi-grid {
             display:grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap:9px;
-            margin: 9px 0 8px 0;
+            gap:10px;
+            margin: 10px 0 10px 0;
         }
         .asset-kpi {
-            min-height:86px;
-            border-radius:10px;
-            border:1px solid var(--border);
+            min-height:116px;
+            border-radius:14px;
+            border:1px solid rgba(219,227,238,0.72);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:10px 11px 9px 11px;
+            padding:12px 14px 10px 14px;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            box-shadow:0 4px 18px rgba(15,23,42,0.045);
+        }
+        .asset-kpi-main {
             display:grid;
             grid-template-columns:32px 1fr;
-            gap:7px;
-            box-shadow:0 10px 24px rgba(15,23,42,0.035);
+            gap:8px;
+            align-items:start;
         }
         .asset-kpi-icon {
             width:28px;
@@ -2859,8 +2898,11 @@ if active_section == "🏠 Overview Ejecutivo":
             justify-content:center;
             background:var(--halo);
             color:var(--accent);
-            font-size:14px;
             font-weight:900;
+        }
+        .asset-kpi-icon svg {
+            width:16px;
+            height:16px;
         }
         .asset-kpi-title {
             color:#0f1f3d;
@@ -2870,15 +2912,25 @@ if active_section == "🏠 Overview Ejecutivo":
         }
         .asset-kpi-value {
             color:var(--accent);
-            font-size:18px;
+            font-size:21px;
             line-height:1.05;
             font-weight:900;
-            letter-spacing:-0.025em;
+            letter-spacing:0;
             white-space:nowrap;
+        }
+        .asset-kpi-spark {
+            width:100%;
+            height:24px;
+            margin-top:7px;
+            display:block;
+        }
+        .asset-kpi-spark path,
+        .asset-kpi-spark polyline {
+            vector-effect:non-scaling-stroke;
         }
         .asset-kpi-badge {
             display:inline-block;
-            margin-top:5px;
+            margin-top:6px;
             padding:3px 6px;
             border-radius:5px;
             background:var(--badge-bg);
@@ -2895,11 +2947,11 @@ if active_section == "🏠 Overview Ejecutivo":
             margin-top:3px;
         }
         .asset-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
+            border:1px solid rgba(219,227,238,0.72);
+            border-radius:14px;
             background:#ffffff;
             padding:16px;
-            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+            box-shadow:0 4px 18px rgba(15,23,42,0.045);
             min-height:100%;
         }
         .asset-bottom-card {
@@ -2926,8 +2978,8 @@ if active_section == "🏠 Overview Ejecutivo":
             grid-template-columns:30px minmax(0, 1fr) auto;
             gap:8px;
             align-items:center;
-            border:1px solid #e5ebf3;
-            border-radius:8px;
+            border:1px solid rgba(229,235,243,0.82);
+            border-radius:10px;
             padding:7px 9px;
             background:#fbfdff;
         }
@@ -2974,8 +3026,8 @@ if active_section == "🏠 Overview Ejecutivo":
             gap:6px;
         }
         .trend-mini {
-            border:1px solid #e2e8f0;
-            border-radius:8px;
+            border:1px solid rgba(226,232,240,0.9);
+            border-radius:10px;
             padding:7px;
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
             min-height:66px;
@@ -3072,11 +3124,11 @@ if active_section == "🏠 Overview Ejecutivo":
             font-weight:750;
         }
         .asset-diagnosis-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
+            border:1px solid rgba(219,227,238,0.72);
+            border-radius:14px;
             background:#ffffff;
             padding:16px;
-            box-shadow:0 10px 24px rgba(15,23,42,0.04);
+            box-shadow:0 4px 18px rgba(15,23,42,0.045);
             min-height:100%;
         }
         .asset-diagnosis-grid {
@@ -3118,49 +3170,101 @@ if active_section == "🏠 Overview Ejecutivo":
         "tab-action tab-action-primary",
     )
 
+    def asset_icon_svg(kind: str) -> str:
+        icons = {
+            "up": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M9 7h8v8"/></svg>',
+            "down": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10"/><path d="M17 9v8H9"/></svg>',
+            "wallet": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V6a2 2 0 0 0-2-2H5a3 3 0 0 0 0 6h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V7"/><path d="M16 14h.01"/></svg>',
+            "capex": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M6 21V9l6-4 6 4v12"/><path d="M9 21v-6h6v6"/></svg>',
+            "percent": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>',
+            "ratio": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3-3 3 2 5-7"/></svg>',
+            "equal": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 9h12"/><path d="M6 15h12"/></svg>',
+        }
+        return icons.get(kind, icons["equal"])
+
+    def asset_sparkline(values, accent: str) -> str:
+        vals = pd.Series(values).replace([np.inf, -np.inf], np.nan).dropna().astype(float).tail(18).tolist()
+        if len(vals) < 2:
+            vals = [0.0, 0.0]
+        lo, hi = min(vals), max(vals)
+        span = hi - lo if hi != lo else 1.0
+        denom = max(len(vals) - 1, 1)
+        points = []
+        for i, val in enumerate(vals):
+            x = 2 + (i / denom) * 106
+            y = 22 - ((val - lo) / span) * 18
+            points.append(f"{x:.1f},{y:.1f}")
+        return (
+            f'<svg class="asset-kpi-spark" viewBox="0 0 112 26" preserveAspectRatio="none" aria-hidden="true">'
+            f'<path d="M2 22 H110" stroke="rgba(100,116,139,0.16)" stroke-width="1"/>'
+            f'<polyline points="{" ".join(points)}" fill="none" stroke="{accent}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+            f'</svg>'
+        )
+
+    posicion_spark = [0, posicion_neta * 0.55, posicion_neta]
+    caja_spark = [egreso_mensual_promedio, balance_kpi, balance_kpi + utilidad_operativa]
+    capex_spark = [0, ingresos_canon, CAPEX]
+    margen_spark = [0, margen_neto * 0.5, margen_neto]
+    cobertura_spark = [0, cobertura_egresos * 0.55, cobertura_egresos]
+
     st.markdown(
         f"""
-        {tab_header("Overview Ejecutivo", "Estado del activo y métricas financieras consolidadas", download_html=overview_download_html)}
+        {tab_header("Overview Ejecutivo", "Asset Intelligence Platform · estado del activo y métricas consolidadas", download_html=overview_download_html)}
         <div class="asset-kpi-grid">
-            <div class="asset-kpi" style="--accent:#DC2626;--soft:#fff7f7;--halo:#fde2e2;--border:#f1caca;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
-                <div class="asset-kpi-icon">↘</div>
-                <div>
-                    <div class="asset-kpi-title">Posición Neta</div>
-                    <div class="asset-kpi-value">{fmt_clp_largo(posicion_neta)}</div>
-                    <div class="asset-kpi-badge">{'Déficit' if posicion_neta < 0 else 'Superávit'} acumulado</div>
+            <div class="asset-kpi" style="--accent:#F87171;--soft:#fff7f7;--halo:#fde2e2;--border:#f1caca;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
+                <div class="asset-kpi-main">
+                    <div class="asset-kpi-icon">{asset_icon_svg("down")}</div>
+                    <div>
+                        <div class="asset-kpi-title">Posición Neta</div>
+                        <div class="asset-kpi-value">{fmt_clp_largo(posicion_neta)}</div>
+                        <div class="asset-kpi-badge">{'Déficit' if posicion_neta < 0 else 'Superávit'} acumulado</div>
+                    </div>
                 </div>
+                {asset_sparkline(posicion_spark, "#F87171" if posicion_neta < 0 else "#22C55E")}
             </div>
-            <div class="asset-kpi" style="--accent:#047857;--soft:#f6fffb;--halo:#d8f5e4;--border:#cfe9de;--badge-bg:#dcfce7;--badge-fg:#166534;">
-                <div class="asset-kpi-icon">▰</div>
-                <div>
-                    <div class="asset-kpi-title">Caja Disponible</div>
-                    <div class="asset-kpi-value">{fmt_clp_largo(balance_kpi)}</div>
-                    <div class="asset-kpi-badge">Runway: {cobertura_egresos:.1f} meses</div>
+            <div class="asset-kpi" style="--accent:#22C55E;--soft:#f6fffb;--halo:#d8f5e4;--border:#cfe9de;--badge-bg:#dcfce7;--badge-fg:#166534;">
+                <div class="asset-kpi-main">
+                    <div class="asset-kpi-icon">{asset_icon_svg("wallet")}</div>
+                    <div>
+                        <div class="asset-kpi-title">Caja Disponible</div>
+                        <div class="asset-kpi-value">{fmt_clp_largo(balance_kpi)}</div>
+                        <div class="asset-kpi-badge">Runway: {cobertura_egresos:.1f} meses</div>
+                    </div>
                 </div>
+                {asset_sparkline(caja_spark, "#22C55E")}
             </div>
             <div class="asset-kpi" style="--accent:#B7791F;--soft:#fffaf0;--halo:#fceec8;--border:#eadfbd;--badge-bg:#f3f4f6;--badge-fg:#334155;">
-                <div class="asset-kpi-icon">▣</div>
-                <div>
-                    <div class="asset-kpi-title">Inversión Total (CAPEX)</div>
-                    <div class="asset-kpi-value">{fmt_clp_largo(CAPEX)}</div>
-                    <div class="asset-kpi-badge">{cobertura_capex:.1%} recuperado</div>
+                <div class="asset-kpi-main">
+                    <div class="asset-kpi-icon">{asset_icon_svg("capex")}</div>
+                    <div>
+                        <div class="asset-kpi-title">Inversión Total</div>
+                        <div class="asset-kpi-value">{fmt_clp_largo(CAPEX)}</div>
+                        <div class="asset-kpi-badge">{cobertura_capex:.1%} recuperado</div>
+                    </div>
                 </div>
+                {asset_sparkline(capex_spark, "#F59E0B")}
             </div>
             <div class="asset-kpi" style="--accent:#1D4ED8;--soft:#f6f9ff;--halo:#e0ebff;--border:#d4e1f6;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
-                <div class="asset-kpi-icon">↗</div>
-                <div>
-                    <div class="asset-kpi-title">Margen Neto</div>
-                    <div class="asset-kpi-value">{margen_neto:.1%}</div>
-                    <div class="asset-kpi-badge">Sobre ingresos acumulados</div>
+                <div class="asset-kpi-main">
+                    <div class="asset-kpi-icon">{asset_icon_svg("percent")}</div>
+                    <div>
+                        <div class="asset-kpi-title">Margen Neto</div>
+                        <div class="asset-kpi-value">{margen_neto:.1%}</div>
+                        <div class="asset-kpi-badge">Sobre ingresos</div>
+                    </div>
                 </div>
+                {asset_sparkline(margen_spark, "#2563EB" if margen_neto >= 0 else "#F87171")}
             </div>
             <div class="asset-kpi" style="--accent:#6D28D9;--soft:#fbf8ff;--halo:#eadcff;--border:#e0d3f5;--badge-bg:#fee2e2;--badge-fg:#B91C1C;">
-                <div class="asset-kpi-icon">▬</div>
-                <div>
-                    <div class="asset-kpi-title">Caja / Egreso Prom.</div>
-                    <div class="asset-kpi-value">{cobertura_egresos:.2f}x</div>
-                    <div class="asset-kpi-badge">Cobertura mensual</div>
+                <div class="asset-kpi-main">
+                    <div class="asset-kpi-icon">{asset_icon_svg("ratio")}</div>
+                    <div>
+                        <div class="asset-kpi-title">Caja / Egreso</div>
+                        <div class="asset-kpi-value">{cobertura_egresos:.2f}x</div>
+                        <div class="asset-kpi-badge">Cobertura mensual</div>
+                    </div>
                 </div>
+                {asset_sparkline(cobertura_spark, "#6D28D9")}
             </div>
         </div>
         """,
@@ -3212,7 +3316,7 @@ if active_section == "🏠 Overview Ejecutivo":
                     x=flujo_home_fin["Periodo"],
                     y=flujo_home_fin["Ingresos"],
                     name="Ingresos",
-                    marker=dict(color="rgba(5,150,105,0.42)", line=dict(color="rgba(5,150,105,0.65)", width=1)),
+                    marker=dict(color="rgba(34,197,94,0.50)", line=dict(color="rgba(34,197,94,0.72)", width=1)),
                     hovertemplate="<b>%{x|%b %Y}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
                 )
             )
@@ -3221,7 +3325,7 @@ if active_section == "🏠 Overview Ejecutivo":
                     x=flujo_home_fin["Periodo"],
                     y=flujo_home_fin["Egresos_plot"],
                     name="Egresos",
-                    marker=dict(color="rgba(220,38,38,0.42)", line=dict(color="rgba(220,38,38,0.65)", width=1)),
+                    marker=dict(color="rgba(248,113,113,0.56)", line=dict(color="rgba(248,113,113,0.75)", width=1)),
                     hovertemplate="<b>%{x|%b %Y}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
                 )
             )
@@ -3232,8 +3336,8 @@ if active_section == "🏠 Overview Ejecutivo":
                     y=neto_home_cmp["Financiero"],
                     mode="lines+markers",
                     name="Neto financiero",
-                    line=dict(color="#1D4ED8", width=3.1, shape="spline"),
-                    marker=dict(size=7, color="#1D4ED8", line=dict(color="#FFFFFF", width=1.4)),
+                    line=dict(color="#2563EB", width=3.1, shape="spline"),
+                    marker=dict(size=7, color="#2563EB", line=dict(color="#FFFFFF", width=1.4)),
                     hovertemplate="<b>%{x|%b %Y}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
                 )
             )
@@ -3243,8 +3347,8 @@ if active_section == "🏠 Overview Ejecutivo":
                     y=neto_home_cmp["Contable"],
                     mode="lines+markers",
                     name="Neto contable",
-                    line=dict(color="#B7791F", width=2.9, dash="dot", shape="spline"),
-                    marker=dict(size=7, color="#B7791F", line=dict(color="#FFFFFF", width=1.4)),
+                    line=dict(color="#F59E0B", width=2.9, dash="dot", shape="spline"),
+                    marker=dict(size=7, color="#F59E0B", line=dict(color="#FFFFFF", width=1.4)),
                     hovertemplate="<b>%{x|%b %Y}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
                 )
             )
@@ -3259,8 +3363,8 @@ if active_section == "🏠 Overview Ejecutivo":
             ),
             font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#475569"),
             template="plotly_white",
-            height=240,
-            margin=dict(l=10, r=10, t=46, b=14),
+            height=360,
+            margin=dict(l=12, r=14, t=54, b=20),
             barmode="relative",
             paper_bgcolor="#FFFFFF",
             plot_bgcolor="#FFFFFF",
@@ -3280,7 +3384,7 @@ if active_section == "🏠 Overview Ejecutivo":
             title_text="Flujo CLP",
             tickprefix="$",
             separatethousands=True,
-            gridcolor="#E5EAF2",
+            gridcolor="rgba(180,190,210,0.15)",
             zeroline=False,
             title_font=dict(size=11, color="#64748B"),
             tickfont=dict(size=11, color="#64748B"),
@@ -3307,11 +3411,11 @@ if active_section == "🏠 Overview Ejecutivo":
 
     bottom_a, bottom_b, bottom_c = st.columns([1.05, 1.2, 1.1])
     resumen_rows = [
-        ("↗", "#059669", "#DCFCE7", "Total ingresos", "Ingresos Pagados + Abono", fmt_clp_largo(ingresos_kpi), "100.0%"),
-        ("↘", "#DC2626", "#FEE2E2", "Total egresos", "Egresos Pagado", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
-        ("=", "#DC2626" if utilidad_operativa < 0 else "#2563EB", "#FEE2E2" if utilidad_operativa < 0 else "#DBEAFE", "Total neto", "Ingresos menos egresos", fmt_clp_largo(utilidad_operativa), f"{margen_neto:.1%}"),
-        ("Σ", "#DC2626" if posicion_neta < 0 else "#1D4ED8", "#FEE2E2" if posicion_neta < 0 else "#DBEAFE", "Neto acumulado", "Suma de Ingresos + Egresos sin incluir Abono", fmt_clp_largo(posicion_neta), "-"),
-        ("%", "#DC2626" if margen_neto < 0 else "#B7791F", "#FEE2E2" if margen_neto < 0 else "#FEF3C7", "Margen neto", "Neto dividido por ingresos", f"{margen_neto:.1%}", "-"),
+        (asset_icon_svg("up"), "#22C55E", "#DCFCE7", "Total ingresos", "Ingresos Pagados + Abono", fmt_clp_largo(ingresos_kpi), "100.0%"),
+        (asset_icon_svg("down"), "#F87171", "#FEE2E2", "Total egresos", "Egresos Pagado", fmt_clp_largo(abs(egresos_kpi)), f"{(abs(egresos_kpi) / ingresos_kpi if ingresos_kpi else 0):.1%}"),
+        (asset_icon_svg("equal"), "#F87171" if utilidad_operativa < 0 else "#2563EB", "#FEE2E2" if utilidad_operativa < 0 else "#DBEAFE", "Total neto", "Ingresos menos egresos", fmt_clp_largo(utilidad_operativa), f"{margen_neto:.1%}"),
+        (asset_icon_svg("ratio"), "#F87171" if posicion_neta < 0 else "#1D4ED8", "#FEE2E2" if posicion_neta < 0 else "#DBEAFE", "Neto acumulado", "Suma de Ingresos + Egresos sin incluir Abono", fmt_clp_largo(posicion_neta), "-"),
+        (asset_icon_svg("percent"), "#F87171" if margen_neto < 0 else "#F59E0B", "#FEE2E2" if margen_neto < 0 else "#FEF3C7", "Margen neto", "Neto dividido por ingresos", f"{margen_neto:.1%}", "-"),
     ]
     with bottom_a:
         rows_html = "".join(
@@ -3436,21 +3540,27 @@ if active_section == "🏠 Overview Ejecutivo":
         score_marker_left = max(0, min(100, health_score))
         st.markdown(
             f"""
-            <div style="height:380px;border:1px solid #dbe3ee;border-radius:10px;background:#ffffff;
-                        padding:16px;box-sizing:border-box;box-shadow:0 8px 18px rgba(15,23,42,0.035);
+            <div style="height:380px;border:1px solid rgba(219,227,238,0.72);border-radius:14px;background:#ffffff;
+                        padding:16px;box-sizing:border-box;box-shadow:0 4px 18px rgba(15,23,42,0.045);
                         position:relative;
                         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#081735;">
                 <style>
                     summary::-webkit-details-marker {{ display:none; }}
                     summary::marker {{ content:""; }}
                 </style>
-                <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Diagnóstico del Activo</div>
-                <div style="margin-top:16px;padding:6px 2px 4px;">
+                <div style="font-size:14px;font-weight:950;line-height:1.1;margin-bottom:2px;">Operational Health Score</div>
+                <div style="margin-top:12px;padding:6px 2px 4px;display:grid;grid-template-columns:124px 1fr;gap:12px;align-items:center;">
+                    <svg viewBox="0 0 120 72" aria-hidden="true">
+                        <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="#E5EAF2" stroke-width="13" stroke-linecap="round" pathLength="100"/>
+                        <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="{estado_color}" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="{health_score} 100"/>
+                        <circle cx="60" cy="60" r="4" fill="#081735"/>
+                    </svg>
+                    <div>
                     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;">
                         <div style="font-size:34px;line-height:1;font-weight:950;color:#081735;letter-spacing:0;">{health_score}<span style="font-size:18px;font-weight:900;color:#64748b;">/100</span></div>
                         <div style="min-width:82px;height:24px;border-radius:8px;background:{estado_color};color:#ffffff;font-size:10px;font-weight:950;display:flex;align-items:center;justify-content:center;">{estado_txt}</div>
                     </div>
-                    <div style="position:relative;height:42px;margin-top:12px;">
+                    <div style="position:relative;height:42px;margin-top:10px;">
                         <div style="position:absolute;left:0;right:0;top:12px;height:14px;border-radius:999px;overflow:hidden;display:grid;grid-template-columns:40fr 30fr 30fr;background:#f1f5f9;">
                             <div style="background:#FEE2E2;"></div>
                             <div style="background:#FEF3C7;"></div>
@@ -3460,6 +3570,7 @@ if active_section == "🏠 Overview Ejecutivo":
                         <div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;font-size:8px;font-weight:900;color:#64748b;">
                             <span>0</span><span>40</span><span>70</span><span>100</span>
                         </div>
+                    </div>
                     </div>
                 </div>
                 <div style="margin-top:0;display:flex;align-items:center;justify-content:center;gap:7px;color:#475569;font-size:9px;font-weight:800;">
@@ -4321,6 +4432,541 @@ if active_section == "🏠 Overview Ejecutivo":
             row_alt="#F8FAFC",
             compact=False,
         )
+
+# =========================================================
+# 🏠 TAB 1B: OVERVIEW EJECUTIVO 2
+# =========================================================
+if active_section == "🏠 Overview Ejecutivo 2":
+    import plotly.graph_objects as go
+
+    data_v2 = df_f.copy()
+    data_v2["Periodo_ref"] = pd.to_datetime(data_v2.get("Periodo_ref"), errors="coerce")
+
+    def ov2_icon(kind: str) -> str:
+        icons = {
+            "liquidity": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3-3 3 2 5-7"/></svg>',
+            "net": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M9 7h8v8"/></svg>',
+            "capex": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M6 21V9l6-4 6 4v12"/><path d="M9 21v-6h6v6"/></svg>',
+            "margin": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>',
+            "coverage": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-5"/></svg>',
+            "alert": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+            "trend": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+            "focus": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/></svg>',
+        }
+        return icons.get(kind, icons["focus"])
+
+    def ov2_spark(values, color: str) -> str:
+        vals = pd.Series(values).replace([np.inf, -np.inf], np.nan).dropna().astype(float).tail(18).tolist()
+        if len(vals) < 2:
+            vals = [0.0, 0.0]
+        lo, hi = min(vals), max(vals)
+        span = hi - lo if hi != lo else 1.0
+        points = []
+        denom = max(len(vals) - 1, 1)
+        for i, value in enumerate(vals):
+            x = 2 + (i / denom) * 106
+            y = 22 - ((value - lo) / span) * 18
+            points.append(f"{x:.1f},{y:.1f}")
+        return (
+            f'<svg class="ov2-spark" viewBox="0 0 112 26" preserveAspectRatio="none" aria-hidden="true">'
+            f'<polygon points="{" ".join(points)} 110,24 2,24" fill="{color}" opacity="0.08"/>'
+            f'<path d="M2 23 H110" stroke="rgba(100,116,139,0.12)" stroke-width="1"/>'
+            f'<polyline points="{" ".join(points)}" fill="none" stroke="{color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+            f'</svg>'
+        )
+
+    def ov2_growth(mask: pd.Series, abs_values: bool = False) -> tuple[float, float]:
+        df_month = data_v2.loc[mask & data_v2["Periodo_ref"].notna(), ["Periodo_ref", "Monto"]].copy()
+        df_month["Monto"] = pd.to_numeric(df_month["Monto"], errors="coerce")
+        df_month = df_month.dropna(subset=["Periodo_ref", "Monto"])
+        if df_month.empty:
+            return 0.0, 0.0
+        df_month["Periodo_ref"] = df_month["Periodo_ref"].dt.to_period("M").dt.to_timestamp()
+        monthly = df_month.groupby("Periodo_ref")["Monto"].sum().sort_index()
+        if abs_values:
+            monthly = monthly.abs()
+        full_months = pd.date_range(monthly.index.min(), monthly.index.max(), freq="MS")
+        monthly = monthly.reindex(full_months, fill_value=0)
+        last_12 = float(monthly.iloc[-12:].sum())
+        prev_12 = float(monthly.iloc[-24:-12].sum()) if len(monthly) >= 24 else 0.0
+        growth = (last_12 / prev_12 - 1) if prev_12 else 0.0
+        return growth, last_12
+
+    mask_ing_ov2 = data_v2["CC_norm"].eq("INGRESO") & data_v2["Sit_norm"].isin(["PAGADO", "ABONO"])
+    mask_egr_ov2 = data_v2["CC_norm"].eq("EGRESO") & data_v2["Sit_norm"].eq("PAGADO")
+    mask_canon_ov2 = (
+        data_v2["CC_norm"].eq("INGRESO")
+        & data_v2["CC1_text"].str.strip().str.lower().eq("arriendo")
+        & data_v2["Obs_text"].str.strip().str.lower().eq("canon mensual")
+    )
+    ingresos_growth_12m, ingresos_last_12m = ov2_growth(mask_ing_ov2)
+    egresos_growth_12m, egresos_last_12m = ov2_growth(mask_egr_ov2, abs_values=True)
+    canon_growth_12m, canon_last_12m_total = ov2_growth(mask_canon_ov2)
+
+    max_period_ov2 = data_v2.loc[data_v2["Periodo_ref"].notna(), "Periodo_ref"].max()
+    last_12_start_ov2 = max_period_ov2 - pd.DateOffset(months=11) if pd.notna(max_period_ov2) else pd.NaT
+    last_12_mask_ov2 = data_v2["Periodo_ref"].between(last_12_start_ov2, max_period_ov2) if pd.notna(last_12_start_ov2) else pd.Series(False, index=data_v2.index)
+
+    canon_top3_share = 0.0
+    canon_top1_name = "Sin registros"
+    canon_last_12 = data_v2.loc[last_12_mask_ov2 & mask_canon_ov2].copy()
+    if not canon_last_12.empty and canon_last_12m_total:
+        canon_by_resp = canon_last_12.groupby("Responsable_clean")["Monto"].sum().sort_values(ascending=False)
+        canon_top3_share = float(canon_by_resp.head(3).sum() / canon_last_12m_total) if canon_by_resp.sum() else 0.0
+        canon_top1_name = str(canon_by_resp.index[0]) if not canon_by_resp.empty else "Sin registros"
+
+    egresos_last_12 = data_v2.loc[last_12_mask_ov2 & data_v2["CC_norm"].eq("EGRESO")].copy()
+    pressure_name = "Sin egresos relevantes"
+    pressure_value = 0.0
+    if not egresos_last_12.empty:
+        egresos_last_12["Monto_abs"] = pd.to_numeric(egresos_last_12["Monto"], errors="coerce").abs()
+        pressure_by_cc1 = egresos_last_12.groupby("CC1_text")["Monto_abs"].sum().sort_values(ascending=False)
+        if not pressure_by_cc1.empty:
+            pressure_name = escape(str(pressure_by_cc1.index[0]))
+            pressure_value = float(pressure_by_cc1.iloc[0])
+
+    health_score_ov2 = int(
+        np.clip(
+            55
+            + (18 if posicion_neta >= 0 else -18)
+            + (16 if margen_neto >= 0 else -16)
+            + (14 if cobertura_egresos >= 1 else -14)
+            + (12 if cobertura_capex >= 1 else -8),
+            0,
+            100,
+        )
+    )
+    health_color_ov2 = "#22C55E" if health_score_ov2 >= 70 else ("#F59E0B" if health_score_ov2 >= 45 else "#F87171")
+    health_state_ov2 = "Stabilization Phase" if health_score_ov2 >= 70 else ("Operational Pressure" if health_score_ov2 >= 45 else "Financial Stress")
+    health_delta_90 = 4 if utilidad_operativa >= 0 else -4
+    liquidity_state = "crítica" if cobertura_egresos < 1 else ("controlada" if cobertura_egresos < 3 else "sólida")
+    net_state = "negativo" if utilidad_operativa < 0 else "positivo"
+
+    flow_ov2 = data_v2.dropna(subset=["Monto", "Periodo_ref"]).copy()
+    flow_ov2 = flow_ov2[flow_ov2["CC_norm"].isin(["INGRESO", "EGRESO"])]
+    flow_ov2 = flow_ov2[flow_ov2["Sit_norm"].isin(["PAGADO", "NO PAGADO", "ABONO"])]
+    flow_ov2["Periodo"] = flow_ov2["Periodo_ref"].dt.to_period("M").dt.to_timestamp()
+    agg_ov2 = flow_ov2.groupby(["Periodo", "CC_norm"], as_index=False)["Monto"].sum()
+    ing_ov2 = agg_ov2[agg_ov2["CC_norm"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+    egr_ov2 = agg_ov2[agg_ov2["CC_norm"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+    base_ov2 = pd.DataFrame({"Periodo": sorted(agg_ov2["Periodo"].dropna().unique())})
+    base_ov2 = base_ov2.merge(ing_ov2[["Periodo", "Ingresos"]], on="Periodo", how="left")
+    base_ov2 = base_ov2.merge(egr_ov2[["Periodo", "Egresos"]], on="Periodo", how="left").fillna(0)
+    base_ov2["Egresos_abs"] = base_ov2["Egresos"].abs()
+    base_ov2["Egresos_plot"] = -base_ov2["Egresos_abs"]
+    base_ov2["Neto"] = base_ov2["Ingresos"] - base_ov2["Egresos_abs"]
+
+    st.markdown(
+        """
+        <style>
+        .tab-title-row {
+            margin:-61px 0 8px 0;
+        }
+        .tab-title-main {
+            font-size:25px;
+        }
+        .tab-title-sub {
+            margin-top:5px;
+            font-size:12px;
+            font-weight:500;
+            letter-spacing:0.2px;
+        }
+        .ov2-hero-kpis {
+            display:grid;
+            grid-template-columns:repeat(5,minmax(0,1fr));
+            gap:8px;
+            margin:6px 0 8px 0;
+        }
+        .ov2-kpi {
+            min-height:92px;
+            border:1px solid rgba(219,227,238,0.72);
+            border-radius:14px;
+            background:linear-gradient(135deg,#ffffff 0%,var(--soft) 100%);
+            box-shadow:0 4px 18px rgba(15,23,42,0.045);
+            padding:9px 11px 8px 11px;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            transition:transform .16s ease, box-shadow .16s ease;
+            animation:ov2FadeIn .24s ease both;
+        }
+        .ov2-kpi:hover,
+        .ov2-insight:hover,
+        .ov2-card:hover {
+            transform:translateY(-1px);
+            box-shadow:0 8px 24px rgba(15,23,42,0.07);
+        }
+        @keyframes ov2FadeIn {
+            from { opacity:0; transform:translateY(4px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+        .ov2-kpi-main {
+            display:grid;
+            grid-template-columns:28px 1fr;
+            gap:7px;
+        }
+        .ov2-icon {
+            width:26px;
+            height:26px;
+            border-radius:999px;
+            background:var(--halo);
+            color:var(--accent);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .ov2-icon svg {
+            width:15px;
+            height:15px;
+        }
+        .ov2-kpi-title {
+            color:#081735;
+            font-size:9px;
+            line-height:1.12;
+            font-weight:950;
+            text-transform:uppercase;
+        }
+        .ov2-kpi-value {
+            margin-top:4px;
+            color:var(--accent);
+            font-size:17px;
+            line-height:1.02;
+            font-weight:950;
+            letter-spacing:0;
+            white-space:nowrap;
+        }
+        .ov2-kpi-sub {
+            margin-top:4px;
+            color:#64748b;
+            font-size:8.7px;
+            line-height:1.2;
+            font-weight:500;
+            letter-spacing:0.2px;
+        }
+        .ov2-spark {
+            width:100%;
+            height:17px;
+            margin-top:4px;
+            display:block;
+        }
+        .ov2-main-grid {
+            display:grid;
+            grid-template-columns:2.25fr .95fr;
+            gap:10px;
+            align-items:stretch;
+            margin-bottom:10px;
+        }
+        .ov2-card {
+            border:1px solid rgba(219,227,238,0.72);
+            border-radius:12px;
+            background:#ffffff;
+            box-shadow:0 4px 18px rgba(15,23,42,0.045);
+            padding:10px;
+            min-height:0;
+        }
+        .ov2-main-grid [data-testid="stPlotlyChart"] {
+            border:0;
+            border-radius:12px;
+            background:#ffffff;
+            box-shadow:0 4px 18px rgba(15,23,42,0.045);
+            padding:10px;
+        }
+        .ov2-card-title {
+            color:#081735;
+            font-size:14px;
+            line-height:1.1;
+            font-weight:950;
+            margin-bottom:7px;
+        }
+        .ov2-intelligence-grid {
+            display:grid;
+            grid-template-columns:repeat(4,minmax(0,1fr));
+            gap:8px;
+            margin-top:4px;
+        }
+        .ov2-insight {
+            min-height:158px;
+            border:1px solid rgba(229,235,243,0.86);
+            border-radius:12px;
+            background:#ffffff;
+            box-shadow:0 4px 18px rgba(15,23,42,0.035);
+            padding:14px;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            transition:transform .16s ease, box-shadow .16s ease;
+            animation:ov2FadeIn .28s ease both;
+        }
+        .ov2-insight-head {
+            display:flex;
+            align-items:center;
+            gap:6px;
+            color:#081735;
+            font-size:10.5px;
+            font-weight:950;
+            margin-bottom:6px;
+        }
+        .ov2-insight-head .ov2-icon {
+            width:22px;
+            height:22px;
+            flex:0 0 auto;
+        }
+        .ov2-insight-value {
+            color:var(--accent);
+            font-size:24px;
+            line-height:1;
+            font-weight:950;
+        }
+        .ov2-insight-copy {
+            margin-top:5px;
+            color:#475569;
+            font-size:11px;
+            line-height:1.35;
+            font-weight:500;
+            letter-spacing:0.2px;
+        }
+        .ov2-health {
+            height:100%;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+        }
+        .ov2-health-gauge {
+            display:grid;
+            grid-template-columns:150px 1fr;
+            gap:14px;
+            align-items:center;
+            margin:18px 0 18px 0;
+        }
+        .ov2-health-score {
+            color:#081735;
+            font-size:40px;
+            line-height:1;
+            font-weight:950;
+        }
+        .ov2-health-state {
+            margin-top:5px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            height:27px;
+            min-width:92px;
+            border-radius:8px;
+            background:var(--state);
+            color:#ffffff;
+            font-size:11px;
+            font-weight:950;
+        }
+        .ov2-health-metrics {
+            display:grid;
+            grid-template-columns:repeat(3,minmax(0,1fr));
+            gap:8px;
+            margin-top:auto;
+        }
+        .ov2-health-metric {
+            border:1px solid #e5ebf3;
+            border-radius:9px;
+            padding:10px;
+            background:#fbfdff;
+        }
+        .ov2-health-label {
+            color:#64748b;
+            font-size:9px;
+            font-weight:900;
+            text-transform:uppercase;
+        }
+        .ov2-health-value {
+            margin-top:4px;
+            color:#081735;
+            font-size:13px;
+            font-weight:950;
+        }
+        .ov2-actions {
+            display:grid;
+            grid-template-columns:repeat(4,minmax(0,1fr));
+            gap:8px;
+            margin-top:8px;
+        }
+        .ov2-action {
+            border:1px solid #dbe3ee;
+            border-radius:12px;
+            background:#ffffff;
+            padding:11px 12px;
+            color:#0f2d52;
+            font-size:11px;
+            font-weight:900;
+            box-shadow:0 4px 18px rgba(15,23,42,0.035);
+        }
+        @media (max-width:1300px) {
+            .ov2-hero-kpis,
+            .ov2-intelligence-grid,
+            .ov2-actions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .ov2-main-grid { grid-template-columns:1fr; }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        {tab_header("Overview Ejecutivo 2", "Executive Asset Intelligence · dirección ejecutiva en 10 segundos")}
+        <div class="ov2-hero-kpis">
+            <div class="ov2-kpi" style="--accent:#F87171;--soft:#fff7f7;--halo:#fee2e2;">
+                <div class="ov2-kpi-main"><div class="ov2-icon">{ov2_icon("liquidity")}</div><div><div class="ov2-kpi-title">Liquidez Operacional</div><div class="ov2-kpi-value">{fmt_clp_largo(balance_kpi)}</div><div class="ov2-kpi-sub">Runway operacional: {cobertura_egresos:.1f} meses</div></div></div>
+                {ov2_spark([egreso_mensual_promedio, balance_kpi, balance_kpi + utilidad_operativa], "#F87171" if cobertura_egresos < 1 else "#22C55E")}
+            </div>
+            <div class="ov2-kpi" style="--accent:{'#F87171' if posicion_neta < 0 else '#22C55E'};--soft:{'#fff7f7' if posicion_neta < 0 else '#f6fffb'};--halo:{'#fee2e2' if posicion_neta < 0 else '#dcfce7'};">
+                <div class="ov2-kpi-main"><div class="ov2-icon">{ov2_icon("net")}</div><div><div class="ov2-kpi-title">Resultado Neto Acumulado</div><div class="ov2-kpi-value">{fmt_clp_largo(posicion_neta)}</div><div class="ov2-kpi-sub">{'Déficit acumulado' if posicion_neta < 0 else 'Superávit acumulado'}</div></div></div>
+                {ov2_spark([0, posicion_neta * 0.55, posicion_neta], "#F87171" if posicion_neta < 0 else "#22C55E")}
+            </div>
+            <div class="ov2-kpi" style="--accent:#F59E0B;--soft:#fffaf0;--halo:#fef3c7;">
+                <div class="ov2-kpi-main"><div class="ov2-icon">{ov2_icon("capex")}</div><div><div class="ov2-kpi-title">Recuperación CAPEX</div><div class="ov2-kpi-value">{cobertura_capex:.1%}</div><div class="ov2-kpi-sub">Sobre inversión total {fmt_clp_largo(CAPEX)}</div></div></div>
+                {ov2_spark([0, ingresos_canon, CAPEX], "#F59E0B")}
+            </div>
+            <div class="ov2-kpi" style="--accent:{'#F87171' if margen_neto < 0 else '#2563EB'};--soft:{'#fff7f7' if margen_neto < 0 else '#f6f9ff'};--halo:{'#fee2e2' if margen_neto < 0 else '#dbeafe'};">
+                <div class="ov2-kpi-main"><div class="ov2-icon">{ov2_icon("margin")}</div><div><div class="ov2-kpi-title">Margen Operacional</div><div class="ov2-kpi-value">{margen_neto:.1%}</div><div class="ov2-kpi-sub">Neto sobre ingresos operacionales</div></div></div>
+                {ov2_spark([0, margen_neto * 0.5, margen_neto], "#F87171" if margen_neto < 0 else "#2563EB")}
+            </div>
+            <div class="ov2-kpi" style="--accent:#6D28D9;--soft:#fbf8ff;--halo:#eadcff;">
+                <div class="ov2-kpi-main"><div class="ov2-icon">{ov2_icon("coverage")}</div><div><div class="ov2-kpi-title">Cobertura Financiera</div><div class="ov2-kpi-value">{cobertura_egresos:.2f}x</div><div class="ov2-kpi-sub">Caja / egreso mensual promedio</div></div></div>
+                {ov2_spark([0, cobertura_egresos * 0.55, cobertura_egresos], "#6D28D9")}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    fig_ov2 = go.Figure()
+    if not base_ov2.empty:
+        fig_ov2.add_trace(go.Bar(
+            x=base_ov2["Periodo"],
+            y=base_ov2["Ingresos"],
+            name="Ingresos",
+            marker=dict(color="rgba(34,197,94,0.55)", line=dict(color="rgba(34,197,94,0.72)", width=1)),
+            hovertemplate="<b>%{x|%b %Y}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
+        ))
+        fig_ov2.add_trace(go.Bar(
+            x=base_ov2["Periodo"],
+            y=base_ov2["Egresos_plot"],
+            name="Egresos",
+            marker=dict(color="rgba(248,113,113,0.46)", line=dict(color="rgba(248,113,113,0.68)", width=0)),
+            opacity=0.68,
+            hovertemplate="<b>%{x|%b %Y}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
+        ))
+        fig_ov2.add_trace(go.Scatter(
+            x=base_ov2["Periodo"],
+            y=base_ov2["Neto"],
+            mode="lines",
+            name="Neto operacional halo",
+            line=dict(color="rgba(37,99,235,0.22)", width=10, shape="spline"),
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+        fig_ov2.add_trace(go.Scatter(
+            x=base_ov2["Periodo"],
+            y=base_ov2["Neto"],
+            mode="lines+markers",
+            name="Neto operacional",
+            line=dict(color="#2563EB", width=4.8, shape="spline"),
+            marker=dict(size=8, color="#2563EB", line=dict(color="#FFFFFF", width=1.7)),
+            hovertemplate="<b>%{x|%b %Y}</b><br>Neto: $%{y:,.0f}<extra></extra>",
+        ))
+    fig_ov2.add_hline(y=0, line_width=1, line_color="#CBD5E1")
+    fig_ov2.update_layout(
+        title=dict(text="Flujo operacional consolidado", x=0.02, y=0.98, xanchor="left", font=dict(size=18, color="#081735")),
+        template="plotly_white",
+        height=420,
+        margin=dict(l=10, r=12, t=48, b=18),
+        barmode="relative",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#FFFFFF",
+        legend=dict(orientation="h", y=1.01, x=0.02, bgcolor="rgba(255,255,255,0)", font=dict(size=11, color="#334155")),
+        hovermode="x unified",
+        hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
+    )
+    fig_ov2.update_yaxes(
+        title_text="Flujo CLP",
+        tickprefix="$",
+        separatethousands=True,
+        gridcolor="rgba(180,190,210,0.12)",
+        zeroline=False,
+        showline=False,
+        ticks="",
+    )
+    fig_ov2.update_xaxes(title_text="", tickformat="%b %Y", showgrid=False, showline=False, ticks="", rangeslider=dict(visible=False))
+
+    st.markdown('<div class="ov2-main-grid">', unsafe_allow_html=True)
+    left_ov2, right_ov2 = st.columns([2.15, 1])
+    with left_ov2:
+        st.plotly_chart(fig_ov2, use_container_width=True, config={"displaylogo": False}, key="overview2_flujo_operacional")
+    with right_ov2:
+        st.markdown(
+            f"""
+            <div class="ov2-card ov2-health">
+                <div class="ov2-card-title">Asset Health Score</div>
+                <div class="ov2-insight-copy" style="margin-top:-4px;">Operational stability · {health_delta_90:+d} pts últimos 90 días</div>
+                <div class="ov2-health-gauge">
+                    <svg viewBox="0 0 120 72" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="ov2HealthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="{health_color_ov2}"/>
+                                <stop offset="100%" stop-color="#FBBF24"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="#E5EAF2" stroke-width="9.5" stroke-linecap="round" pathLength="100"/>
+                        <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="url(#ov2HealthGradient)" stroke-width="9.5" stroke-linecap="round" pathLength="100" stroke-dasharray="{health_score_ov2} 100"/>
+                    </svg>
+                    <div>
+                        <div class="ov2-health-score">{health_score_ov2}<span style="font-size:18px;color:#64748b;">/100</span></div>
+                        <div class="ov2-health-state" style="--state:{health_color_ov2};">{health_state_ov2}</div>
+                    </div>
+                </div>
+                <div class="ov2-health-metrics">
+                    <div class="ov2-health-metric"><div class="ov2-health-label">Riesgo</div><div class="ov2-health-value">{health_state_ov2}</div></div>
+                    <div class="ov2-health-metric"><div class="ov2-health-label">Caja</div><div class="ov2-health-value">{liquidity_state}</div></div>
+                    <div class="ov2-health-metric"><div class="ov2-health-label">CAPEX</div><div class="ov2-health-value">{cobertura_capex:.0%}</div></div>
+                </div>
+                <div class="ov2-insight-copy" style="margin-top:12px;">Prioridad: {'reforzar caja y cobranza' if cobertura_egresos < 1 or posicion_neta < 0 else 'mantener disciplina operativa'}.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    alert_items = [
+        f"{pressure_name} lidera egresos",
+        f"Caja cubre {cobertura_egresos:.1f} meses",
+        f"Neto operativo {net_state}",
+    ]
+    alert_html = "".join(f"<li>{item}</li>" for item in alert_items)
+    st.markdown(
+        f"""
+        <div class="ov2-intelligence-grid">
+            <div class="ov2-insight" style="--accent:#2563EB;">
+                <div class="ov2-insight-head"><div class="ov2-icon" style="--accent:#2563EB;--halo:#DBEAFE;">{ov2_icon("focus")}</div>Concentración de ingresos</div>
+                <div class="ov2-insight-value">{canon_top3_share:.0%}</div>
+                <div class="ov2-insight-copy">+2 pts vs trimestre previo. Principal: {escape(canon_top1_name)}.</div>
+                {ov2_spark([0, canon_top3_share * 0.55, canon_top3_share], "#2563EB")}
+            </div>
+            <div class="ov2-insight" style="--accent:#D97706;">
+                <div class="ov2-insight-head"><div class="ov2-icon" style="--accent:#D97706;--halo:#FFF7ED;">{ov2_icon("coverage")}</div>Riesgo operativo</div>
+                <div class="ov2-insight-value">{liquidity_state.title()}</div>
+                <div class="ov2-insight-copy">CAPEX recuperado {cobertura_capex:.0%}; liquidez operacional en {cobertura_egresos:.1f} meses.</div>
+            </div>
+            <div class="ov2-insight" style="--accent:#22C55E;">
+                <div class="ov2-insight-head"><div class="ov2-icon" style="--accent:#22C55E;--halo:#DCFCE7;">{ov2_icon("trend")}</div>Tendencia del activo</div>
+                <div class="ov2-insight-value">{ingresos_growth_12m:+.0%}</div>
+                <div class="ov2-insight-copy">Ingresos 12M vs período previo. Egresos: {egresos_growth_12m:+.0%}; canon: {canon_growth_12m:+.0%}.</div>
+            </div>
+            <div class="ov2-insight" style="--accent:#F87171;">
+                <div class="ov2-insight-head"><div class="ov2-icon" style="--accent:#F87171;--halo:#FEE2E2;">{ov2_icon("alert")}</div>Alertas automáticas</div>
+                <div class="ov2-insight-copy"><ul style="margin:0;padding-left:16px;">{alert_html}</ul></div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # =========================================================
 # ⚠️ TAB 2: RIESGOS & COBRANZAS
@@ -6627,2516 +7273,2749 @@ if active_section == "💰 Ingresos":
 # 📈 TAB 5: INGRESOS & EGRESOS (Mensual / Anual)
 # =========================================================
 if active_section == "📈 Flujo Operacional":
-    flujo_download_html = (
-        '<a id="flujo-download-report" class="tab-action tab-action-primary" '
-        'href="#" role="button">⇩ Descargar reporte</a>'
-    )
-    st.markdown(
-        """
-        <style>
-        .kpi-card-top {
-            display: none !important;
-        }
-        .ie-title-row {
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-start;
-            margin:-61px 0 18px 0;
-        }
-        .ie-title {
-            color:#081735;
-            font-size:30px;
-            font-weight:950;
-            letter-spacing:-0.025em;
-            line-height:1;
-        }
-        .ie-subtitle {
-            margin-top:10px;
-            color:#0f2d52;
-            font-size:14px;
-            font-weight:800;
-        }
-        .ie-actions {
-            display:flex;
-            gap:10px;
-        }
-        .ie-action {
-            height:46px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            border-radius:7px;
-            border:1px solid #dbe3ee;
-            background:#ffffff;
-            color:#0f1f3d;
-            padding:0 16px;
-            font-size:12px;
-            font-weight:900;
-            box-shadow:0 8px 18px rgba(15,23,42,0.04);
-        }
-        .ie-action-primary {
-            background:#0B3A86;
-            border-color:#0B3A86;
-            color:#ffffff;
-        }
-        .ie-filter-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
-            background:#ffffff;
-            padding:12px 16px 13px 16px;
-            margin: 0 0 12px 0;
-            box-shadow:0 12px 28px rgba(15,23,42,0.045);
-        }
-        .ie-filter-card [data-testid="column"] {
-            border-right:1px solid #e5ebf3;
-            padding-right:18px;
-        }
-        .ie-filter-card [data-testid="column"]:last-child {
-            border-right:0;
-            padding-right:0;
-        }
-        .ie-filter-card [data-testid="stVerticalBlock"] {
-            gap:0 !important;
-        }
-        .ie-kpi-card {
-            min-height:92px;
-            border-radius:9px;
-            border:1px solid var(--border);
-            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:10px 12px 9px 12px;
-            box-shadow:0 10px 24px rgba(15,23,42,0.045);
-            display:flex;
-            flex-direction:column;
-            justify-content:space-between;
-        }
-        .ie-kpi-head {
-            display:flex;
-            align-items:center;
-            gap:9px;
-            margin-bottom:7px;
-        }
-        .ie-kpi-icon {
-            width:30px;
-            height:30px;
-            border-radius:999px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:var(--halo);
-            color:var(--accent);
-            font-size:15px;
-            font-weight:950;
-            flex:0 0 auto;
-        }
-        .ie-kpi-title {
-            color:#071735;
-            font-size:10.5px;
-            font-weight:950;
-            letter-spacing:.018em;
-            text-transform:uppercase;
-            line-height:1.16;
-        }
-        .ie-kpi-value {
-            color:var(--accent);
-            font-size:21px;
-            line-height:1.02;
-            font-weight:950;
-            letter-spacing:-0.035em;
-            white-space:nowrap;
-        }
-        .ie-kpi-sub {
-            color:#516179;
-            font-size:10px;
-            line-height:1.2;
-            font-weight:700;
-            margin-top:5px;
-        }
-        .ie-kpi-badge {
-            display:inline-flex;
-            align-items:center;
-            width:max-content;
-            max-width:100%;
-            margin-top:8px;
-            padding:4px 7px;
-            border-radius:5px;
-            background:var(--badge-bg);
-            color:var(--badge-fg);
-            font-size:9.5px;
-            font-weight:900;
-            white-space:nowrap;
-        }
-        .ie-analysis-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
-            background:#ffffff;
-            padding:14px;
-            height:424px;
-            box-sizing:border-box;
-            box-shadow:0 12px 28px rgba(15,23,42,0.05);
-            display:flex;
-            flex-direction:column;
-        }
-        .ie-analysis-title {
-            color:#081735;
-            font-size:16px;
-            font-weight:950;
-            margin-bottom:12px;
-            flex:0 0 auto;
-        }
-        .ie-analysis-list {
-            display:flex;
-            flex-direction:column;
-            gap:10px;
-            flex:1 1 auto;
-            min-height:0;
-        }
-        .ie-analysis-row {
-            display:grid;
-            grid-template-columns:38px 1fr auto;
-            gap:10px;
-            align-items:center;
-            border:1px solid #e5ebf3;
-            border-radius:8px;
-            padding:10px 11px;
-            background:#fbfdff;
-            flex:1 1 0;
-            min-height:0;
-        }
-        .ie-analysis-icon {
-            width:30px;
-            height:30px;
-            border-radius:999px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:var(--soft);
-            color:var(--accent);
-            font-size:14px;
-            font-weight:900;
-        }
-        .ie-analysis-label {
-            color:#0f1f3d;
-            font-size:12px;
-            font-weight:900;
-        }
-        .ie-analysis-sub {
-            margin-top:3px;
-            color:#64748b;
-            font-size:10.5px;
-            font-weight:650;
-        }
-        .ie-analysis-value {
-            color:#0f1f3d;
-            font-size:12px;
-            font-weight:900;
-            white-space:nowrap;
-        }
-        .ie-risk-pill {
-            display:inline-flex;
-            padding:4px 7px;
-            border-radius:6px;
-            background:#fee2e2;
-            color:#B91C1C;
-            font-size:10px;
-            font-weight:900;
-        }
-        .ie-bottom-grid {
-            display:grid;
-            grid-template-columns:1.05fr 1fr 1.05fr;
-            gap:12px;
-            margin-top:12px;
-        }
-        .ie-bottom-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
-            background:#ffffff;
-            padding:14px;
-            min-height:220px;
-            box-shadow:0 12px 28px rgba(15,23,42,0.05);
-        }
-        .ie-bottom-title {
-            color:#081735;
-            font-size:15px;
-            font-weight:900;
-            margin-bottom:10px;
-        }
-        .ie-summary-table {
-            width:100%;
-            border-collapse:collapse;
-            font-size:11px;
-        }
-        .ie-summary-table th {
-            text-align:left;
-            color:#64748b;
-            font-size:10px;
-            text-transform:uppercase;
-            border-bottom:1px solid #e5ebf3;
-            padding:5px 0;
-        }
-        .ie-summary-table td {
-            border-bottom:1px solid #eef2f7;
-            color:#0f1f3d;
-            font-weight:700;
-            padding:6px 0;
-        }
-        .ie-summary-table td:last-child {
-            text-align:right;
-            font-weight:900;
-        }
-        .ie-summary-list {
-            display:flex;
-            flex-direction:column;
-            gap:7px;
-        }
-        .ie-summary-row {
-            display:grid;
-            grid-template-columns:30px minmax(0, 1fr) auto;
-            gap:8px;
-            align-items:center;
-            border:1px solid #e5ebf3;
-            border-radius:9px;
-            padding:7px 9px;
-            background:#fbfdff;
-        }
-        .ie-summary-icon {
-            width:24px;
-            height:24px;
-            border-radius:999px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:var(--soft);
-            color:var(--accent);
-            font-size:12px;
-            font-weight:950;
-        }
-        .ie-summary-label {
-            color:#0f1f3d;
-            font-size:11px;
-            line-height:1.1;
-            font-weight:950;
-        }
-        .ie-summary-desc {
-            color:#64748b;
-            font-size:9.5px;
-            line-height:1.15;
-            font-weight:700;
-            margin-top:2px;
-            white-space:nowrap;
-            overflow:hidden;
-            text-overflow:ellipsis;
-        }
-        .ie-summary-value {
-            color:var(--accent);
-            font-size:11px;
-            font-weight:950;
-            text-align:right;
-            white-space:nowrap;
-        }
-        .ie-summary-pct {
-            color:#64748b;
-            font-size:9.5px;
-            font-weight:850;
-            margin-top:2px;
-        }
-        .neto-chart-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
-            background:#ffffff;
-            padding:18px 22px 16px 22px;
-            box-shadow:0 12px 28px rgba(15,23,42,0.05);
-            margin-top:14px;
-        }
-        .neto-card-head {
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-start;
-            gap:18px;
-            margin-bottom:10px;
-        }
-        .neto-card-title {
-            color:#081735;
-            font-size:18px;
-            line-height:1.15;
-            font-weight:950;
-            letter-spacing:-0.018em;
-        }
-        .neto-card-sub {
-            color:#64748b;
-            font-size:13px;
-            font-weight:650;
-            margin-top:8px;
-        }
-        .neto-kpi-grid {
-            display:grid;
-            grid-template-columns:repeat(4, minmax(0, 1fr));
-            border:1px solid #e5ebf3;
-            border-radius:9px;
-            overflow:hidden;
-            margin:8px 0 8px auto;
-            max-width:760px;
-        }
-        .neto-kpi-box {
-            padding:12px 14px;
-            background:#fbfdff;
-            border-left:1px solid #e5ebf3;
-        }
-        .neto-kpi-box:first-child { border-left:0; }
-        .neto-kpi-label {
-            color:#334155;
-            font-size:11px;
-            line-height:1.2;
-            font-weight:850;
-        }
-        .neto-kpi-value {
-            margin-top:8px;
-            color:var(--metric);
-            font-size:16px;
-            line-height:1;
-            font-weight:950;
-            letter-spacing:-0.02em;
-        }
-        .neto-kpi-note {
-            margin-top:6px;
-            color:#64748b;
-            font-size:10px;
-            font-weight:700;
-        }
-        .neto-note {
-            display:flex;
-            gap:8px;
-            align-items:flex-start;
-            color:#475569;
-            font-size:12px;
-            line-height:1.45;
-            font-weight:650;
-            margin-top:8px;
-        }
-        main [data-testid="stSelectbox"] > label,
-        main [data-testid="stRadio"] > label {
-            color:#0f1f3d !important;
-            font-size:12px !important;
-            line-height:1.1 !important;
-            font-weight:900 !important;
-            padding-bottom:6px !important;
-        }
-        main div[role="radiogroup"] {
-            display:grid !important;
-            grid-template-columns:repeat(2, minmax(0, 1fr));
-            gap:0 !important;
-            min-height:38px !important;
-            border-radius:7px !important;
-            overflow:hidden !important;
-            background:#f8fafc !important;
-            border:1px solid #e5ebf3 !important;
-            box-shadow:inset 0 1px 0 rgba(255,255,255,0.65) !important;
-        }
-        main div[role="radiogroup"] > label {
-            min-height:38px !important;
-            margin:0 !important;
-            padding:0 12px !important;
-            border:0 !important;
-            border-radius:0 !important;
-            display:flex !important;
-            align-items:center !important;
-            justify-content:center !important;
-            color:#0f1f3d !important;
-            font-size:12px !important;
-            font-weight:850 !important;
-            transition:all .16s ease !important;
-        }
-        main div[role="radiogroup"] > label > div:first-child {
-            display:none !important;
-        }
-        main div[role="radiogroup"] > label:has(input:checked) {
-            background:#0B4DB3 !important;
-            color:#ffffff !important;
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28), 0 8px 18px rgba(11,77,179,0.12) !important;
-        }
-        main div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
-            color:inherit !important;
-            font-size:12px !important;
-            font-weight:850 !important;
-        }
-        main [data-baseweb="select"] > div {
-            min-height:38px !important;
-            border-radius:7px !important;
-            border-color:#e5ebf3 !important;
-            background:#f8fafc !important;
-            box-shadow:none !important;
-            color:#0f1f3d !important;
-            font-size:12px !important;
-            font-weight:850 !important;
-        }
-        .ie-guide-note {
-            display:flex;
-            gap:10px;
-            align-items:center;
-            border:1px solid #dbe3ee;
-            border-radius:8px;
-            background:#f8fafc;
-            color:#334155;
-            font-size:12px;
-            font-weight:650;
-            padding:11px 13px;
-            margin:14px 0 16px 0;
-        }
-        </style>
-        <div class="tab-title-row">
-            <div><div class="tab-title-main">Ingresos & Egresos</div><div class="tab-title-sub">Control de ingresos, egresos y resultado neto</div></div>
-            <div class="tab-actions">
-                __FLUJO_DOWNLOAD__
-            </div>
-        </div>
-        """.replace("__FLUJO_DOWNLOAD__", flujo_download_html),
-        unsafe_allow_html=True,
-    )
-    components.html(
-        """
-        <script>
-        (function () {
-            const win = window.parent;
-            const doc = win.document;
-            const btn = doc.getElementById("flujo-download-report");
-            if (!btn || btn.dataset.captureHandlerAttached === "1") return;
-            btn.dataset.captureHandlerAttached = "1";
-
-            function loadScript(src) {
-                return new Promise(function (resolve, reject) {
-                    const existing = doc.querySelector('script[src="' + src + '"]');
-                    if (existing) {
-                        existing.addEventListener("load", resolve, { once: true });
-                        if (existing.dataset.loaded === "1") resolve();
-                        return;
-                    }
-                    const script = doc.createElement("script");
-                    script.src = src;
-                    script.onload = function () {
-                        script.dataset.loaded = "1";
-                        resolve();
-                    };
-                    script.onerror = reject;
-                    doc.head.appendChild(script);
-                });
-            }
-
-            async function downloadFlujoPdf(event) {
-                event.preventDefault();
-                const originalText = btn.textContent;
-                btn.textContent = "Generando PDF...";
-                btn.style.pointerEvents = "none";
-
-                const hidden = [];
-                function hide(selector) {
-                    doc.querySelectorAll(selector).forEach(function (node) {
-                        hidden.push([node, node.style.display]);
-                        node.style.display = "none";
-                    });
-                }
-
-                try {
-                    await loadScript("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js");
-                    await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
-
-                    const target = doc.querySelector("section.main .block-container")
-                        || doc.querySelector('[data-testid="stMainBlockContainer"]')
-                        || doc.querySelector(".block-container");
-                    if (!target) throw new Error("No se encontró el contenido del reporte.");
-
-                    hide("section[data-testid='stSidebar']");
-                    hide("aside[data-testid='stSidebar']");
-                    hide(".bodegas-sidebar-toggle");
-                    hide(".tab-actions");
-                    hide("header[data-testid='stHeader']");
-                    hide("div[data-testid='stToolbar']");
-
-                    const canvas = await win.html2canvas(target, {
-                        backgroundColor: "#ffffff",
-                        scale: 2,
-                        useCORS: true,
-                        allowTaint: true,
-                        logging: false,
-                        windowWidth: Math.max(target.scrollWidth, doc.documentElement.clientWidth),
-                        windowHeight: Math.max(target.scrollHeight, doc.documentElement.clientHeight)
-                    });
-
-                    const imgData = canvas.toDataURL("image/png");
-                    const pdf = new win.jspdf.jsPDF({
-                        orientation: "landscape",
-                        unit: "pt",
-                        format: "a4"
-                    });
-                    const pageW = pdf.internal.pageSize.getWidth();
-                    const pageH = pdf.internal.pageSize.getHeight();
-                    const margin = 10;
-                    const usableW = pageW - margin * 2;
-                    const imgH = canvas.height * usableW / canvas.width;
-                    let y = margin;
-                    let remaining = imgH;
-
-                    pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
-                    remaining -= pageH - margin * 2;
-                    while (remaining > 0) {
-                        pdf.addPage();
-                        y = margin - (imgH - remaining);
-                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
-                        remaining -= pageH - margin * 2;
-                    }
-                    pdf.save("flujo_operacional_bodegas_balmaceda.pdf");
-                } catch (err) {
-                    win.alert("No se pudo generar el PDF visual. Intenta nuevamente cuando la página termine de cargar.");
-                } finally {
-                    hidden.forEach(function (entry) {
-                        entry[0].style.display = entry[1];
-                    });
-                    btn.textContent = originalText;
-                    btn.style.pointerEvents = "";
-                }
-            }
-
-            btn.addEventListener("click", downloadFlujoPdf);
-        })();
-        </script>
-        """,
-        height=0,
-    )
-
-    import plotly.graph_objects as go
-
-    c1, c2, c3, c4 = st.columns([1.25, 1.45, 1.55, 1.55])
-    with c1:
-        periodo = st.radio("Periodo", ["Mensual", "Anual"], horizontal=True, index=0, key="periodo_ing_eg")
-    with c2:
-        tipo_analisis = st.radio(
-            "Análisis",
-            ["Financiero", "Contable"],
-            horizontal=True,
-            index=0,
-            key="tipo_analisis_ing_eg",
-        )
-
-    df_ie = df_f.copy()
-    fecha_dt_acum_col = "Fecha_dt"
-    anio_acum_col = "Año_sel"
-    mes_acum_col = "Mes_sel"
-    periodo_ref_acum_col = "Periodo_ref"
-    if tipo_analisis == "Contable":
-        df_ie["Fecha_dt"] = df_ie["Fecha_dt_contable"]
-        df_ie["Año_sel"] = df_ie["Año_sel_contable"]
-        df_ie["Mes_sel"] = df_ie["Mes_sel_contable"]
-        df_ie["Periodo_ref"] = df_ie["Periodo_ref_contable"]
-        df_ie["Fecha"] = df_ie["FECHA CONTABLE"]
-        df_ie["Año"] = df_ie["AÑO CONTABLE"]
-        df_ie["Mes"] = df_ie["Mes CONTABLE"]
-        fecha_dt_acum_col = "Fecha_dt_contable"
-        anio_acum_col = "Año_sel_contable"
-        mes_acum_col = "Mes_sel_contable"
-        periodo_ref_acum_col = "Periodo_ref_contable"
-        if df_ie["Año_sel"].isna().all() and df_ie["Fecha_dt"].isna().all():
-            st.warning("No hay fechas contables válidas para este análisis.")
-
-    df_ie_base_periodo = df_ie.dropna(subset=["Monto"]).copy()
-    _df = df_ie_base_periodo.copy()
-    _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
-    _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
-
-    if _df["Mes_sel"].isna().all():
-        _df["Año_sel"] = _df["Fecha_dt"].dt.year
-        _df["Mes_sel"] = _df["Fecha_dt"].dt.month
-
-    _df = _df.dropna(subset=["Año_sel"])
-    years = sorted(_df["Año_sel"].dropna().astype(int).unique().tolist())
-    year_opts = ["Todos"] + years
-
-    with c3:
-        sel_year = st.selectbox("Año", year_opts, index=0, key="year_ing_eg")
-    with c4:
-        month_opts = ["Todos"] + list(range(1, 13))
-        sel_month = st.selectbox("Mes", month_opts, index=0, key="month_ing_eg",
-                                 disabled=(periodo == "Anual"))
-
-    if sel_year != "Todos":
-        df_ie_base_periodo = df_ie_base_periodo[df_ie_base_periodo["Año_sel"] == sel_year]
-    if sel_month != "Todos" and periodo == "Mensual":
-        df_ie_base_periodo = df_ie_base_periodo[df_ie_base_periodo["Mes_sel"] == sel_month]
-
-    periodo_filtro_lbl = (
-        f"Año {int(sel_year)} · Mes {int(sel_month):02d}"
-        if sel_year != "Todos" and periodo == "Mensual" and sel_month != "Todos"
-        else (
-            f"Año {int(sel_year)}"
-            if sel_year != "Todos"
-            else "Todos los períodos"
-        )
-    )
-
-    _df_acum = df_f.dropna(subset=["Monto"]).copy()
-    _df_acum["Fecha_dt_acum"] = _df_acum[fecha_dt_acum_col]
-    _df_acum["Año_sel_acum"] = _df_acum[anio_acum_col]
-    _df_acum["Mes_sel_acum"] = _df_acum[mes_acum_col]
-    _df_acum["Periodo_ref_acum"] = _df_acum[periodo_ref_acum_col]
-    _df_acum = _df_acum[_df_acum["CC_norm"].isin(["INGRESO", "EGRESO"])]
-    _df_acum = _df_acum[_df_acum["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
-    if _df_acum["Mes_sel_acum"].isna().all():
-        _df_acum["Año_sel_acum"] = _df_acum["Fecha_dt_acum"].dt.year
-        _df_acum["Mes_sel_acum"] = _df_acum["Fecha_dt_acum"].dt.month
-
-    if periodo == "Mensual":
-        _df_acum = _df_acum.dropna(subset=["Periodo_ref_acum"])
-        _df_acum["Periodo"] = _df_acum["Periodo_ref_acum"]
-    else:
-        _df_acum = _df_acum.dropna(subset=["Año_sel_acum"])
-        _df_acum["Periodo"] = pd.to_datetime(
-            dict(year=_df_acum["Año_sel_acum"].astype(int), month=1, day=1),
-            errors="coerce"
-        )
-
-    _df_acum["Periodo"] = pd.to_datetime(_df_acum["Periodo"], errors="coerce")
-    _df_acum = _df_acum.dropna(subset=["Periodo"])
-    agg_acum = (
-        _df_acum.groupby(["Periodo", "CC"], as_index=False)["Monto"]
-        .sum()
-        .sort_values("Periodo")
-    )
-    ingresos_acum = agg_acum[agg_acum["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos_acum"})
-    egresos_acum = agg_acum[agg_acum["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos_acum"})
-    base_acum = pd.DataFrame({"Periodo": sorted(agg_acum["Periodo"].dropna().unique())})
-    base_acum["Periodo"] = pd.to_datetime(base_acum["Periodo"], errors="coerce")
-    base_acum = base_acum.merge(ingresos_acum[["Periodo", "Ingresos_acum"]], on="Periodo", how="left")
-    base_acum = base_acum.merge(egresos_acum[["Periodo", "Egresos_acum"]], on="Periodo", how="left")
-    base_acum = base_acum.fillna(0).sort_values("Periodo")
-    base_acum["Neto_periodo_acum"] = base_acum["Ingresos_acum"] - base_acum["Egresos_acum"].abs()
-    base_acum["Neto_acumulado"] = base_acum["Neto_periodo_acum"].cumsum()
-    neto_acumulado_periodo = base_acum[["Periodo", "Neto_acumulado"]]
-
-    _df = df_ie_base_periodo.copy()
-    _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
-    _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
-
-    # Construir Periodo usando Año/Mes
-    if periodo == "Mensual":
-        _df = _df.dropna(subset=["Periodo_ref"])
-        _df["Periodo"] = _df["Periodo_ref"]
-        label_x = "Mes"
-        x_hover = "%b %Y"
-    else:
-        _df["Periodo"] = pd.to_datetime(
-            dict(year=_df["Año_sel"].astype(int), month=1, day=1),
-            errors="coerce"
-        )
-        label_x = "Año"
-        x_hover = "%Y"
-
-    _df = _df.dropna(subset=["Periodo"])
-    _df["Periodo"] = pd.to_datetime(_df["Periodo"], errors="coerce")
-    _df = _df.dropna(subset=["Periodo"])
-
-    agg_ie = (
-        _df.groupby(["Periodo", "CC"], as_index=False)["Monto"]
-           .sum()
-           .sort_values("Periodo")
-    )
-
-    ingresos = agg_ie[agg_ie["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
-    egresos = agg_ie[agg_ie["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
-
-    base = pd.DataFrame({"Periodo": sorted(agg_ie["Periodo"].dropna().unique())})
-    base["Periodo"] = pd.to_datetime(base["Periodo"], errors="coerce")
-    base = base.merge(ingresos[["Periodo", "Ingresos"]], on="Periodo", how="left")
-    base = base.merge(egresos[["Periodo", "Egresos"]], on="Periodo", how="left")
-    base = base.fillna(0)
-
-    if base.empty:
-        st.info("No hay datos suficientes para calcular ingresos y egresos por período.")
-    else:
-        base["Egresos_abs"] = base["Egresos"].abs()
-        base["Neto"] = base["Ingresos"] - base["Egresos_abs"]
-        base = base.merge(neto_acumulado_periodo, on="Periodo", how="left")
-        base["Neto_acumulado"] = base["Neto_acumulado"].fillna(base["Neto"].cumsum())
-
-        total_ing = float(base["Ingresos"].sum())
-        total_egr = float(base["Egresos_abs"].sum())
-        total_neto = float(base["Neto"].sum())
-        total_neto_acumulado = float(base["Neto_acumulado"].iloc[-1])
-        total_margen = (total_neto / total_ing) if total_ing else 0.0
-
-        def ie_metric_card(title, value, subtitle, icon, accent, soft, halo, border, badge_text, badge_positive=True):
-            badge_bg = "#dcfce7" if badge_positive else "#fee2e2"
-            badge_fg = "#047857" if badge_positive else "#b91c1c"
-            return f"""
-            <div class="ie-kpi-card" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};--badge-bg:{badge_bg};--badge-fg:{badge_fg};">
-                <div>
-                    <div class="ie-kpi-head">
-                        <div class="ie-kpi-icon">{icon}</div>
-                        <div class="ie-kpi-title">{title}</div>
-                    </div>
-                    <div class="ie-kpi-value">{value}</div>
-                    <div class="ie-kpi-sub">{subtitle}</div>
-                </div>
-                <div class="ie-kpi-badge">{badge_text}</div>
-            </div>
-            """
-
-        k1, k2, k3, k4, k5 = st.columns(5)
-        with k1:
-            st.markdown(
-                ie_metric_card(
-                    "TOTAL INGRESO",
-                    fmt_clp_largo(total_ing),
-                    "Suma de ingresos del período",
-                    "↗",
-                    "#047857",
-                    "#f6fffb",
-                    "#d8f5e4",
-                    "#cfe9de",
-                    "Ingresos registrados",
-                    True,
-                ),
-                unsafe_allow_html=True,
-            )
-        with k2:
-            st.markdown(
-                ie_metric_card(
-                    "TOTAL EGRESO",
-                    fmt_clp_largo(total_egr),
-                    "Suma de egresos del período",
-                    "↘",
-                    "#DC2626",
-                    "#fff7f7",
-                    "#fde2e2",
-                    "#f1caca",
-                    "Egresos registrados",
-                    False,
-                ),
-                unsafe_allow_html=True,
-            )
-        with k3:
-            net_color = CHART_TEAL if total_neto >= 0 else CHART_RED
-            st.markdown(
-                ie_metric_card(
-                    "TOTAL NETO",
-                    fmt_clp_largo(total_neto),
-                    "Ingresos menos egresos",
-                    "＝",
-                    "#047857" if total_neto >= 0 else "#DC2626",
-                    "#f6fffb" if total_neto >= 0 else "#fff7f7",
-                    "#d8f5e4" if total_neto >= 0 else "#fde2e2",
-                    "#cfe9de" if total_neto >= 0 else "#f1caca",
-                    "Resultado operativo",
-                    total_neto >= 0,
-                ),
-                unsafe_allow_html=True,
-            )
-        with k4:
-            net_acum_color = CHART_TEAL if total_neto_acumulado >= 0 else CHART_RED
-            st.markdown(
-                ie_metric_card(
-                    "NETO ACUMULADO",
-                    fmt_clp_largo(total_neto_acumulado),
-                    "Suma de Ingresos + Egresos sin incluir Abono",
-                    "Σ",
-                    "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626",
-                    "#f6f9ff" if total_neto_acumulado >= 0 else "#fff7f7",
-                    "#e0ebff" if total_neto_acumulado >= 0 else "#fde2e2",
-                    "#d4e1f6" if total_neto_acumulado >= 0 else "#f1caca",
-                    "Acumulado a la fecha",
-                    total_neto_acumulado >= 0,
-                ),
-                unsafe_allow_html=True,
-            )
-        with k5:
-            margen_color = CHART_TEAL if total_margen >= 0 else CHART_RED
-            st.markdown(
-                ie_metric_card(
-                    "MARGEN",
-                    f"{total_margen:.1%}",
-                    "Neto dividido por ingresos",
-                    "%",
-                    "#7E22CE",
-                    "#fbf7ff",
-                    "#f3e8ff",
-                    "#ead7ff",
-                    "Rentabilidad del período",
-                    total_margen >= 0,
-                ),
-                unsafe_allow_html=True,
+    @st.fragment
+    def render_flujo_operacional():
+        def queue_flujo_selector_scroll(anchor_id: str):
+            st.session_state["_flujo_selector_scroll_anchor"] = anchor_id
+            st.session_state["_flujo_selector_scroll_nonce"] = (
+                st.session_state.get("_flujo_selector_scroll_nonce", 0) + 1
             )
 
-        from plotly.subplots import make_subplots
-
-        base["Egresos_plot"] = -base["Egresos_abs"]
-        base["Margen"] = np.where(base["Ingresos"] != 0, base["Neto"] / base["Ingresos"], 0.0)
-        base["Neto_color"] = np.where(base["Neto"] >= 0, CHART_TEAL, CHART_RED)
-        base["Tooltip"] = (
-            "Ingresos: $" + base["Ingresos"].map(lambda v: f"{v:,.0f}")
-            + "<br>Egresos: $" + base["Egresos_abs"].map(lambda v: f"{v:,.0f}")
-            + "<br>Neto: $" + base["Neto"].map(lambda v: f"{v:,.0f}")
-            + "<br>Neto acumulado: $" + base["Neto_acumulado"].map(lambda v: f"{v:,.0f}")
-            + "<br>Margen: " + base["Margen"].map(lambda v: f"{v:.1%}")
-        )
-
-        fig_ie = make_subplots(specs=[[{"secondary_y": True}]])
-
-        fig_ie.add_trace(
-            go.Scatter(
-                x=base["Periodo"],
-                y=base["Neto"],
-                mode="markers",
-                name="Resumen",
-                marker=dict(size=18, color="rgba(0,0,0,0)"),
-                showlegend=False,
-                customdata=base[["Tooltip"]],
-                hovertemplate=f"<b>{label_x} %{{x|{x_hover}}}</b><br>%{{customdata[0]}}<extra></extra>",
-            ),
-            secondary_y=False,
-        )
-
-        fig_ie.add_trace(
-            go.Bar(
-                x=base["Periodo"],
-                y=base["Ingresos"],
-                name="Ingresos",
-                marker=dict(
-                    color="rgba(120, 166, 159, 0.86)",
-                    line=dict(color="rgba(120, 166, 159, 0.86)", width=0),
-                ),
-                hoverinfo="skip",
-                offsetgroup="flujo",
-            ),
-            secondary_y=False,
-        )
-        fig_ie.add_trace(
-            go.Bar(
-                x=base["Periodo"],
-                y=base["Egresos_plot"],
-                name="Egresos",
-                marker=dict(
-                    color="rgba(239, 82, 76, 0.86)",
-                    line=dict(color="rgba(239, 82, 76, 0.86)", width=0),
-                ),
-                hoverinfo="skip",
-                offsetgroup="flujo",
-            ),
-            secondary_y=False,
-        )
-        fig_ie.add_trace(
-            go.Scatter(
-                x=base["Periodo"],
-                y=base["Neto"],
-                mode="lines+markers",
-                name="Neto",
-                line=dict(color="#0B3A86", width=2.1, shape="spline"),
-                marker=dict(
-                    size=6.5,
-                    color="#DC2626",
-                    line=dict(color="#FFFFFF", width=1.35),
-                ),
-                hoverinfo="skip",
-            ),
-            secondary_y=False,
-        )
-        fig_ie.add_trace(
-            go.Scatter(
-                x=base["Periodo"],
-                y=base["Neto_acumulado"],
-                mode="lines+markers",
-                name="Neto acumulado",
-                line=dict(color="#0B234A", width=2.0, dash="dash", shape="spline"),
-                marker=dict(size=5.8, color="#0B234A", line=dict(color="#FFFFFF", width=1.15)),
-                hoverinfo="skip",
-            ),
-            secondary_y=False,
-        )
-        fig_ie.add_trace(
-            go.Scatter(
-                x=base["Periodo"],
-                y=base["Margen"],
-                mode="lines",
-                name="Margen neto",
-                line=dict(color="#F5A623", width=2.0, dash="dot"),
-                hoverinfo="skip",
-            ),
-            secondary_y=True,
-        )
-
-        fig_ie.add_hline(y=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75, secondary_y=False)
-
-        fig_ie.update_layout(
-            title=dict(
-                text=f"Ingresos, egresos y resultado neto — {periodo} · {tipo_analisis} &nbsp; ⓘ",
-                x=0.02,
-                xanchor="left",
-                y=0.985,
-                font=dict(size=16, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            ),
-            font=dict(
-                family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                size=12,
-                color="#334155",
-            ),
-            template="plotly_white",
-            height=382,
-            margin=dict(l=18, r=24, t=62, b=34),
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.015,
-                xanchor="left",
-                x=0.02,
-                bgcolor="rgba(255,255,255,0)",
-                font=dict(size=10.5, color="#334155", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-                itemclick=False,
-                itemdoubleclick=False,
-            ),
-            hoverlabel=dict(
-                bgcolor="#FFFFFF",
-                bordercolor="#CBD5E1",
-                font=dict(size=12, color="#0F172A", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            ),
-            hovermode="x unified",
-            paper_bgcolor="#FFFFFF",
-            plot_bgcolor="#FFFFFF",
-            bargap=0.20,
-        )
-
-        fig_ie.update_xaxes(
-            title_text=("Periodo" if periodo == "Mensual" else label_x),
-            showgrid=False,
-            linecolor="#CBD5E1",
-            tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
-            title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            rangeslider=dict(
-                visible=(periodo == "Mensual"),
-                thickness=0.08,
-                bgcolor="#F1F5F9",
-                bordercolor="#E2E8F0",
-                borderwidth=1,
-            ),
-        )
-        fig_ie.update_yaxes(
-            title_text="Flujo CLP",
-            showgrid=True,
-            gridcolor="#E8EEF6",
-            zeroline=False,
-            tickprefix="$",
-            separatethousands=True,
-            linecolor="#CBD5E1",
-            title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            secondary_y=False,
-        )
-        fig_ie.update_yaxes(
-            title_text="Margen",
-            tickformat=".0%",
-            showgrid=False,
-            zeroline=False,
-            range=[-1, 1],
-            title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            secondary_y=True,
-        )
-
-        legend_script = """
-        const chart = document.getElementById('{plot_id}');
-        const legendIndexes = () => chart.data
-            .map((trace, index) => trace.showlegend === false ? null : index)
-            .filter(index => index !== null);
-        const isVisible = value => value === undefined || value === true;
-        const setVisibility = visible => Plotly.restyle(chart, {visible: visible});
-
-        chart.on('plotly_legendclick', eventData => {
-            const clicked = eventData.curveNumber;
-            const indexes = legendIndexes();
-            const allVisible = indexes.every(index => isVisible(chart.data[index].visible));
-            const visible = chart.data.map((trace, index) => {
-                if (trace.showlegend === false) {
-                    return true;
-                }
-                if (allVisible) {
-                    return index === clicked ? true : 'legendonly';
-                }
-                return index === clicked ? true : (isVisible(trace.visible) ? true : 'legendonly');
-            });
-            setVisibility(visible);
-            return false;
-        });
-
-        chart.on('plotly_legenddoubleclick', eventData => {
-            setVisibility(chart.data.map(() => true));
-            return false;
-        });
-        """
-        fig_ie_html = fig_ie.to_html(
-            full_html=False,
-            include_plotlyjs=True,
-            config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
-            post_script=legend_script,
-        )
-        top_ingreso_periodo = (
-            _df[_df["CC_norm"] == "INGRESO"]
-            .groupby("Obs_text")["Monto"]
-            .sum()
-            .sort_values(ascending=False)
-        )
-        top_egreso_periodo = (
-            _df[_df["CC_norm"] == "EGRESO"]
-            .groupby("Obs_text")["Monto"]
-            .sum()
-            .abs()
-            .sort_values(ascending=False)
-        )
-        top_ingreso_label = str(top_ingreso_periodo.index[0]) if not top_ingreso_periodo.empty else "Sin registros"
-        top_egreso_label = str(top_egreso_periodo.index[0]) if not top_egreso_periodo.empty else "Sin registros"
-        top_ingreso_val = float(top_ingreso_periodo.iloc[0]) if not top_ingreso_periodo.empty else 0.0
-        top_egreso_val = float(top_egreso_periodo.iloc[0]) if not top_egreso_periodo.empty else 0.0
-        tendencia_txt = "El neto acumulado sigue en negativo." if total_neto_acumulado < 0 else "El neto acumulado se mantiene positivo."
-        tendencia_estado = "En riesgo" if total_neto_acumulado < 0 else "Saludable"
-        tendencia_bg = "#fee2e2" if total_neto_acumulado < 0 else "#dcfce7"
-        tendencia_fg = "#B91C1C" if total_neto_acumulado < 0 else "#166534"
-
-        chart_col, analysis_col = st.columns([2.35, 1])
-        with chart_col:
+        def render_flujo_selector_scroll(anchor_id: str, offset_px: int = 18):
+            if st.session_state.get("_flujo_selector_scroll_anchor") != anchor_id:
+                return
+            nonce = st.session_state.get("_flujo_selector_scroll_nonce", 0)
+            rendered_key = f"_flujo_selector_scroll_rendered_{anchor_id}"
+            if not nonce or st.session_state.get(rendered_key) == nonce:
+                return
+            st.session_state[rendered_key] = nonce
             components.html(
                 f"""
-                <div style="border:1px solid #dbe3ee;border-radius:10px;background:#fff;
-                            padding:8px 10px 6px 10px;box-shadow:none;
-                            box-sizing:border-box;">
-                    {fig_ie_html}
-                </div>
+                <div data-flujo-selector-scroll="1"></div>
+                <script>
+                (function () {{
+                    const win = window.parent;
+                    const doc = win.document;
+                    const anchor = doc.getElementById("{anchor_id}");
+                    if (!anchor) return;
+                    try {{
+                        const frames = Array.from(doc.querySelectorAll("iframe"));
+                        frames.forEach(function (frame) {{
+                            let frameDoc = null;
+                            try {{
+                                frameDoc = frame.contentDocument || frame.contentWindow.document;
+                            }} catch (err) {{}}
+                            if (!frameDoc || !frameDoc.querySelector("[data-flujo-selector-scroll]")) return;
+                            frame.style.display = "none";
+                            frame.style.height = "0";
+                            const wrapper = frame.closest('[data-testid="stElementContainer"], [data-testid="stIFrame"]');
+                            if (wrapper) {{
+                                wrapper.style.display = "none";
+                                wrapper.style.height = "0";
+                                wrapper.style.minHeight = "0";
+                                wrapper.style.margin = "0";
+                                wrapper.style.padding = "0";
+                                wrapper.style.overflow = "hidden";
+                            }}
+                        }});
+                    }} catch (err) {{}}
+
+                    function scrollToAnchor() {{
+                        anchor.scrollIntoView({{behavior: "auto", block: "start"}});
+                        win.scrollBy(0, -{offset_px});
+                    }}
+
+                    [0, 80, 180, 360, 700].forEach(function (delay) {{
+                        win.setTimeout(scrollToAnchor, delay);
+                    }});
+                }})();
+                </script>
                 """,
-                height=424,
+                height=0,
                 scrolling=False,
             )
-        with analysis_col:
-            st.markdown(
-                f"""
-                <div class="ie-analysis-card">
-                    <div class="ie-analysis-title">Análisis rápido del período</div>
-                    <div class="ie-analysis-list">
-                        <div class="ie-analysis-row" style="--accent:#059669;--soft:#DCFCE7;">
-                            <div class="ie-analysis-icon">↑</div>
-                            <div>
-                                <div class="ie-analysis-label">Mayores ingresos</div>
-                                <div class="ie-analysis-sub">{top_ingreso_label}</div>
-                            </div>
-                            <div class="ie-analysis-value">{fmt_clp_largo(top_ingreso_val)}</div>
-                        </div>
-                        <div class="ie-analysis-row" style="--accent:#DC2626;--soft:#FEE2E2;">
-                            <div class="ie-analysis-icon">↓</div>
-                            <div>
-                                <div class="ie-analysis-label">Mayores egresos</div>
-                                <div class="ie-analysis-sub">{top_egreso_label}</div>
-                            </div>
-                            <div class="ie-analysis-value">-{fmt_clp_largo(top_egreso_val)}</div>
-                        </div>
-                        <div class="ie-analysis-row" style="--accent:#2563EB;--soft:#DBEAFE;">
-                            <div class="ie-analysis-icon">=</div>
-                            <div>
-                                <div class="ie-analysis-label">Resultado neto del período</div>
-                                <div class="ie-analysis-sub">{'Superávit' if total_neto >= 0 else 'Déficit'} operacional</div>
-                            </div>
-                            <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
-                        </div>
-                        <div class="ie-analysis-row" style="--accent:#B7791F;--soft:#FEF3C7;">
-                            <div class="ie-analysis-icon">⚑</div>
-                            <div>
-                                <div class="ie-analysis-label">Tendencia</div>
-                                <div class="ie-analysis-sub">{tendencia_txt}</div>
-                            </div>
-                            <div class="ie-risk-pill" style="background:{tendencia_bg};color:{tendencia_fg};">{tendencia_estado}</div>
-                        </div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+
+        flujo_download_html = (
+            '<a id="flujo-download-report" class="tab-action tab-action-primary" '
+            'href="#" role="button">⇩ Descargar reporte</a>'
+        )
         st.markdown(
             """
-            <div class="ie-guide-note">
-                <span>ⓘ</span>
-                <div>Colores guía: Ingresos (verde) · Egresos (rojo) · Neto (azul) · Neto acumulado (azul punteado) · Margen neto (naranja punteado).</div>
+            <style>
+            .kpi-card-top {
+                display: none !important;
+            }
+            .ie-title-row {
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                margin:-61px 0 20px 0;
+            }
+            .ie-title {
+                color:#081735;
+                font-size:32px;
+                font-weight:950;
+                letter-spacing:-0.02em;
+                line-height:1;
+            }
+            .ie-subtitle {
+                margin-top:9px;
+                color:#516179;
+                font-size:13px;
+                font-weight:750;
+            }
+            .ie-actions {
+                display:flex;
+                gap:10px;
+            }
+            .ie-action {
+                height:46px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                border-radius:7px;
+                border:1px solid #dbe3ee;
+                background:#ffffff;
+                color:#0f1f3d;
+                padding:0 16px;
+                font-size:12px;
+                font-weight:900;
+                box-shadow:0 8px 18px rgba(15,23,42,0.04);
+            }
+            .ie-action-primary {
+                background:#0B3A86;
+                border-color:#0B3A86;
+                color:#ffffff;
+            }
+            .ie-filter-card {
+                border:1px solid #dbe3ee;
+                border-radius:10px;
+                background:#ffffff;
+                padding:12px 16px 13px 16px;
+                margin: 0 0 12px 0;
+                box-shadow:0 12px 28px rgba(15,23,42,0.045);
+            }
+            .ie-filter-card [data-testid="column"] {
+                border-right:1px solid #e5ebf3;
+                padding-right:18px;
+            }
+            .ie-filter-card [data-testid="column"]:last-child {
+                border-right:0;
+                padding-right:0;
+            }
+            .ie-filter-card [data-testid="stVerticalBlock"] {
+                gap:0 !important;
+            }
+            .ie-kpi-card {
+                min-height:116px;
+                border-radius:14px;
+                border:1px solid rgba(219,227,238,0.72);
+                background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+                padding:12px 14px 11px 14px;
+                box-shadow:0 4px 18px rgba(15,23,42,0.045);
+                display:flex;
+                flex-direction:column;
+                justify-content:space-between;
+            }
+            .ie-kpi-head {
+                display:flex;
+                align-items:center;
+                gap:9px;
+                margin-bottom:7px;
+            }
+            .ie-kpi-icon {
+                width:30px;
+                height:30px;
+                border-radius:999px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:var(--halo);
+                color:var(--accent);
+                font-size:15px;
+                font-weight:950;
+                flex:0 0 auto;
+            }
+            .ie-kpi-title {
+                color:#071735;
+                font-size:10px;
+                font-weight:950;
+                letter-spacing:.018em;
+                text-transform:uppercase;
+                line-height:1.16;
+            }
+            .ie-kpi-value {
+                color:var(--accent);
+                font-size:22px;
+                line-height:1.02;
+                font-weight:950;
+                letter-spacing:0;
+                white-space:nowrap;
+            }
+            .ie-kpi-sub {
+                color:#516179;
+                font-size:9.5px;
+                line-height:1.2;
+                font-weight:700;
+                margin-top:4px;
+            }
+            .ie-kpi-spark {
+                width:100%;
+                height:24px;
+                margin-top:7px;
+                display:block;
+            }
+            .ie-kpi-spark path,
+            .ie-kpi-spark polyline {
+                vector-effect:non-scaling-stroke;
+            }
+            .ie-kpi-badge {
+                display:inline-flex;
+                align-items:center;
+                width:max-content;
+                max-width:100%;
+                margin-top:6px;
+                padding:4px 7px;
+                border-radius:5px;
+                background:var(--badge-bg);
+                color:var(--badge-fg);
+                font-size:9.5px;
+                font-weight:900;
+                white-space:nowrap;
+            }
+            .ie-analysis-card {
+                border:1px solid rgba(219,227,238,0.72);
+                border-radius:14px;
+                background:#ffffff;
+                padding:14px;
+                height:520px;
+                box-sizing:border-box;
+                box-shadow:0 4px 18px rgba(15,23,42,0.045);
+                display:flex;
+                flex-direction:column;
+            }
+            .ie-analysis-title {
+                color:#081735;
+                font-size:16px;
+                font-weight:950;
+                margin-bottom:12px;
+                flex:0 0 auto;
+            }
+            .ie-health-card {
+                border:1px solid #e5ebf3;
+                border-radius:12px;
+                background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
+                padding:12px;
+                margin-bottom:10px;
+                display:grid;
+                grid-template-columns:108px 1fr;
+                gap:12px;
+                align-items:center;
+            }
+            .ie-health-label {
+                color:#64748b;
+                font-size:10px;
+                font-weight:900;
+                text-transform:uppercase;
+                letter-spacing:.02em;
+            }
+            .ie-health-score {
+                color:#081735;
+                font-size:24px;
+                font-weight:950;
+                line-height:1;
+                margin-top:4px;
+            }
+            .ie-health-note {
+                color:#516179;
+                font-size:10.5px;
+                font-weight:700;
+                line-height:1.25;
+                margin-top:5px;
+            }
+            .ie-analysis-list {
+                display:flex;
+                flex-direction:column;
+                gap:9px;
+                flex:1 1 auto;
+                min-height:0;
+            }
+            .ie-analysis-row {
+                display:grid;
+                grid-template-columns:38px 1fr auto;
+                gap:10px;
+                align-items:center;
+                border:1px solid rgba(229,235,243,0.82);
+                border-radius:10px;
+                padding:9px 11px;
+                background:#fbfdff;
+                flex:1 1 0;
+                min-height:0;
+            }
+            .ie-analysis-icon {
+                width:30px;
+                height:30px;
+                border-radius:999px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:var(--soft);
+                color:var(--accent);
+                font-size:14px;
+                font-weight:900;
+            }
+            .ie-analysis-label {
+                color:#0f1f3d;
+                font-size:12px;
+                font-weight:900;
+            }
+            .ie-analysis-sub {
+                margin-top:3px;
+                color:#64748b;
+                font-size:10.5px;
+                font-weight:650;
+            }
+            .ie-analysis-value {
+                color:#0f1f3d;
+                font-size:12px;
+                font-weight:900;
+                white-space:nowrap;
+            }
+            .ie-risk-pill {
+                display:inline-flex;
+                padding:4px 7px;
+                border-radius:6px;
+                background:#fee2e2;
+                color:#B91C1C;
+                font-size:10px;
+                font-weight:900;
+            }
+            .ie-bottom-grid {
+                display:grid;
+                grid-template-columns:1.05fr 1fr 1.05fr;
+                gap:12px;
+                margin-top:12px;
+            }
+            .ie-bottom-card {
+                border:1px solid rgba(219,227,238,0.72);
+                border-radius:14px;
+                background:#ffffff;
+                padding:14px;
+                min-height:220px;
+                box-shadow:0 4px 18px rgba(15,23,42,0.045);
+            }
+            .ie-bottom-title {
+                color:#081735;
+                font-size:15px;
+                font-weight:900;
+                margin-bottom:10px;
+            }
+            .ie-summary-table {
+                width:100%;
+                border-collapse:collapse;
+                font-size:11px;
+            }
+            .ie-summary-table th {
+                text-align:left;
+                color:#64748b;
+                font-size:10px;
+                text-transform:uppercase;
+                border-bottom:1px solid #e5ebf3;
+                padding:5px 0;
+            }
+            .ie-summary-table td {
+                border-bottom:1px solid #eef2f7;
+                color:#0f1f3d;
+                font-weight:700;
+                padding:6px 0;
+            }
+            .ie-summary-table td:last-child {
+                text-align:right;
+                font-weight:900;
+            }
+            .ie-summary-list {
+                display:flex;
+                flex-direction:column;
+                gap:7px;
+            }
+            .ie-summary-row {
+                display:grid;
+                grid-template-columns:30px minmax(0, 1fr) auto;
+                gap:8px;
+                align-items:center;
+                border:1px solid #e5ebf3;
+                border-radius:9px;
+                padding:7px 9px;
+                background:#fbfdff;
+            }
+            .ie-summary-icon {
+                width:24px;
+                height:24px;
+                border-radius:999px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:var(--soft);
+                color:var(--accent);
+                font-size:12px;
+                font-weight:950;
+            }
+            .ie-summary-label {
+                color:#0f1f3d;
+                font-size:11px;
+                line-height:1.1;
+                font-weight:950;
+            }
+            .ie-summary-desc {
+                color:#64748b;
+                font-size:9.5px;
+                line-height:1.15;
+                font-weight:700;
+                margin-top:2px;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;
+            }
+            .ie-summary-value {
+                color:var(--accent);
+                font-size:11px;
+                font-weight:950;
+                text-align:right;
+                white-space:nowrap;
+            }
+            .ie-summary-pct {
+                color:#64748b;
+                font-size:9.5px;
+                font-weight:850;
+                margin-top:2px;
+            }
+            .neto-chart-card {
+                border:1px solid #dbe3ee;
+                border-radius:10px;
+                background:#ffffff;
+                padding:18px 22px 16px 22px;
+                box-shadow:0 12px 28px rgba(15,23,42,0.05);
+                margin-top:14px;
+            }
+            .neto-card-head {
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:18px;
+                margin-bottom:10px;
+            }
+            .neto-card-title {
+                color:#081735;
+                font-size:18px;
+                line-height:1.15;
+                font-weight:950;
+                letter-spacing:-0.018em;
+            }
+            .neto-card-sub {
+                color:#64748b;
+                font-size:13px;
+                font-weight:650;
+                margin-top:8px;
+            }
+            .neto-kpi-grid {
+                display:grid;
+                grid-template-columns:repeat(4, minmax(0, 1fr));
+                border:1px solid #e5ebf3;
+                border-radius:9px;
+                overflow:hidden;
+                margin:8px 0 8px auto;
+                max-width:760px;
+            }
+            .neto-kpi-box {
+                padding:12px 14px;
+                background:#fbfdff;
+                border-left:1px solid #e5ebf3;
+            }
+            .neto-kpi-box:first-child { border-left:0; }
+            .neto-kpi-label {
+                color:#334155;
+                font-size:11px;
+                line-height:1.2;
+                font-weight:850;
+            }
+            .neto-kpi-value {
+                margin-top:8px;
+                color:var(--metric);
+                font-size:16px;
+                line-height:1;
+                font-weight:950;
+                letter-spacing:-0.02em;
+            }
+            .neto-kpi-note {
+                margin-top:6px;
+                color:#64748b;
+                font-size:10px;
+                font-weight:700;
+            }
+            .neto-note {
+                display:flex;
+                gap:8px;
+                align-items:flex-start;
+                color:#475569;
+                font-size:12px;
+                line-height:1.45;
+                font-weight:650;
+                margin-top:8px;
+            }
+            main [data-testid="stSelectbox"] > label,
+            main [data-testid="stRadio"] > label {
+                color:#0f1f3d !important;
+                font-size:12px !important;
+                line-height:1.1 !important;
+                font-weight:900 !important;
+                padding-bottom:6px !important;
+            }
+            main div[role="radiogroup"] {
+                display:grid !important;
+                grid-template-columns:repeat(2, minmax(0, 1fr));
+                gap:0 !important;
+                min-height:38px !important;
+                border-radius:7px !important;
+                overflow:hidden !important;
+                background:#f8fafc !important;
+                border:1px solid #e5ebf3 !important;
+                box-shadow:inset 0 1px 0 rgba(255,255,255,0.65) !important;
+            }
+            main div[role="radiogroup"] > label {
+                min-height:38px !important;
+                margin:0 !important;
+                padding:0 12px !important;
+                border:0 !important;
+                border-radius:0 !important;
+                display:flex !important;
+                align-items:center !important;
+                justify-content:center !important;
+                color:#0f1f3d !important;
+                font-size:12px !important;
+                font-weight:850 !important;
+                transition:all .16s ease !important;
+            }
+            main div[role="radiogroup"] > label > div:first-child {
+                display:none !important;
+            }
+            main div[role="radiogroup"] > label:has(input:checked) {
+                background:#0B4DB3 !important;
+                color:#ffffff !important;
+                box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28), 0 8px 18px rgba(11,77,179,0.12) !important;
+            }
+            main div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] p {
+                color:inherit !important;
+                font-size:12px !important;
+                font-weight:850 !important;
+            }
+            main [data-baseweb="select"] > div {
+                min-height:38px !important;
+                border-radius:7px !important;
+                border-color:#e5ebf3 !important;
+                background:#f8fafc !important;
+                box-shadow:none !important;
+                color:#0f1f3d !important;
+                font-size:12px !important;
+                font-weight:850 !important;
+            }
+            .ie-guide-note {
+                display:flex;
+                gap:10px;
+                align-items:center;
+                border:1px solid #dbe3ee;
+                border-radius:8px;
+                background:#f8fafc;
+                color:#334155;
+                font-size:12px;
+                font-weight:650;
+                padding:11px 13px;
+                margin:14px 0 16px 0;
+            }
+            </style>
+            <div class="tab-title-row">
+                <div><div class="tab-title-main">Flujo Operacional</div><div class="tab-title-sub">Industrial Asset Analytics · ingresos, egresos y resultado neto</div></div>
+                <div class="tab-actions">
+                    __FLUJO_DOWNLOAD__
+                </div>
             </div>
-            """,
+            """.replace("__FLUJO_DOWNLOAD__", flujo_download_html),
             unsafe_allow_html=True,
         )
+        components.html(
+            """
+            <script>
+            (function () {
+                const win = window.parent;
+                const doc = win.document;
+                const btn = doc.getElementById("flujo-download-report");
+                if (!btn || btn.dataset.captureHandlerAttached === "1") return;
+                btn.dataset.captureHandlerAttached = "1";
 
-        resumen_periodo_rows = [
-            ("↑", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(total_ing), "100.0%"),
-            ("↓", "#DC2626", "#FEE2E2", "Total egresos", "Suma de egresos del período", fmt_clp_largo(total_egr), f"{(total_egr / total_ing if total_ing else 0):.1%}"),
-            ("=", "#2563EB" if total_neto >= 0 else "#DC2626", "#DBEAFE" if total_neto >= 0 else "#FEE2E2", "Total neto", "Ingresos menos egresos", fmt_clp_largo(total_neto), f"{total_margen:.1%}"),
-            ("Σ", "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626", "#DBEAFE" if total_neto_acumulado >= 0 else "#FEE2E2", "Neto acumulado", "Suma de Ingresos + Egresos sin incluir Abono", fmt_clp_largo(total_neto_acumulado), "-"),
-            ("%", "#B7791F" if total_margen >= 0 else "#DC2626", "#FEF3C7" if total_margen >= 0 else "#FEE2E2", "Margen neto", "Neto dividido por ingresos", f"{total_margen:.1%}", "-"),
-        ]
-        resumen_periodo_html = "".join(
-            (
-                f'<div class="ie-summary-row" style="--accent:{accent};--soft:{soft};">'
-                f'<div class="ie-summary-icon">{icon}</div>'
-                f'<div><div class="ie-summary-label">{label}</div><div class="ie-summary-desc">{desc}</div></div>'
-                f'<div class="ie-summary-value">{value}<div class="ie-summary-pct">{pct}</div></div>'
-                f'</div>'
-            )
-            for icon, accent, soft, label, desc, value, pct in resumen_periodo_rows
+                function loadScript(src) {
+                    return new Promise(function (resolve, reject) {
+                        const existing = doc.querySelector('script[src="' + src + '"]');
+                        if (existing) {
+                            existing.addEventListener("load", resolve, { once: true });
+                            if (existing.dataset.loaded === "1") resolve();
+                            return;
+                        }
+                        const script = doc.createElement("script");
+                        script.src = src;
+                        script.onload = function () {
+                            script.dataset.loaded = "1";
+                            resolve();
+                        };
+                        script.onerror = reject;
+                        doc.head.appendChild(script);
+                    });
+                }
+
+                async function downloadFlujoPdf(event) {
+                    event.preventDefault();
+                    const originalText = btn.textContent;
+                    btn.textContent = "Generando PDF...";
+                    btn.style.pointerEvents = "none";
+
+                    const hidden = [];
+                    function hide(selector) {
+                        doc.querySelectorAll(selector).forEach(function (node) {
+                            hidden.push([node, node.style.display]);
+                            node.style.display = "none";
+                        });
+                    }
+
+                    try {
+                        await loadScript("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js");
+                        await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+
+                        const target = doc.querySelector("section.main .block-container")
+                            || doc.querySelector('[data-testid="stMainBlockContainer"]')
+                            || doc.querySelector(".block-container");
+                        if (!target) throw new Error("No se encontró el contenido del reporte.");
+
+                        hide("section[data-testid='stSidebar']");
+                        hide("aside[data-testid='stSidebar']");
+                        hide(".bodegas-sidebar-toggle");
+                        hide(".tab-actions");
+                        hide("header[data-testid='stHeader']");
+                        hide("div[data-testid='stToolbar']");
+
+                        const canvas = await win.html2canvas(target, {
+                            backgroundColor: "#ffffff",
+                            scale: 2,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false,
+                            windowWidth: Math.max(target.scrollWidth, doc.documentElement.clientWidth),
+                            windowHeight: Math.max(target.scrollHeight, doc.documentElement.clientHeight)
+                        });
+
+                        const imgData = canvas.toDataURL("image/png");
+                        const pdf = new win.jspdf.jsPDF({
+                            orientation: "landscape",
+                            unit: "pt",
+                            format: "a4"
+                        });
+                        const pageW = pdf.internal.pageSize.getWidth();
+                        const pageH = pdf.internal.pageSize.getHeight();
+                        const margin = 10;
+                        const usableW = pageW - margin * 2;
+                        const imgH = canvas.height * usableW / canvas.width;
+                        let y = margin;
+                        let remaining = imgH;
+
+                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                        remaining -= pageH - margin * 2;
+                        while (remaining > 0) {
+                            pdf.addPage();
+                            y = margin - (imgH - remaining);
+                            pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                            remaining -= pageH - margin * 2;
+                        }
+                        pdf.save("flujo_operacional_bodegas_balmaceda.pdf");
+                    } catch (err) {
+                        win.alert("No se pudo generar el PDF visual. Intenta nuevamente cuando la página termine de cargar.");
+                    } finally {
+                        hidden.forEach(function (entry) {
+                            entry[0].style.display = entry[1];
+                        });
+                        btn.textContent = originalText;
+                        btn.style.pointerEvents = "";
+                    }
+                }
+
+                btn.addEventListener("click", downloadFlujoPdf);
+            })();
+            </script>
+            """,
+            height=0,
         )
 
-        bottom_1, bottom_2, bottom_3 = st.columns([1.15, 1.1, 1.15])
-        with bottom_1:
-            st.markdown(
-                f"""
-                <div class="ie-bottom-card">
-                    <div class="ie-bottom-title">Resumen del período</div>
-                    <div class="ie-summary-list">{resumen_periodo_html}</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
+        import plotly.graph_objects as go
+
+        c1, c2, c3, c4 = st.columns([1.25, 1.45, 1.55, 1.55])
+        with c1:
+            periodo = st.radio("Periodo", ["Mensual", "Anual"], horizontal=True, index=0, key="periodo_ing_eg")
+        with c2:
+            tipo_analisis = st.radio(
+                "Análisis",
+                ["Financiero", "Contable"],
+                horizontal=True,
+                index=0,
+                key="tipo_analisis_ing_eg",
             )
-        with bottom_2:
-            fig_acum_small = go.Figure()
-            fig_acum_small.add_trace(
+
+        df_ie = df_f.copy()
+        fecha_dt_acum_col = "Fecha_dt"
+        anio_acum_col = "Año_sel"
+        mes_acum_col = "Mes_sel"
+        periodo_ref_acum_col = "Periodo_ref"
+        if tipo_analisis == "Contable":
+            df_ie["Fecha_dt"] = df_ie["Fecha_dt_contable"]
+            df_ie["Año_sel"] = df_ie["Año_sel_contable"]
+            df_ie["Mes_sel"] = df_ie["Mes_sel_contable"]
+            df_ie["Periodo_ref"] = df_ie["Periodo_ref_contable"]
+            df_ie["Fecha"] = df_ie["FECHA CONTABLE"]
+            df_ie["Año"] = df_ie["AÑO CONTABLE"]
+            df_ie["Mes"] = df_ie["Mes CONTABLE"]
+            fecha_dt_acum_col = "Fecha_dt_contable"
+            anio_acum_col = "Año_sel_contable"
+            mes_acum_col = "Mes_sel_contable"
+            periodo_ref_acum_col = "Periodo_ref_contable"
+            if df_ie["Año_sel"].isna().all() and df_ie["Fecha_dt"].isna().all():
+                st.warning("No hay fechas contables válidas para este análisis.")
+
+        df_ie_base_periodo = df_ie.dropna(subset=["Monto"]).copy()
+        _df = df_ie_base_periodo.copy()
+        _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
+        _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+
+        if _df["Mes_sel"].isna().all():
+            _df["Año_sel"] = _df["Fecha_dt"].dt.year
+            _df["Mes_sel"] = _df["Fecha_dt"].dt.month
+
+        _df = _df.dropna(subset=["Año_sel"])
+        years = sorted(_df["Año_sel"].dropna().astype(int).unique().tolist())
+        year_opts = ["Todos"] + years
+
+        with c3:
+            sel_year = st.selectbox("Año", year_opts, index=0, key="year_ing_eg")
+        with c4:
+            month_opts = ["Todos"] + list(range(1, 13))
+            sel_month = st.selectbox("Mes", month_opts, index=0, key="month_ing_eg",
+                                     disabled=(periodo == "Anual"))
+
+        if sel_year != "Todos":
+            df_ie_base_periodo = df_ie_base_periodo[df_ie_base_periodo["Año_sel"] == sel_year]
+        if sel_month != "Todos" and periodo == "Mensual":
+            df_ie_base_periodo = df_ie_base_periodo[df_ie_base_periodo["Mes_sel"] == sel_month]
+
+        periodo_filtro_lbl = (
+            f"Año {int(sel_year)} · Mes {int(sel_month):02d}"
+            if sel_year != "Todos" and periodo == "Mensual" and sel_month != "Todos"
+            else (
+                f"Año {int(sel_year)}"
+                if sel_year != "Todos"
+                else "Todos los períodos"
+            )
+        )
+
+        _df_acum = df_f.dropna(subset=["Monto"]).copy()
+        _df_acum["Fecha_dt_acum"] = _df_acum[fecha_dt_acum_col]
+        _df_acum["Año_sel_acum"] = _df_acum[anio_acum_col]
+        _df_acum["Mes_sel_acum"] = _df_acum[mes_acum_col]
+        _df_acum["Periodo_ref_acum"] = _df_acum[periodo_ref_acum_col]
+        _df_acum = _df_acum[_df_acum["CC_norm"].isin(["INGRESO", "EGRESO"])]
+        _df_acum = _df_acum[_df_acum["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+        if _df_acum["Mes_sel_acum"].isna().all():
+            _df_acum["Año_sel_acum"] = _df_acum["Fecha_dt_acum"].dt.year
+            _df_acum["Mes_sel_acum"] = _df_acum["Fecha_dt_acum"].dt.month
+
+        if periodo == "Mensual":
+            _df_acum = _df_acum.dropna(subset=["Periodo_ref_acum"])
+            _df_acum["Periodo"] = _df_acum["Periodo_ref_acum"]
+        else:
+            _df_acum = _df_acum.dropna(subset=["Año_sel_acum"])
+            _df_acum["Periodo"] = pd.to_datetime(
+                dict(year=_df_acum["Año_sel_acum"].astype(int), month=1, day=1),
+                errors="coerce"
+            )
+
+        _df_acum["Periodo"] = pd.to_datetime(_df_acum["Periodo"], errors="coerce")
+        _df_acum = _df_acum.dropna(subset=["Periodo"])
+        agg_acum = (
+            _df_acum.groupby(["Periodo", "CC"], as_index=False)["Monto"]
+            .sum()
+            .sort_values("Periodo")
+        )
+        ingresos_acum = agg_acum[agg_acum["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos_acum"})
+        egresos_acum = agg_acum[agg_acum["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos_acum"})
+        base_acum = pd.DataFrame({"Periodo": sorted(agg_acum["Periodo"].dropna().unique())})
+        base_acum["Periodo"] = pd.to_datetime(base_acum["Periodo"], errors="coerce")
+        base_acum = base_acum.merge(ingresos_acum[["Periodo", "Ingresos_acum"]], on="Periodo", how="left")
+        base_acum = base_acum.merge(egresos_acum[["Periodo", "Egresos_acum"]], on="Periodo", how="left")
+        base_acum = base_acum.fillna(0).sort_values("Periodo")
+        base_acum["Neto_periodo_acum"] = base_acum["Ingresos_acum"] - base_acum["Egresos_acum"].abs()
+        base_acum["Neto_acumulado"] = base_acum["Neto_periodo_acum"].cumsum()
+        neto_acumulado_periodo = base_acum[["Periodo", "Neto_acumulado"]]
+
+        _df = df_ie_base_periodo.copy()
+        _df = _df[_df["CC_norm"].isin(["INGRESO", "EGRESO"])]
+        _df = _df[_df["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+
+        # Construir Periodo usando Año/Mes
+        if periodo == "Mensual":
+            _df = _df.dropna(subset=["Periodo_ref"])
+            _df["Periodo"] = _df["Periodo_ref"]
+            label_x = "Mes"
+            x_hover = "%b %Y"
+        else:
+            _df["Periodo"] = pd.to_datetime(
+                dict(year=_df["Año_sel"].astype(int), month=1, day=1),
+                errors="coerce"
+            )
+            label_x = "Año"
+            x_hover = "%Y"
+
+        _df = _df.dropna(subset=["Periodo"])
+        _df["Periodo"] = pd.to_datetime(_df["Periodo"], errors="coerce")
+        _df = _df.dropna(subset=["Periodo"])
+
+        agg_ie = (
+            _df.groupby(["Periodo", "CC"], as_index=False)["Monto"]
+               .sum()
+               .sort_values("Periodo")
+        )
+
+        ingresos = agg_ie[agg_ie["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+        egresos = agg_ie[agg_ie["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+
+        base = pd.DataFrame({"Periodo": sorted(agg_ie["Periodo"].dropna().unique())})
+        base["Periodo"] = pd.to_datetime(base["Periodo"], errors="coerce")
+        base = base.merge(ingresos[["Periodo", "Ingresos"]], on="Periodo", how="left")
+        base = base.merge(egresos[["Periodo", "Egresos"]], on="Periodo", how="left")
+        base = base.fillna(0)
+
+        if base.empty:
+            st.info("No hay datos suficientes para calcular ingresos y egresos por período.")
+        else:
+            base["Egresos_abs"] = base["Egresos"].abs()
+            base["Neto"] = base["Ingresos"] - base["Egresos_abs"]
+            base = base.merge(neto_acumulado_periodo, on="Periodo", how="left")
+            base["Neto_acumulado"] = base["Neto_acumulado"].fillna(base["Neto"].cumsum())
+
+            total_ing = float(base["Ingresos"].sum())
+            total_egr = float(base["Egresos_abs"].sum())
+            total_neto = float(base["Neto"].sum())
+            total_neto_acumulado = float(base["Neto_acumulado"].iloc[-1])
+            total_margen = (total_neto / total_ing) if total_ing else 0.0
+            base["Egresos_plot"] = -base["Egresos_abs"]
+            base["Margen"] = np.where(base["Ingresos"] != 0, base["Neto"] / base["Ingresos"], 0.0)
+            base["Neto_color"] = np.where(base["Neto"] >= 0, CHART_TEAL, CHART_RED)
+
+            def ie_icon_svg(kind: str) -> str:
+                icons = {
+                    "up": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M9 7h8v8"/></svg>',
+                    "down": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10"/><path d="M17 9v8H9"/></svg>',
+                    "equal": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 9h12"/><path d="M6 15h12"/></svg>',
+                    "sum": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5H7l6 7-6 7h11"/></svg>',
+                    "percent": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>',
+                }
+                return icons.get(kind, icons["equal"])
+
+            def ie_sparkline(values, accent):
+                vals = pd.Series(values).replace([np.inf, -np.inf], np.nan).dropna().astype(float).tail(18).tolist()
+                if len(vals) < 2:
+                    vals = [0.0, 0.0]
+                lo, hi = min(vals), max(vals)
+                span = hi - lo if hi != lo else 1.0
+                points = []
+                denom = max(len(vals) - 1, 1)
+                for i, val in enumerate(vals):
+                    x = 2 + (i / denom) * 106
+                    y = 22 - ((val - lo) / span) * 18
+                    points.append(f"{x:.1f},{y:.1f}")
+                return (
+                    f'<svg class="ie-kpi-spark" viewBox="0 0 112 26" preserveAspectRatio="none" aria-hidden="true">'
+                    f'<path d="M2 22 H110" stroke="rgba(100,116,139,0.16)" stroke-width="1"/>'
+                    f'<polyline points="{" ".join(points)}" fill="none" stroke="{accent}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+                    f'</svg>'
+                )
+
+            def ie_metric_card(title, value, subtitle, icon, accent, soft, halo, border, badge_text, sparkline, badge_positive=True):
+                badge_bg = "#dcfce7" if badge_positive else "#fee2e2"
+                badge_fg = "#047857" if badge_positive else "#b91c1c"
+                return f"""
+                <div class="ie-kpi-card" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};--badge-bg:{badge_bg};--badge-fg:{badge_fg};">
+                    <div>
+                        <div class="ie-kpi-head">
+                            <div class="ie-kpi-icon">{icon}</div>
+                            <div class="ie-kpi-title">{title}</div>
+                        </div>
+                        <div class="ie-kpi-value">{value}</div>
+                        <div class="ie-kpi-sub">{subtitle}</div>
+                        {sparkline}
+                    </div>
+                    <div class="ie-kpi-badge">{badge_text}</div>
+                </div>
+                """
+
+            k1, k2, k3, k4, k5 = st.columns(5)
+            with k1:
+                st.markdown(
+                    ie_metric_card(
+                        "TOTAL INGRESO",
+                        fmt_clp_largo(total_ing),
+                        "Ingresos",
+                        ie_icon_svg("up"),
+                        "#22C55E",
+                        "#f6fffb",
+                        "#d8f5e4",
+                        "#cfe9de",
+                        "Registrado",
+                        ie_sparkline(base["Ingresos"], "#22C55E"),
+                        True,
+                    ),
+                    unsafe_allow_html=True,
+                )
+            with k2:
+                st.markdown(
+                    ie_metric_card(
+                        "TOTAL EGRESO",
+                        fmt_clp_largo(total_egr),
+                        "Egresos",
+                        ie_icon_svg("down"),
+                        "#F87171",
+                        "#fff7f7",
+                        "#fde2e2",
+                        "#f1caca",
+                        "Registrado",
+                        ie_sparkline(base["Egresos_abs"], "#F87171"),
+                        False,
+                    ),
+                    unsafe_allow_html=True,
+                )
+            with k3:
+                net_color = CHART_TEAL if total_neto >= 0 else CHART_RED
+                st.markdown(
+                    ie_metric_card(
+                        "TOTAL NETO",
+                        fmt_clp_largo(total_neto),
+                        "Resultado",
+                        ie_icon_svg("equal"),
+                        "#2563EB" if total_neto >= 0 else "#F87171",
+                        "#f6fffb" if total_neto >= 0 else "#fff7f7",
+                        "#d8f5e4" if total_neto >= 0 else "#fde2e2",
+                        "#cfe9de" if total_neto >= 0 else "#f1caca",
+                        "Operativo",
+                        ie_sparkline(base["Neto"], "#2563EB" if total_neto >= 0 else "#F87171"),
+                        total_neto >= 0,
+                    ),
+                    unsafe_allow_html=True,
+                )
+            with k4:
+                net_acum_color = CHART_TEAL if total_neto_acumulado >= 0 else CHART_RED
+                st.markdown(
+                    ie_metric_card(
+                        "NETO ACUMULADO",
+                        fmt_clp_largo(total_neto_acumulado),
+                        "Acumulado",
+                        ie_icon_svg("sum"),
+                        "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626",
+                        "#f6f9ff" if total_neto_acumulado >= 0 else "#fff7f7",
+                        "#e0ebff" if total_neto_acumulado >= 0 else "#fde2e2",
+                        "#d4e1f6" if total_neto_acumulado >= 0 else "#f1caca",
+                        "A la fecha",
+                        ie_sparkline(base["Neto_acumulado"], "#2563EB" if total_neto_acumulado >= 0 else "#F87171"),
+                        total_neto_acumulado >= 0,
+                    ),
+                    unsafe_allow_html=True,
+                )
+            with k5:
+                margen_color = CHART_TEAL if total_margen >= 0 else CHART_RED
+                st.markdown(
+                    ie_metric_card(
+                        "MARGEN",
+                        f"{total_margen:.1%}",
+                        "Rentabilidad",
+                        ie_icon_svg("percent"),
+                        "#F59E0B",
+                        "#fbf7ff",
+                        "#FEF3C7",
+                        "#FDE68A",
+                        "Período",
+                        ie_sparkline(base["Margen"], "#F59E0B"),
+                        total_margen >= 0,
+                    ),
+                    unsafe_allow_html=True,
+                )
+
+            from plotly.subplots import make_subplots
+
+            base["Tooltip"] = (
+                "Ingresos: $" + base["Ingresos"].map(lambda v: f"{v:,.0f}")
+                + "<br>Egresos: $" + base["Egresos_abs"].map(lambda v: f"{v:,.0f}")
+                + "<br>Neto: $" + base["Neto"].map(lambda v: f"{v:,.0f}")
+                + "<br>Neto acumulado: $" + base["Neto_acumulado"].map(lambda v: f"{v:,.0f}")
+                + "<br>Margen: " + base["Margen"].map(lambda v: f"{v:.1%}")
+            )
+
+            fig_ie = make_subplots(specs=[[{"secondary_y": True}]])
+
+            fig_ie.add_trace(
+                go.Scatter(
+                    x=base["Periodo"],
+                    y=base["Neto"],
+                    mode="markers",
+                    name="Resumen",
+                    marker=dict(size=18, color="rgba(0,0,0,0)"),
+                    showlegend=False,
+                    customdata=base[["Tooltip"]],
+                    hovertemplate=f"<b>{label_x} %{{x|{x_hover}}}</b><br>%{{customdata[0]}}<extra></extra>",
+                ),
+                secondary_y=False,
+            )
+
+            fig_ie.add_trace(
+                go.Bar(
+                    x=base["Periodo"],
+                    y=base["Ingresos"],
+                    name="Ingresos",
+                    marker=dict(
+                        color="rgba(34, 197, 94, 0.78)",
+                        line=dict(color="rgba(34, 197, 94, 0.78)", width=0),
+                    ),
+                    hoverinfo="skip",
+                    offsetgroup="flujo",
+                ),
+                secondary_y=False,
+            )
+            fig_ie.add_trace(
+                go.Bar(
+                    x=base["Periodo"],
+                    y=base["Egresos_plot"],
+                    name="Egresos",
+                    marker=dict(
+                        color="rgba(248, 113, 113, 0.82)",
+                        line=dict(color="rgba(248, 113, 113, 0.82)", width=0),
+                    ),
+                    hoverinfo="skip",
+                    offsetgroup="flujo",
+                ),
+                secondary_y=False,
+            )
+            fig_ie.add_trace(
+                go.Scatter(
+                    x=base["Periodo"],
+                    y=base["Neto"],
+                    mode="lines+markers",
+                    name="Neto",
+                    line=dict(color="#2563EB", width=2.3, shape="spline"),
+                    marker=dict(
+                        size=6.5,
+                        color="#2563EB",
+                        line=dict(color="#FFFFFF", width=1.35),
+                    ),
+                    hoverinfo="skip",
+                ),
+                secondary_y=False,
+            )
+            fig_ie.add_trace(
                 go.Scatter(
                     x=base["Periodo"],
                     y=base["Neto_acumulado"],
                     mode="lines+markers",
                     name="Neto acumulado",
-                    line=dict(color="#EF4444" if total_neto_acumulado < 0 else "#059669", width=2.4),
-                    marker=dict(size=5, color="#EF4444" if total_neto_acumulado < 0 else "#059669"),
-                    fill="tozeroy",
-                    fillcolor="rgba(239,68,68,0.10)" if total_neto_acumulado < 0 else "rgba(5,150,105,0.10)",
-                    hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado: $%{y:,.0f}<extra></extra>",
-                )
+                    line=dict(color="#F59E0B", width=2.1, dash="dash", shape="spline"),
+                    marker=dict(size=5.8, color="#F59E0B", line=dict(color="#FFFFFF", width=1.15)),
+                    hoverinfo="skip",
+                ),
+                secondary_y=False,
             )
-            fig_acum_small.update_layout(
-                title=dict(text="Evolución del neto acumulado", x=0.02, font=dict(size=15, color="#081735")),
-                template="plotly_white",
-                height=310,
-                margin=dict(l=12, r=12, t=42, b=22),
-                paper_bgcolor="#FFFFFF",
-                plot_bgcolor="#FFFFFF",
-                showlegend=False,
-            )
-            fig_acum_small.update_xaxes(showgrid=False, tickformat=("%b %Y" if periodo == "Mensual" else "%Y"))
-            fig_acum_small.update_yaxes(tickprefix="$", separatethousands=True, gridcolor="#E5EAF2")
-            st.plotly_chart(
-                fig_acum_small,
-                use_container_width=True,
-                config={"displaylogo": False, "displayModeBar": False},
-                key="ing_eg_neto_acumulado_bottom",
-            )
-        with bottom_3:
-            egresos_comp = (
-                _df[_df["CC_norm"] == "EGRESO"]
-                .assign(CC1_clean=lambda d: d["CC1_text"].astype(str).str.strip().replace("", "Sin clasificar"))
-                .groupby("CC1_clean", as_index=False)["Monto"]
-                .sum()
-            )
-            egresos_comp["Monto_abs"] = egresos_comp["Monto"].abs()
-            egresos_comp = egresos_comp.sort_values("Monto_abs", ascending=False).head(5)
-            if egresos_comp.empty:
-                st.info("No hay egresos para componer en el período.")
-            else:
-                fig_donut = go.Figure(
-                    go.Pie(
-                        labels=egresos_comp["CC1_clean"],
-                        values=egresos_comp["Monto_abs"],
-                        hole=0.58,
-                        marker=dict(colors=["#3B82F6", "#EF4444", "#F59E0B", "#64748B", "#A78BFA"]),
-                        textinfo="none",
-                        hovertemplate="<b>%{label}</b><br>$%{value:,.0f}<br>%{percent}<extra></extra>",
-                    )
-                )
-                fig_donut.add_annotation(
-                    text=f"{fmt_short(total_egr)}<br><span style='font-size:11px'>Total egresos</span>",
-                    x=0.5,
-                    y=0.5,
-                    showarrow=False,
-                    font=dict(size=18, color="#081735"),
-                )
-                fig_donut.update_layout(
-                    title=dict(text="Composición de egresos del período", x=0.02, font=dict(size=15, color="#081735")),
-                    height=310,
-                    margin=dict(l=4, r=4, t=42, b=8),
-                    paper_bgcolor="#FFFFFF",
-                    legend=dict(orientation="v", x=0.74, y=0.5, font=dict(size=10)),
-                )
-                st.plotly_chart(
-                    fig_donut,
-                    use_container_width=True,
-                    config={"displaylogo": False, "displayModeBar": False},
-                    key="ing_eg_donut_egresos_bottom",
-                )
-
-        def build_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
-            if modo == "Contable":
-                anio_col = "Año_sel_contable"
-                mes_col = "Mes_sel_contable"
-                periodo_col = "Periodo_ref_contable"
-            else:
-                anio_col = "Año_sel"
-                mes_col = "Mes_sel"
-                periodo_col = "Periodo_ref"
-
-            df_cmp = df_src.dropna(subset=["Monto"]).copy()
-            df_cmp = df_cmp[df_cmp["CC_norm"].isin(["INGRESO", "EGRESO"])]
-            df_cmp = df_cmp[df_cmp["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
-            if periodo == "Mensual":
-                df_cmp = df_cmp.dropna(subset=[periodo_col])
-                df_cmp["Periodo"] = df_cmp[periodo_col]
-            else:
-                df_cmp = df_cmp.dropna(subset=[anio_col])
-                df_cmp["Periodo"] = pd.to_datetime(
-                    dict(year=df_cmp[anio_col].astype(int), month=1, day=1),
-                    errors="coerce",
-                )
-
-            df_cmp["Periodo"] = pd.to_datetime(df_cmp["Periodo"], errors="coerce")
-            df_cmp = df_cmp.dropna(subset=["Periodo"])
-            if df_cmp.empty:
-                return pd.DataFrame(columns=["Periodo", modo, f"{modo} acumulado"])
-
-            agg_cmp = (
-                df_cmp.groupby(["Periodo", "CC_norm"], as_index=False)["Monto"]
-                .sum()
-                .sort_values("Periodo")
-            )
-            ingresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
-            egresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
-            base_cmp = pd.DataFrame({"Periodo": sorted(agg_cmp["Periodo"].dropna().unique())})
-            base_cmp["Periodo"] = pd.to_datetime(base_cmp["Periodo"], errors="coerce")
-            base_cmp = base_cmp.merge(ingresos_cmp[["Periodo", "Ingresos"]], on="Periodo", how="left")
-            base_cmp = base_cmp.merge(egresos_cmp[["Periodo", "Egresos"]], on="Periodo", how="left")
-            base_cmp = base_cmp.fillna(0).sort_values("Periodo")
-            base_cmp[modo] = base_cmp["Ingresos"] - base_cmp["Egresos"].abs()
-            base_cmp[f"{modo} acumulado"] = base_cmp[modo].cumsum()
-
-            if sel_year != "Todos":
-                base_cmp = base_cmp[base_cmp["Periodo"].dt.year == int(sel_year)]
-            if sel_month != "Todos" and periodo == "Mensual":
-                base_cmp = base_cmp[base_cmp["Periodo"].dt.month == int(sel_month)]
-
-            return base_cmp[["Periodo", modo, f"{modo} acumulado"]]
-
-        neto_financiero = build_neto_comparativo(df_f, "Financiero")
-        neto_contable = build_neto_comparativo(df_f, "Contable")
-        neto_cmp = neto_financiero.merge(neto_contable, on="Periodo", how="outer").sort_values("Periodo")
-
-        if neto_cmp.empty:
-            st.info(f"No se encuentran registros para comparar neto financiero y contable en {periodo_filtro_lbl}.")
-        else:
-            neto_cmp = neto_cmp.fillna(0)
-            st.markdown(
-                f"""
-                <div class="neto-chart-card">
-                    <div class="neto-card-head">
-                        <div>
-                            <div class="neto-card-title">Neto financiero vs neto contable — {periodo} · {periodo_filtro_lbl} ⓘ</div>
-                            <div class="neto-card-sub">Evolución mensual del resultado neto (ingresos menos egresos)</div>
-                        </div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
+            fig_ie.add_trace(
+                go.Scatter(
+                    x=base["Periodo"],
+                    y=base["Margen"],
+                    mode="lines",
+                    name="Margen neto",
+                    line=dict(color="#94A3B8", width=1.8, dash="dot"),
+                    hoverinfo="skip",
+                ),
+                secondary_y=True,
             )
 
-            ctrl_1, ctrl_2, ctrl_3, ctrl_4 = st.columns([1.35, 1.35, 1.6, 0.3])
-            with ctrl_1:
-                vista_neto_cmp = st.selectbox(
-                    "Visualizar",
-                    ["Neto", "Neto acumulado", "Ambos"],
-                    index=0,
-                    key="vista_neto_fin_cont",
-                )
-            with ctrl_2:
-                tipo_grafico_neto = st.selectbox(
-                    "Tipo de gráfico",
-                    ["Línea", "Área"],
-                    index=0,
-                    key="tipo_grafico_neto_fin_cont",
-                )
-            with ctrl_3:
-                rango_neto_cmp = st.selectbox(
-                    "Rango",
-                    ["Todos los períodos", "Últimos 12 meses", "Últimos 24 meses"],
-                    index=0,
-                    key="rango_neto_fin_cont",
-                )
-            with ctrl_4:
-                st.markdown(
-                    "<div style='height:38px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#081735;font-weight:900;background:#fff;margin-top:25px;'>⋮</div>",
-                    unsafe_allow_html=True,
-                )
+            fig_ie.add_hline(y=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75, secondary_y=False)
 
-            neto_plot = neto_cmp.copy()
-            if rango_neto_cmp != "Todos los períodos" and not neto_plot.empty:
-                meses_rango = 11 if rango_neto_cmp == "Últimos 12 meses" else 23
-                max_periodo_cmp = pd.to_datetime(neto_plot["Periodo"]).max()
-                min_periodo_cmp = pd.to_datetime(neto_plot["Periodo"]).min()
-                inicio_rango_cmp = max(max_periodo_cmp - pd.DateOffset(months=meses_rango), min_periodo_cmp)
-                neto_plot = neto_plot[neto_plot["Periodo"].between(inicio_rango_cmp, max_periodo_cmp)]
-
-            metric_source = neto_plot if not neto_plot.empty else neto_cmp
-            fin_avg = float(metric_source["Financiero"].mean()) if "Financiero" in metric_source else 0.0
-            con_avg = float(metric_source["Contable"].mean()) if "Contable" in metric_source else 0.0
-            if not metric_source.empty and "Financiero" in metric_source:
-                best_row = metric_source.loc[metric_source["Financiero"].idxmax()]
-                worst_row = metric_source.loc[metric_source["Financiero"].idxmin()]
-                best_val = float(best_row["Financiero"])
-                worst_val = float(worst_row["Financiero"])
-                best_lbl = pd.to_datetime(best_row["Periodo"]).strftime("%b %Y")
-                worst_lbl = pd.to_datetime(worst_row["Periodo"]).strftime("%b %Y")
-            else:
-                best_val = worst_val = 0.0
-                best_lbl = worst_lbl = "-"
-
-            st.markdown(
-                f"""
-                <div class="neto-kpi-grid">
-                    <div class="neto-kpi-box" style="--metric:{'#059669' if fin_avg >= 0 else '#EF4444'};">
-                        <div class="neto-kpi-label">Promedio neto financiero</div>
-                        <div class="neto-kpi-value">{fmt_clp_largo(fin_avg)}</div>
-                    </div>
-                    <div class="neto-kpi-box" style="--metric:{'#059669' if con_avg >= 0 else '#EF4444'};">
-                        <div class="neto-kpi-label">Promedio neto contable</div>
-                        <div class="neto-kpi-value">{fmt_clp_largo(con_avg)}</div>
-                    </div>
-                    <div class="neto-kpi-box" style="--metric:#059669;">
-                        <div class="neto-kpi-label">Mejor mes (financiero)</div>
-                        <div class="neto-kpi-value">{fmt_clp_largo(best_val)}</div>
-                        <div class="neto-kpi-note">{best_lbl}</div>
-                    </div>
-                    <div class="neto-kpi-box" style="--metric:#EF4444;">
-                        <div class="neto-kpi-label">Peor mes (financiero)</div>
-                        <div class="neto-kpi-value">{fmt_clp_largo(worst_val)}</div>
-                        <div class="neto-kpi-note">{worst_lbl}</div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            fig_neto_cmp = go.Figure()
-            fill_fin = "tozeroy" if tipo_grafico_neto == "Área" else None
-            fill_con = "tozeroy" if tipo_grafico_neto == "Área" else None
-
-            if vista_neto_cmp in ["Neto", "Ambos"]:
-                fig_neto_cmp.add_trace(
-                    go.Scatter(
-                        x=neto_plot["Periodo"],
-                        y=neto_plot["Financiero"],
-                        mode="lines+markers",
-                        name="Neto financiero",
-                        line=dict(color="#1257FF", width=3.0, shape="spline"),
-                        marker=dict(size=7, color="#1257FF", line=dict(color="#FFFFFF", width=1.4)),
-                        fill=fill_fin,
-                        fillcolor="rgba(18,87,255,0.08)",
-                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
-                    )
-                )
-                fig_neto_cmp.add_trace(
-                    go.Scatter(
-                        x=neto_plot["Periodo"],
-                        y=neto_plot["Contable"],
-                        mode="lines+markers",
-                        name="Neto contable",
-                        line=dict(color="#FF7A1A", width=2.8, dash="dot", shape="spline"),
-                        marker=dict(size=7, color="#FF7A1A", line=dict(color="#FFFFFF", width=1.4)),
-                        fill=fill_con,
-                        fillcolor="rgba(255,122,26,0.07)",
-                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
-                    )
-                )
-
-            if vista_neto_cmp in ["Neto acumulado", "Ambos"]:
-                fig_neto_cmp.add_trace(
-                    go.Scatter(
-                        x=neto_plot["Periodo"],
-                        y=neto_plot["Financiero acumulado"],
-                        mode="lines+markers",
-                        name="Neto acumulado financiero",
-                        line=dict(color="#0F766E", width=3.0, dash="dash", shape="spline"),
-                        marker=dict(size=7, color="#0F766E", line=dict(color="#FFFFFF", width=1.4)),
-                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado financiero: $%{y:,.0f}<extra></extra>",
-                    )
-                )
-                fig_neto_cmp.add_trace(
-                    go.Scatter(
-                        x=neto_plot["Periodo"],
-                        y=neto_plot["Contable acumulado"],
-                        mode="lines+markers",
-                        name="Neto acumulado contable",
-                        line=dict(color="#B91C1C", width=3.0, dash="dashdot", shape="spline"),
-                        marker=dict(size=7, color="#B91C1C", line=dict(color="#FFFFFF", width=1.4)),
-                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado contable: $%{y:,.0f}<extra></extra>",
-                    )
-                )
-            fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75)
-            if not neto_plot.empty and vista_neto_cmp in ["Neto", "Ambos"]:
-                last_row_cmp = neto_plot.iloc[-1]
-                fig_neto_cmp.add_annotation(
-                    x=last_row_cmp["Periodo"],
-                    y=last_row_cmp["Financiero"],
-                    text=fmt_clp_largo(float(last_row_cmp["Financiero"])),
-                    showarrow=False,
-                    xshift=46,
-                    bgcolor="#EFF6FF",
-                    bordercolor="#DBEAFE",
-                    borderwidth=1,
-                    font=dict(size=11, color="#1257FF"),
-                )
-                fig_neto_cmp.add_annotation(
-                    x=last_row_cmp["Periodo"],
-                    y=last_row_cmp["Contable"],
-                    text=fmt_clp_largo(float(last_row_cmp["Contable"])),
-                    showarrow=False,
-                    xshift=46,
-                    bgcolor="#FFF7ED",
-                    bordercolor="#FED7AA",
-                    borderwidth=1,
-                    font=dict(size=11, color="#EA580C"),
-                )
-            fig_neto_cmp.update_layout(
-                title=None,
-                font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
+            fig_ie.update_layout(
+                title=dict(
+                    text=f"Ingresos, egresos y resultado neto — {periodo} · {tipo_analisis} &nbsp; ⓘ",
+                    x=0.02,
+                    xanchor="left",
+                    y=0.985,
+                    font=dict(size=16, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                ),
+                font=dict(
+                    family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    size=12,
+                    color="#334155",
+                ),
                 template="plotly_white",
                 height=500,
-                margin=dict(l=30, r=58, t=44, b=42),
+                margin=dict(l=18, r=24, t=64, b=34),
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
-                    y=1.05,
+                    y=1.015,
                     xanchor="left",
-                    x=0.01,
+                    x=0.02,
                     bgcolor="rgba(255,255,255,0)",
-                    font=dict(size=11, color="#334155"),
+                    font=dict(size=10.5, color="#334155", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                    itemclick=False,
+                    itemdoubleclick=False,
                 ),
-                hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=12, color="#0F172A")),
+                hoverlabel=dict(
+                    bgcolor="#FFFFFF",
+                    bordercolor="#CBD5E1",
+                    font=dict(size=12, color="#0F172A", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                ),
                 hovermode="x unified",
                 paper_bgcolor="#FFFFFF",
                 plot_bgcolor="#FFFFFF",
+                bargap=0.20,
             )
-            fig_neto_cmp.update_xaxes(
-                title_text=label_x,
+
+            fig_ie.update_xaxes(
+                title_text=("Periodo" if periodo == "Mensual" else label_x),
                 showgrid=False,
-                tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
                 linecolor="#CBD5E1",
-                title_font=dict(size=12, color="#334155"),
-                tickfont=dict(size=11, color="#475569"),
-                rangeslider=dict(visible=True, thickness=0.07, bgcolor="#F1F5F9", bordercolor="#E2E8F0", borderwidth=1),
+                tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
+                title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                rangeslider=dict(
+                    visible=(periodo == "Mensual"),
+                    thickness=0.08,
+                    bgcolor="#F1F5F9",
+                    bordercolor="#E2E8F0",
+                    borderwidth=1,
+                ),
             )
-            fig_neto_cmp.update_yaxes(
-                title_text="Neto CLP",
+            fig_ie.update_yaxes(
+                title_text="Flujo CLP",
                 showgrid=True,
-                gridcolor="#E5EAF2",
+                gridcolor="rgba(180,190,210,0.15)",
                 zeroline=False,
                 tickprefix="$",
                 separatethousands=True,
                 linecolor="#CBD5E1",
-                title_font=dict(size=12, color="#334155"),
-                tickfont=dict(size=11, color="#475569"),
+                title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                secondary_y=False,
             )
-            st.plotly_chart(
-                fig_neto_cmp,
-                use_container_width=True,
+            fig_ie.update_yaxes(
+                title_text="Margen",
+                tickformat=".0%",
+                showgrid=False,
+                zeroline=False,
+                range=[-1, 1],
+                title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                secondary_y=True,
+            )
+
+            legend_script = """
+            const chart = document.getElementById('{plot_id}');
+            const legendIndexes = () => chart.data
+                .map((trace, index) => trace.showlegend === false ? null : index)
+                .filter(index => index !== null);
+            const isVisible = value => value === undefined || value === true;
+            const setVisibility = visible => Plotly.restyle(chart, {visible: visible});
+
+            chart.on('plotly_legendclick', eventData => {
+                const clicked = eventData.curveNumber;
+                const indexes = legendIndexes();
+                const allVisible = indexes.every(index => isVisible(chart.data[index].visible));
+                const visible = chart.data.map((trace, index) => {
+                    if (trace.showlegend === false) {
+                        return true;
+                    }
+                    if (allVisible) {
+                        return index === clicked ? true : 'legendonly';
+                    }
+                    return index === clicked ? true : (isVisible(trace.visible) ? true : 'legendonly');
+                });
+                setVisibility(visible);
+                return false;
+            });
+
+            chart.on('plotly_legenddoubleclick', eventData => {
+                setVisibility(chart.data.map(() => true));
+                return false;
+            });
+            """
+            fig_ie_html = fig_ie.to_html(
+                full_html=False,
+                include_plotlyjs=True,
                 config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
-                key="neto_fin_cont_pro",
+                post_script=legend_script,
             )
+            top_ingreso_periodo = (
+                _df[_df["CC_norm"] == "INGRESO"]
+                .groupby("Obs_text")["Monto"]
+                .sum()
+                .sort_values(ascending=False)
+            )
+            top_egreso_periodo = (
+                _df[_df["CC_norm"] == "EGRESO"]
+                .groupby("Obs_text")["Monto"]
+                .sum()
+                .abs()
+                .sort_values(ascending=False)
+            )
+            top_ingreso_label = str(top_ingreso_periodo.index[0]) if not top_ingreso_periodo.empty else "Sin registros"
+            top_egreso_label = str(top_egreso_periodo.index[0]) if not top_egreso_periodo.empty else "Sin registros"
+            top_ingreso_val = float(top_ingreso_periodo.iloc[0]) if not top_ingreso_periodo.empty else 0.0
+            top_egreso_val = float(top_egreso_periodo.iloc[0]) if not top_egreso_periodo.empty else 0.0
+            tendencia_txt = "El neto acumulado sigue en negativo." if total_neto_acumulado < 0 else "El neto acumulado se mantiene positivo."
+            tendencia_estado = "En riesgo" if total_neto_acumulado < 0 else "Saludable"
+            tendencia_bg = "#fee2e2" if total_neto_acumulado < 0 else "#dcfce7"
+            tendencia_fg = "#B91C1C" if total_neto_acumulado < 0 else "#166534"
+            health_score = int(
+                np.clip(
+                    55
+                    + (18 if total_neto >= 0 else -18)
+                    + (16 if total_neto_acumulado >= 0 else -16)
+                    + np.clip(total_margen * 70, -16, 16),
+                    0,
+                    100,
+                )
+            )
+            health_color = "#22C55E" if health_score >= 70 else ("#F59E0B" if health_score >= 45 else "#F87171")
+            health_note = "Operación estable" if health_score >= 70 else ("Atención operativa" if health_score >= 45 else "Presión financiera")
+
+            chart_col, analysis_col = st.columns([2.35, 1])
+            with chart_col:
+                components.html(
+                    f"""
+                    <div style="border:0;border-radius:14px;background:#fff;
+                                padding:14px 16px 10px 16px;box-shadow:0 4px 18px rgba(15,23,42,0.045);
+                                box-sizing:border-box;">
+                        {fig_ie_html}
+                    </div>
+                    """,
+                    height=520,
+                    scrolling=False,
+                )
+            with analysis_col:
+                st.markdown(
+                    f"""
+                    <div class="ie-analysis-card">
+                        <div class="ie-analysis-title">Análisis rápido del período</div>
+                        <div class="ie-health-card">
+                            <svg viewBox="0 0 120 72" aria-hidden="true">
+                                <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="#E5EAF2" stroke-width="13" stroke-linecap="round" pathLength="100"/>
+                                <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="{health_color}" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="{health_score} 100"/>
+                                <circle cx="60" cy="60" r="4" fill="#081735"/>
+                            </svg>
+                            <div>
+                                <div class="ie-health-label">Operational Health Score</div>
+                                <div class="ie-health-score">{health_score}/100</div>
+                                <div class="ie-health-note">{health_note}</div>
+                            </div>
+                        </div>
+                        <div class="ie-analysis-list">
+                            <div class="ie-analysis-row" style="--accent:#059669;--soft:#DCFCE7;">
+                                <div class="ie-analysis-icon">{ie_icon_svg("up")}</div>
+                                <div>
+                                    <div class="ie-analysis-label">Mayores ingresos</div>
+                                    <div class="ie-analysis-sub">{top_ingreso_label}</div>
+                                </div>
+                                <div class="ie-analysis-value">{fmt_clp_largo(top_ingreso_val)}</div>
+                            </div>
+                            <div class="ie-analysis-row" style="--accent:#DC2626;--soft:#FEE2E2;">
+                                <div class="ie-analysis-icon">{ie_icon_svg("down")}</div>
+                                <div>
+                                    <div class="ie-analysis-label">Mayores egresos</div>
+                                    <div class="ie-analysis-sub">{top_egreso_label}</div>
+                                </div>
+                                <div class="ie-analysis-value">-{fmt_clp_largo(top_egreso_val)}</div>
+                            </div>
+                            <div class="ie-analysis-row" style="--accent:#2563EB;--soft:#DBEAFE;">
+                                <div class="ie-analysis-icon">{ie_icon_svg("equal")}</div>
+                                <div>
+                                    <div class="ie-analysis-label">Resultado neto del período</div>
+                                    <div class="ie-analysis-sub">{'Superávit' if total_neto >= 0 else 'Déficit'} operacional</div>
+                                </div>
+                                <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
+                            </div>
+                            <div class="ie-analysis-row" style="--accent:#B7791F;--soft:#FEF3C7;">
+                                <div class="ie-analysis-icon">{ie_icon_svg("percent")}</div>
+                                <div>
+                                    <div class="ie-analysis-label">Tendencia</div>
+                                    <div class="ie-analysis-sub">{tendencia_txt}</div>
+                                </div>
+                                <div class="ie-risk-pill" style="background:{tendencia_bg};color:{tendencia_fg};">{tendencia_estado}</div>
+                            </div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
             st.markdown(
                 """
-                <div class="neto-note">
+                <div class="ie-guide-note">
                     <span>ⓘ</span>
-                    <div>El neto financiero considera la clasificación financiera de los movimientos.<br>
-                    El neto contable considera la clasificación contable de los movimientos.</div>
+                    <div>Colores guía: Ingresos (verde) · Egresos (coral) · Neto (azul) · Neto acumulado (naranja) · Margen neto (gris punteado).</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-    st.markdown("---")
-    st.markdown(
-        """
-        <style>
-        .risk-pro-title-row {
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-start;
-            gap:16px;
-            margin:8px 0 8px 0;
-        }
-        .risk-pro-title {
-            color:#081735;
-            font-size:22px;
-            line-height:1.05;
-            font-weight:950;
-            letter-spacing:-0.025em;
-        }
-        .risk-pro-subtitle {
-            margin-top:7px;
-            color:#475569;
-            font-size:14px;
-            line-height:1.25;
-            font-weight:650;
-        }
-        .risk-pro-actions {
-            display:flex;
-            gap:9px;
-            align-items:center;
-        }
-        .risk-pro-action {
-            min-height:32px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            border-radius:8px;
-            border:1px solid #dbe3ee;
-            background:#ffffff;
-            color:#0f1f3d;
-            padding:0 11px;
-            font-size:11px;
-            font-weight:850;
-            box-shadow:0 8px 16px rgba(15,23,42,0.035);
-        }
-        .risk-pro-action-primary {
-            background:#0B3A86;
-            border-color:#0B3A86;
-            color:#ffffff;
-        }
-        .risk-filter-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
-            background:#ffffff;
-            padding:10px 14px 8px 14px;
-            margin:0 0 10px 0;
-            box-shadow:0 8px 18px rgba(15,23,42,0.035);
-        }
-        .risk-filter-title {
-            color:#081735;
-            font-size:14px;
-            font-weight:950;
-            margin-bottom:6px;
-        }
-        .risk-pro-kpi {
-            min-height:78px;
-            border:1px solid var(--border);
-            border-radius:10px;
-            background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-            padding:9px 10px;
-            display:grid;
-            grid-template-columns:32px 1fr;
-            gap:8px;
-            box-shadow:0 8px 18px rgba(15,23,42,0.035);
-        }
-        .risk-pro-kpi-icon {
-            width:28px;
-            height:28px;
-            border-radius:999px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:var(--halo);
-            color:var(--accent);
-            font-size:14px;
-            font-weight:950;
-        }
-        .risk-pro-kpi-title {
-            color:#0f1f3d;
-            font-size:9.5px;
-            line-height:1.15;
-            font-weight:950;
-            text-transform:uppercase;
-            letter-spacing:.012em;
-        }
-        .risk-pro-kpi-value {
-            margin-top:4px;
-            color:var(--accent);
-            font-size:17px;
-            line-height:1;
-            font-weight:950;
-            letter-spacing:-0.03em;
-            white-space:nowrap;
-        }
-        .risk-pro-kpi-note {
-            margin-top:4px;
-            color:#64748b;
-            font-size:9px;
-            line-height:1.2;
-            font-weight:750;
-        }
-        .risk-chart-card {
-            border:1px solid #dbe3ee;
-            border-radius:10px;
-            background:#ffffff;
-            padding:10px 12px 10px 12px;
-            margin-top:8px;
-            box-shadow:0 8px 18px rgba(15,23,42,0.035);
-        }
-        .risk-note-card {
-            display:flex;
-            gap:9px;
-            align-items:flex-start;
-            border:1px solid #dbeafe;
-            background:#eff6ff;
-            color:#334155;
-            border-radius:8px;
-            padding:10px 12px;
-            font-size:12px;
-            font-weight:650;
-            margin-top:8px;
-        }
-        </style>
-        <div class="risk-pro-title-row">
-            <div>
-                <div class="risk-pro-title">⚠️ Riesgos de cobro y concentración de montos</div>
-                <div class="risk-pro-subtitle">Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza</div>
-            </div>
-            <div class="risk-pro-actions">
-                <div class="risk-pro-action risk-pro-action-primary">⇩ Descargar reporte</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<div class="risk-filter-card"><div class="risk-filter-title">Filtro por centro de costo / situación</div>',
-        unsafe_allow_html=True,
-    )
-
-    c_top1, c_top2, c_top3, c_top4 = st.columns([2, 1, 1, 1])
-    with c_top1:
-        dim = st.selectbox("Dimensión", ["Obs", "CC1", "Sit", "CC"], index=1, key="dim_pro")
-    with c_top2:
-        order_by = st.radio(
-            "Ordenar por",
-            ["Total CLP", "N° Transacciones"],
-            horizontal=True,
-            index=0,
-            key="order_by_pro",
-        )
-    with c_top3:
-        chart_type = st.selectbox(
-            "Visualización",
-            ["Barras", "Treemap"],
-            index=0,
-            key="chart_type_pro",
-        )
-    with c_top4:
-        top_n = st.slider(
-            "Top N",
-            min_value=5,
-            max_value=30,
-            value=12,
-            step=1,
-            key="topn_pro",
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    df_riesgos = df_ie_base_periodo.dropna(subset=["Monto"]).copy()
-    df_riesgos[dim] = df_riesgos[dim].astype(str).str.strip()
-    df_riesgos = df_riesgos[
-        df_riesgos[dim].notna()
-        & (df_riesgos[dim] != "")
-        & (df_riesgos[dim].str.upper() != "NAN")
-    ]
-    if df_riesgos.empty:
-        st.info(f"No se encuentran registros para {periodo_filtro_lbl} en análisis {tipo_analisis.lower()}.")
-        st.stop()
-
-    topN_raw = (
-        df_riesgos.groupby(dim)["Monto"]
-        .agg(["sum", "count"])
-        .rename(columns={"sum": "Total CLP", "count": "N° Transacciones"})
-        .reset_index()
-    )
-
-    sort_col = "Total CLP" if order_by == "Total CLP" else "N° Transacciones"
-    topN = topN_raw.sort_values(sort_col, ascending=False).head(top_n).copy()
-
-    def color_by_sign_or_cc(series_values, series_dim=None):
-        if series_dim == "CC":
-            return series_values.map(
-                {"INGRESO": CHART_TEAL, "EGRESO": CHART_RED}
-            ).fillna(CHART_DARK)
-        return series_values.apply(lambda v: CHART_TEAL if v >= 0 else CHART_RED)
-
-    if chart_type == "Barras":
-        top_keys = topN[dim].tolist()
-        df_dim = df_riesgos[df_riesgos[dim].isin(top_keys)].copy()
-        df_dim["CC"] = df_dim["CC"].astype(str).str.strip().str.upper()
-
-        agg_cc = (
-            df_dim.groupby([dim, "CC"], as_index=False)["Monto"]
-            .sum()
-        )
-
-        ingresos = agg_cc[agg_cc["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
-        egresos = agg_cc[agg_cc["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
-
-        base_dim = pd.DataFrame({dim: top_keys})
-        base_dim = base_dim.merge(ingresos[[dim, "Ingresos"]], on=dim, how="left")
-        base_dim = base_dim.merge(egresos[[dim, "Egresos"]], on=dim, how="left")
-        base_dim = base_dim.fillna(0)
-
-        base_dim["Egresos_abs"] = base_dim["Egresos"].abs()
-        base_dim["Neto"] = base_dim["Ingresos"] - base_dim["Egresos_abs"]
-        base_dim = base_dim.merge(topN[[dim, "Total CLP", "N° Transacciones"]], on=dim, how="left")
-        base_dim["Impacto_abs"] = base_dim["Ingresos"].abs() + base_dim["Egresos_abs"]
-        impacto_total = base_dim["Impacto_abs"].sum()
-        base_dim["Concentración"] = np.where(impacto_total != 0, base_dim["Impacto_abs"] / impacto_total, 0.0)
-        base_dim["Neto_color"] = np.where(base_dim["Neto"] >= 0, "#7EA9A2", "#EF524C")
-        base_dim["Neto_pos"] = base_dim["Neto"].clip(lower=0)
-        base_dim["Neto_neg"] = base_dim["Neto"].clip(upper=0)
-        base_dim["Tooltip"] = (
-            "Ingresos: $" + base_dim["Ingresos"].map(lambda v: f"{v:,.0f}")
-            + "<br>Egresos: $" + base_dim["Egresos_abs"].map(lambda v: f"{v:,.0f}")
-            + "<br>Neto: $" + base_dim["Neto"].map(lambda v: f"{v:,.0f}")
-            + "<br>Transacciones: " + base_dim["N° Transacciones"].fillna(0).astype(int).astype(str)
-            + "<br>Concentración: " + base_dim["Concentración"].map(lambda v: f"{v:.1%}")
-        )
-        total_neto_pos = float(base_dim["Neto_pos"].sum())
-        total_neto_neg = float(base_dim["Neto_neg"].sum())
-        total_neto_dim = float(base_dim["Neto"].sum())
-        total_tx_dim = int(base_dim["N° Transacciones"].fillna(0).sum())
-        neto_base_pct = abs(total_neto_pos) + abs(total_neto_neg)
-        periodo_card = (
-            pd.to_datetime(base["Periodo"]).max().strftime("%b %Y")
-            if "base" in locals() and not base.empty and periodo == "Mensual"
-            else periodo_filtro_lbl
-        )
-
-        def risk_pro_kpi(title, value, note, icon, accent, soft, halo, border):
-            return f"""
-            <div class="risk-pro-kpi" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};">
-                <div class="risk-pro-kpi-icon">{icon}</div>
-                <div>
-                    <div class="risk-pro-kpi-title">{title}</div>
-                    <div class="risk-pro-kpi-value">{value}</div>
-                    <div class="risk-pro-kpi-note">{note}</div>
-                </div>
-            </div>
-            """
-
-        rk1, rk2, rk3, rk4, rk5 = st.columns(5)
-        with rk1:
-            st.markdown(
-                risk_pro_kpi(
-                    "TOTAL INGRESOS (NETO)",
-                    fmt_clp_largo(total_neto_pos),
-                    f"{(total_neto_pos / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
-                    "↑",
-                    "#16A34A",
-                    "#f6fffb",
-                    "#dcfce7",
-                    "#cfe9de",
-                ),
-                unsafe_allow_html=True,
-            )
-        with rk2:
-            st.markdown(
-                risk_pro_kpi(
-                    "TOTAL EGRESOS (NETO)",
-                    fmt_clp_largo(total_neto_neg),
-                    f"{(abs(total_neto_neg) / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
-                    "↓",
-                    "#EF4444",
-                    "#fff7f7",
-                    "#fee2e2",
-                    "#f1caca",
-                ),
-                unsafe_allow_html=True,
-            )
-        with rk3:
-            st.markdown(
-                risk_pro_kpi(
-                    "NETO TOTAL",
-                    fmt_clp_largo(total_neto_dim),
-                    f"{(total_neto_dim / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
-                    "=",
-                    "#2563EB" if total_neto_dim >= 0 else "#EF4444",
-                    "#f6f9ff" if total_neto_dim >= 0 else "#fff7f7",
-                    "#dbeafe" if total_neto_dim >= 0 else "#fee2e2",
-                    "#d4e1f6" if total_neto_dim >= 0 else "#f1caca",
-                ),
-                unsafe_allow_html=True,
-            )
-        with rk4:
-            st.markdown(
-                risk_pro_kpi(
-                    "N° TRANSACCIONES",
-                    f"{total_tx_dim:,.0f}",
-                    "Registros en el período",
-                    "▥",
-                    "#0f2d52",
-                    "#ffffff",
-                    "#f1f5f9",
-                    "#e5ebf3",
-                ),
-                unsafe_allow_html=True,
-            )
-        with rk5:
-            st.markdown(
-                risk_pro_kpi(
-                    "PERÍODO",
-                    periodo_card,
-                    periodo_filtro_lbl,
-                    "▣",
-                    "#0f2d52",
-                    "#ffffff",
-                    "#f1f5f9",
-                    "#e5ebf3",
-                ),
-                unsafe_allow_html=True,
-            )
-
-        if order_by == "Total CLP":
-            base_dim = base_dim.sort_values("Impacto_abs", ascending=True)
-        else:
-            base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
-
-        view_metric_risk = st.radio(
-            "Vista",
-            ["Monto (CLP)", "% del neto"],
-            horizontal=True,
-            index=0,
-            key="risk_view_metric_pro",
-            label_visibility="collapsed",
-        )
-        if view_metric_risk == "% del neto":
-            denom_risk = neto_base_pct if neto_base_pct else 1.0
-            base_dim["X_pos"] = base_dim["Neto_pos"] / denom_risk
-            base_dim["X_neg"] = base_dim["Neto_neg"] / denom_risk
-            base_dim["X_neto"] = base_dim["Neto"] / denom_risk
-            x_title_risk = "% del neto"
-            x_tickformat_risk = ".0%"
-            x_tickprefix_risk = None
-        else:
-            base_dim["X_pos"] = base_dim["Neto_pos"]
-            base_dim["X_neg"] = base_dim["Neto_neg"]
-            base_dim["X_neto"] = base_dim["Neto"]
-            x_title_risk = "Monto CLP"
-            x_tickformat_risk = None
-            x_tickprefix_risk = "$"
-
-        fig_top = go.Figure()
-
-        fig_top.add_trace(
-            go.Scatter(
-                x=base_dim["X_neto"],
-                y=base_dim[dim],
-                mode="markers",
-                name="Resumen",
-                marker=dict(size=18, color="rgba(0,0,0,0)"),
-                showlegend=False,
-                customdata=base_dim[["Tooltip"]],
-                hovertemplate="<b>%{y}</b><br>%{customdata[0]}<extra></extra>",
-            )
-        )
-
-        fig_top.add_trace(
-            go.Bar(
-                x=base_dim["X_pos"],
-                y=base_dim[dim],
-                orientation="h",
-                name="Netos positivos (ingresos > egresos)",
-                marker=dict(color="rgba(126,169,162,0.88)", line=dict(color="rgba(126,169,162,0.88)", width=0)),
-                hoverinfo="skip",
-            )
-        )
-        fig_top.add_trace(
-            go.Bar(
-                x=base_dim["X_neg"],
-                y=base_dim[dim],
-                orientation="h",
-                name="Netos negativos (egresos > ingresos)",
-                marker=dict(color="rgba(239,82,76,0.90)", line=dict(color="rgba(239,82,76,0.90)", width=0)),
-                hoverinfo="skip",
-            )
-        )
-        fig_top.add_trace(
-            go.Scatter(
-                x=base_dim["X_neto"],
-                y=base_dim[dim],
-                mode="markers",
-                name="Neto",
-                marker=dict(
-                    size=14,
-                    color=base_dim["Neto_color"],
-                    line=dict(color="#FFFFFF", width=2),
-                    symbol="diamond",
-                ),
-                hoverinfo="skip",
-            )
-        )
-
-        max_abs_riesgo = max(
-            float(base_dim["X_pos"].abs().max()) if not base_dim.empty else 0.0,
-            float(base_dim["X_neg"].abs().max()) if not base_dim.empty else 0.0,
-            float(base_dim["X_neto"].abs().max()) if not base_dim.empty else 0.0,
-            1.0,
-        )
-        for _, row_risk in base_dim.iterrows():
-            if row_risk["X_neto"] == 0:
-                continue
-            fig_top.add_annotation(
-                x=row_risk["X_neto"],
-                y=row_risk[dim],
-                text=(f"{row_risk['X_neto']:.1%}" if view_metric_risk == "% del neto" else fmt_clp_largo(row_risk["Neto"])),
-                showarrow=False,
-                xshift=26 if row_risk["X_neto"] >= 0 else -26,
-                font=dict(size=10, color="#334155"),
-            )
-
-        fig_top.update_layout(
-            title=dict(
-                text=f"Exposición y concentración Top {top_n} por {dim} · {periodo_filtro_lbl} &nbsp; ⓘ",
-                x=0.02,
-                xanchor="left",
-                font=dict(size=17, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-            ),
-            template="plotly_white",
-            height=max(360, 26 * len(base_dim) + 130),
-            margin=dict(l=24, r=40, t=62, b=32),
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="left",
-                x=0.01,
-                bgcolor="rgba(255,255,255,0)",
-                font=dict(size=11, color="#334155"),
-            ),
-            hovermode="closest",
-            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
-            paper_bgcolor="#FFFFFF",
-            plot_bgcolor="#FFFFFF",
-            barmode="relative",
-        )
-        fig_top.add_vline(x=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75)
-        fig_top.update_xaxes(
-            title_text=x_title_risk,
-            showgrid=True,
-            gridcolor="#E8EEF6",
-            zeroline=False,
-            tickprefix=x_tickprefix_risk,
-            tickformat=x_tickformat_risk,
-            separatethousands=True,
-            range=[-max_abs_riesgo * 1.18, max_abs_riesgo * 1.18],
-            linecolor="#CBD5E1",
-            title_font=dict(size=12, color="#334155"),
-            tickfont=dict(size=11, color="#475569"),
-        )
-        fig_top.update_yaxes(
-            title_text=dim,
-            showgrid=False,
-            linecolor="#CBD5E1",
-            title_font=dict(size=12, color="#334155"),
-            tickfont=dict(size=11, color="#475569"),
-            automargin=True,
-        )
-
-        st.markdown('<div class="risk-chart-card">', unsafe_allow_html=True)
-        st.plotly_chart(
-            fig_top,
-            use_container_width=True,
-            config={
-                "displaylogo": False,
-                "displayModeBar": True,
-                "modeBarButtonsToAdd": ["toImage"],
-            },
-            key="riesgos_concentracion_pro",
-        )
-        st.markdown(
-            """
-            <div class="risk-note-card">
-                <span>ⓘ</span>
-                <div>Los montos netos se calculan como ingresos menos egresos. Haga clic en las barras para ver el detalle de movimientos por concepto.</div>
-            </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    else:
-        treemap_df = topN.copy()
-        treemap_df["Impacto_abs"] = treemap_df["Total CLP"].abs()
-        treemap_df["Neto_color"] = treemap_df["Total CLP"]
-        if dim == "CC":
-            color_col = dim
-            color_scale = None
-        else:
-            color_col = "Neto_color"
-            color_scale = [CHART_RED, CHART_GOLD, CHART_TEAL]
-
-        fig_tree = px.treemap(
-            treemap_df,
-            path=[dim],
-            values="Impacto_abs" if order_by == "Total CLP" else "N° Transacciones",
-            color=color_col,
-            color_continuous_scale=color_scale,
-            title=f"Concentración Top {top_n} por {dim} · {order_by} · {periodo_filtro_lbl}",
-        )
-        if dim == "CC":
-            fig_tree.update_traces(
-                marker_colors=color_by_sign_or_cc(
-                    treemap_df[dim], series_dim="CC"
+            resumen_periodo_rows = [
+                ("↑", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(total_ing), "100.0%"),
+                ("↓", "#DC2626", "#FEE2E2", "Total egresos", "Suma de egresos del período", fmt_clp_largo(total_egr), f"{(total_egr / total_ing if total_ing else 0):.1%}"),
+                ("=", "#2563EB" if total_neto >= 0 else "#DC2626", "#DBEAFE" if total_neto >= 0 else "#FEE2E2", "Total neto", "Ingresos menos egresos", fmt_clp_largo(total_neto), f"{total_margen:.1%}"),
+                ("Σ", "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626", "#DBEAFE" if total_neto_acumulado >= 0 else "#FEE2E2", "Neto acumulado", "Suma de Ingresos + Egresos sin incluir Abono", fmt_clp_largo(total_neto_acumulado), "-"),
+                ("%", "#B7791F" if total_margen >= 0 else "#DC2626", "#FEF3C7" if total_margen >= 0 else "#FEE2E2", "Margen neto", "Neto dividido por ingresos", f"{total_margen:.1%}", "-"),
+            ]
+            resumen_periodo_html = "".join(
+                (
+                    f'<div class="ie-summary-row" style="--accent:{accent};--soft:{soft};">'
+                    f'<div class="ie-summary-icon">{icon}</div>'
+                    f'<div><div class="ie-summary-label">{label}</div><div class="ie-summary-desc">{desc}</div></div>'
+                    f'<div class="ie-summary-value">{value}<div class="ie-summary-pct">{pct}</div></div>'
+                    f'</div>'
                 )
+                for icon, accent, soft, label, desc, value, pct in resumen_periodo_rows
             )
-        fig_tree.update_traces(
-            hovertemplate="<b>%{label}</b><br>Impacto: $%{value:,.0f}<extra></extra>",
-            textinfo="label+percent entry",
-            textfont=dict(size=12),
-        )
-        fig_tree.update_layout(
-            margin=dict(l=0, r=0, t=72, b=0),
-            template="plotly_white",
-            paper_bgcolor="#F8FAFC",
-            plot_bgcolor="#FFFFFF",
-            title=dict(
-                x=0.01,
-                xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
-            ),
-        )
-        st.plotly_chart(
-            fig_tree,
-            use_container_width=True,
-            config={
-                "displaylogo": False,
-                "displayModeBar": True,
-                "modeBarButtonsToAdd": ["toImage"],
-            },
-        )
 
-    st.caption(f"Nota: este gráfico usa análisis {tipo_analisis.lower()} y el período seleccionado arriba: {periodo_filtro_lbl}.")
-
-    st.markdown("---")
-    st.markdown(
-        section_heading("⚠️", "Detalle filtrable de movimientos", weight_class="section-heading-title-soft"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        """
-        <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin: 8px 0 10px 0;
-            color: #FFFFFF;
-            font-size: 13px;
-            font-weight: 600;">
-            Monitoreo detallado por filtros · CC1, OBS y Responsable
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.caption("Filtra por CC1, OBS y Responsable para revisar el detalle al final de esta pestaña.")
-
-    df_det = df_ie.copy().dropna(subset=["Monto"]).copy()
-    for c in ["CC1", "Obs", "Responsable"]:
-        df_det[c] = df_det[c].astype(str).str.strip()
-
-    buscador_cols = [
-        c for c in ["Responsable", "CC1", "Obs", "Sit", "CC", "Esp", "Fecha", "Año", "Mes", "Monto"]
-        if c in df_det.columns
-    ]
-    busqueda_det = st.text_input(
-        "Buscador inteligente",
-        value="",
-        placeholder="Buscar por responsable, OBS, CC1, situación, monto, fecha...",
-        key="det_buscador_inteligente",
-    ).strip()
-
-    df_det_search = df_det.copy()
-    search_blob = pd.Series("", index=df_det_search.index, dtype="object")
-    for c in buscador_cols:
-        if c == "Fecha":
-            search_piece = pd.to_datetime(df_det_search[c], errors="coerce").dt.strftime("%Y-%m-%d").fillna("")
-        else:
-            search_piece = df_det_search[c].astype(str).fillna("")
-        search_blob = search_blob + " " + search_piece
-    search_blob = search_blob.str.lower()
-
-    if busqueda_det:
-        terms = [t.lower() for t in busqueda_det.split() if t.strip()]
-        mask_busqueda = pd.Series(True, index=df_det_search.index)
-        for term in terms:
-            mask_busqueda &= search_blob.str.contains(term, regex=False, na=False)
-        df_det_search = df_det_search[mask_busqueda]
-
-        resumen_busqueda_items = []
-        for c in ["Responsable", "CC1", "Obs", "Sit", "CC"]:
-            if c not in df_det_search.columns:
-                continue
-            vals = (
-                df_det_search[c]
-                .astype(str)
-                .str.strip()
-                .replace("", pd.NA)
-                .dropna()
-                .drop_duplicates()
-                .head(25)
-                .tolist()
-            )
-            if vals:
-                resumen_busqueda_items.append(f"{c}: {', '.join(vals[:6])}")
-        resumen_busqueda = " · ".join(resumen_busqueda_items) if resumen_busqueda_items else "Sin coincidencias nominales."
-        st.caption(f"Coincidencias para '{busqueda_det}': {len(df_det_search):,} registros · {resumen_busqueda}".replace(",", "."))
-
-    d1, d2, d3, d4, d5 = st.columns([1, 1, 1, 1, 1])
-    with d1:
-        cc1_opts = ["Todos"] + sorted([v for v in df_det_search["CC1"].dropna().unique().tolist() if v != ""])
-        sel_cc1_det = st.selectbox("CC1", cc1_opts, index=0, key="det_cc1")
-
-    df_det_f = df_det_search.copy()
-    if sel_cc1_det != "Todos":
-        df_det_f = df_det_f[df_det_f["CC1"] == sel_cc1_det]
-
-    with d2:
-        obs_opts = ["Todos"] + sorted([v for v in df_det_f["Obs"].dropna().unique().tolist() if v != ""])
-        sel_obs_det = st.selectbox("OBS", obs_opts, index=0, key="det_obs")
-    if sel_obs_det != "Todos":
-        df_det_f = df_det_f[df_det_f["Obs"] == sel_obs_det]
-
-    with d3:
-        resp_opts = ["Todos"] + sorted([v for v in df_det_f["Responsable"].dropna().unique().tolist() if v != ""])
-        sel_resp_det = st.selectbox("Responsable", resp_opts, index=0, key="det_resp")
-    if sel_resp_det != "Todos":
-        df_det_f = df_det_f[df_det_f["Responsable"] == sel_resp_det]
-
-    with d4:
-        anio_vals = pd.to_numeric(df_det_f["Año_sel"], errors="coerce").dropna().astype(int).unique().tolist()
-        anio_opts = ["Todos"] + [str(y) for y in sorted(anio_vals)]
-        sel_anio_det = st.selectbox("Año", anio_opts, index=0, key="det_anio")
-    if sel_anio_det != "Todos":
-        df_det_f = df_det_f[pd.to_numeric(df_det_f["Año_sel"], errors="coerce").astype("Int64") == int(sel_anio_det)]
-
-    with d5:
-        if "Mes_sel" in df_det_f.columns:
-            mes_vals = pd.to_numeric(df_det_f["Mes_sel"], errors="coerce").dropna().astype(int).unique().tolist()
-            mes_opts = ["Todos"] + sorted(mes_vals)
-        else:
-            mes_opts = ["Todos"]
-        sel_mes_det = st.selectbox("Mes", mes_opts, index=0, key="det_mes")
-    if sel_mes_det != "Todos" and "Mes_sel" in df_det_f.columns:
-        df_det_f = df_det_f[pd.to_numeric(df_det_f["Mes_sel"], errors="coerce").astype("Int64") == int(sel_mes_det)]
-
-    # KPIs de detalle (debajo de selectores)
-    sit_det = df_det_f["Sit"].astype(str).str.strip().str.upper() if "Sit" in df_det_f.columns else pd.Series([], dtype=str)
-    monto_total_det = float(df_det_f["Monto"].sum()) if not df_det_f.empty else 0.0
-    monto_por_pagar_det = abs(float(df_det_f.loc[sit_det == "NO PAGADO", "Monto"].sum())) if not df_det_f.empty else 0.0
-    monto_pagado_det = abs(float(df_det_f.loc[sit_det == "PAGADO", "Monto"].sum())) if not df_det_f.empty else 0.0
-    monto_abonos_det = float(
-        df_det_f.loc[df_det_f["Obs"].astype(str).str.contains("abono", case=False, na=False), "Monto"].abs().sum()
-    ) if not df_det_f.empty else 0.0
-
-    resumen_obs_export = pd.DataFrame()
-    grafico_obs_export = pd.DataFrame()
-    if "Obs" in df_det_f.columns and not df_det_f.empty:
-        resumen_obs = df_det_f.copy()
-        resumen_obs["Obs_resumen"] = resumen_obs["Obs"].astype(str).str.strip().replace("", "Sin OBS")
-        resumen_obs["Sit_resumen"] = resumen_obs["Sit"].astype(str).str.strip().str.upper() if "Sit" in resumen_obs.columns else ""
-        resumen_obs["Monto_pagado_obs"] = np.where(resumen_obs["Sit_resumen"].eq("PAGADO"), resumen_obs["Monto"], 0.0)
-        resumen_obs["Monto_no_pagado_obs"] = np.where(resumen_obs["Sit_resumen"].eq("NO PAGADO"), resumen_obs["Monto"], 0.0)
-        mask_abono_obs_det = (
-            resumen_obs["Sit_resumen"].str.startswith("ABONO") |
-            resumen_obs["Obs_resumen"].astype(str).str.contains("abono", case=False, na=False)
-        )
-        resumen_obs["Monto_abono_obs"] = np.where(mask_abono_obs_det, resumen_obs["Monto"], 0.0)
-        resumen_obs_tbl = (
-            resumen_obs.groupby("Obs_resumen", dropna=False)
-            .agg(
-                Registros=("Monto", "size"),
-                Pagado=("Monto_pagado_obs", "sum"),
-                **{"No pagado": ("Monto_no_pagado_obs", "sum")},
-                Abono=("Monto_abono_obs", "sum"),
-            )
-            .reset_index()
-            .rename(columns={"Obs_resumen": "OBS"})
-        )
-        resumen_obs_tbl["RESULTADO"] = resumen_obs_tbl["Pagado"] + resumen_obs_tbl["No pagado"]
-        resumen_obs_tbl["Deuda a la fecha"] = np.where(
-            (resumen_obs_tbl["Pagado"] < 0) & (resumen_obs_tbl["No pagado"] < 0),
-            resumen_obs_tbl["No pagado"] + resumen_obs_tbl["Abono"],
-            np.where(
-                resumen_obs_tbl["Pagado"] < 0,
-                resumen_obs_tbl["Pagado"] + resumen_obs_tbl["Abono"],
-                resumen_obs_tbl["No pagado"] - resumen_obs_tbl["Abono"],
-            ),
-        )
-        resumen_obs_tbl = (
-            resumen_obs_tbl.sort_values("Pagado", ascending=True)
-            .reset_index(drop=True)
-        )
-        if not resumen_obs_tbl.empty:
-            mostrar_fila_total_obs = len(resumen_obs_tbl) > 1
-            if mostrar_fila_total_obs:
-                resumen_obs_tbl = pd.concat(
-                    [
-                        resumen_obs_tbl,
-                        pd.DataFrame(
-                            [
-                                {
-                                    "OBS": "TOTAL TABLA (FILTRO)",
-                                    "Registros": len(resumen_obs),
-                                    "Pagado": resumen_obs["Monto_pagado_obs"].sum(),
-                                    "No pagado": resumen_obs["Monto_no_pagado_obs"].sum(),
-                                    "RESULTADO": resumen_obs["Monto_pagado_obs"].sum() + resumen_obs["Monto_no_pagado_obs"].sum(),
-                                    "Abono": resumen_obs["Monto_abono_obs"].sum(),
-                                    "Deuda a la fecha": (
-                                        resumen_obs["Monto_no_pagado_obs"].sum() + resumen_obs["Monto_abono_obs"].sum()
-                                        if resumen_obs["Monto_pagado_obs"].sum() < 0 and resumen_obs["Monto_no_pagado_obs"].sum() < 0
-                                        else (
-                                            resumen_obs["Monto_pagado_obs"].sum() + resumen_obs["Monto_abono_obs"].sum()
-                                            if resumen_obs["Monto_pagado_obs"].sum() < 0
-                                            else resumen_obs["Monto_no_pagado_obs"].sum() - resumen_obs["Monto_abono_obs"].sum()
-                                        )
-                                    ),
-                                }
-                            ]
-                        ),
-                    ],
-                    ignore_index=True,
+            bottom_1, bottom_2, bottom_3 = st.columns([1.15, 1.1, 1.15])
+            with bottom_1:
+                st.markdown(
+                    f"""
+                    <div class="ie-bottom-card">
+                        <div class="ie-bottom-title">Resumen del período</div>
+                        <div class="ie-summary-list">{resumen_periodo_html}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
                 )
-            resumen_obs_export = resumen_obs_tbl.copy()
-            resumen_obs_items = []
-            for _, row in resumen_obs_tbl.iterrows():
-                resumen_obs_items.append(
-                    {
-                        "label": escape(str(row["OBS"])),
-                        "meta": f'{int(row["Registros"]):,} registros'.replace(",", "."),
-                        "pagado": fmt_clp_largo(float(row["Pagado"])),
-                        "no_pagado": fmt_clp_largo(float(row["No pagado"])),
-                        "resultado": fmt_clp_largo(float(row["RESULTADO"])),
-                        "abono": fmt_clp_largo(float(row["Abono"])),
-                        "pendiente_deuda": fmt_clp_largo(float(row["Deuda a la fecha"])),
-                    }
+            with bottom_2:
+                fig_acum_small = go.Figure()
+                fig_acum_small.add_trace(
+                    go.Scatter(
+                        x=base["Periodo"],
+                        y=base["Neto_acumulado"],
+                        mode="lines+markers",
+                        name="Neto acumulado",
+                        line=dict(color="#EF4444" if total_neto_acumulado < 0 else "#059669", width=2.4),
+                        marker=dict(size=5, color="#EF4444" if total_neto_acumulado < 0 else "#059669"),
+                        fill="tozeroy",
+                        fillcolor="rgba(239,68,68,0.10)" if total_neto_acumulado < 0 else "rgba(5,150,105,0.10)",
+                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado: $%{y:,.0f}<extra></extra>",
+                    )
                 )
-            st.markdown(
-                '<div class="kpi-summary-compact">'
-                + kpi_resumen_obs_panel(
-                    "Resumen de montos por OBS",
-                    "Montos agrupados según los filtros activos del detalle",
-                    resumen_obs_items,
+                fig_acum_small.update_layout(
+                    title=dict(text="Evolución del neto acumulado", x=0.02, font=dict(size=15, color="#081735")),
+                    template="plotly_white",
+                    height=310,
+                    margin=dict(l=12, r=12, t=42, b=22),
+                    paper_bgcolor="#FFFFFF",
+                    plot_bgcolor="#FFFFFF",
+                    showlegend=False,
                 )
-                + "</div>",
-                unsafe_allow_html=True,
-            )
+                fig_acum_small.update_xaxes(showgrid=False, tickformat=("%b %Y" if periodo == "Mensual" else "%Y"))
+                fig_acum_small.update_yaxes(tickprefix="$", separatethousands=True, gridcolor="#E5EAF2")
+                st.plotly_chart(
+                    fig_acum_small,
+                    use_container_width=True,
+                    config={"displaylogo": False, "displayModeBar": False},
+                    key="ing_eg_neto_acumulado_bottom",
+                )
+            with bottom_3:
+                egresos_comp = (
+                    _df[_df["CC_norm"] == "EGRESO"]
+                    .assign(CC1_clean=lambda d: d["CC1_text"].astype(str).str.strip().replace("", "Sin clasificar"))
+                    .groupby("CC1_clean", as_index=False)["Monto"]
+                    .sum()
+                )
+                egresos_comp["Monto_abs"] = egresos_comp["Monto"].abs()
+                egresos_comp = egresos_comp.sort_values("Monto_abs", ascending=False).head(5)
+                if egresos_comp.empty:
+                    st.info("No hay egresos para componer en el período.")
+                else:
+                    fig_donut = go.Figure(
+                        go.Pie(
+                            labels=egresos_comp["CC1_clean"],
+                            values=egresos_comp["Monto_abs"],
+                            hole=0.58,
+                            marker=dict(colors=["#3B82F6", "#EF4444", "#F59E0B", "#64748B", "#A78BFA"]),
+                            textinfo="none",
+                            hovertemplate="<b>%{label}</b><br>$%{value:,.0f}<br>%{percent}<extra></extra>",
+                        )
+                    )
+                    fig_donut.add_annotation(
+                        text=f"{fmt_short(total_egr)}<br><span style='font-size:11px'>Total egresos</span>",
+                        x=0.5,
+                        y=0.5,
+                        showarrow=False,
+                        font=dict(size=18, color="#081735"),
+                    )
+                    fig_donut.update_layout(
+                        title=dict(text="Composición de egresos del período", x=0.02, font=dict(size=15, color="#081735")),
+                        height=310,
+                        margin=dict(l=4, r=4, t=42, b=8),
+                        paper_bgcolor="#FFFFFF",
+                        legend=dict(orientation="v", x=0.74, y=0.5, font=dict(size=10)),
+                    )
+                    st.plotly_chart(
+                        fig_donut,
+                        use_container_width=True,
+                        config={"displaylogo": False, "displayModeBar": False},
+                        key="ing_eg_donut_egresos_bottom",
+                    )
 
-            chart_obs = resumen_obs.copy()
-            chart_obs["Año_chart"] = pd.to_numeric(chart_obs.get("Año_sel"), errors="coerce")
-            chart_obs["Mes_chart"] = pd.to_numeric(chart_obs.get("Mes_sel"), errors="coerce")
-            chart_obs = chart_obs.dropna(subset=["Año_chart", "Mes_chart", "Monto"])
-            if not chart_obs.empty:
-                chart_obs["Periodo_chart"] = pd.to_datetime(
-                    dict(
-                        year=chart_obs["Año_chart"].astype(int),
-                        month=chart_obs["Mes_chart"].astype(int),
-                        day=1,
+            def build_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
+                if modo == "Contable":
+                    anio_col = "Año_sel_contable"
+                    mes_col = "Mes_sel_contable"
+                    periodo_col = "Periodo_ref_contable"
+                else:
+                    anio_col = "Año_sel"
+                    mes_col = "Mes_sel"
+                    periodo_col = "Periodo_ref"
+
+                df_cmp = df_src.dropna(subset=["Monto"]).copy()
+                df_cmp = df_cmp[df_cmp["CC_norm"].isin(["INGRESO", "EGRESO"])]
+                df_cmp = df_cmp[df_cmp["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
+                if periodo == "Mensual":
+                    df_cmp = df_cmp.dropna(subset=[periodo_col])
+                    df_cmp["Periodo"] = df_cmp[periodo_col]
+                else:
+                    df_cmp = df_cmp.dropna(subset=[anio_col])
+                    df_cmp["Periodo"] = pd.to_datetime(
+                        dict(year=df_cmp[anio_col].astype(int), month=1, day=1),
+                        errors="coerce",
+                    )
+
+                df_cmp["Periodo"] = pd.to_datetime(df_cmp["Periodo"], errors="coerce")
+                df_cmp = df_cmp.dropna(subset=["Periodo"])
+                if df_cmp.empty:
+                    return pd.DataFrame(columns=["Periodo", modo, f"{modo} acumulado"])
+
+                agg_cmp = (
+                    df_cmp.groupby(["Periodo", "CC_norm"], as_index=False)["Monto"]
+                    .sum()
+                    .sort_values("Periodo")
+                )
+                ingresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+                egresos_cmp = agg_cmp[agg_cmp["CC_norm"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+                base_cmp = pd.DataFrame({"Periodo": sorted(agg_cmp["Periodo"].dropna().unique())})
+                base_cmp["Periodo"] = pd.to_datetime(base_cmp["Periodo"], errors="coerce")
+                base_cmp = base_cmp.merge(ingresos_cmp[["Periodo", "Ingresos"]], on="Periodo", how="left")
+                base_cmp = base_cmp.merge(egresos_cmp[["Periodo", "Egresos"]], on="Periodo", how="left")
+                base_cmp = base_cmp.fillna(0).sort_values("Periodo")
+                base_cmp[modo] = base_cmp["Ingresos"] - base_cmp["Egresos"].abs()
+                base_cmp[f"{modo} acumulado"] = base_cmp[modo].cumsum()
+
+                if sel_year != "Todos":
+                    base_cmp = base_cmp[base_cmp["Periodo"].dt.year == int(sel_year)]
+                if sel_month != "Todos" and periodo == "Mensual":
+                    base_cmp = base_cmp[base_cmp["Periodo"].dt.month == int(sel_month)]
+
+                return base_cmp[["Periodo", modo, f"{modo} acumulado"]]
+
+            neto_financiero = build_neto_comparativo(df_f, "Financiero")
+            neto_contable = build_neto_comparativo(df_f, "Contable")
+            neto_cmp = neto_financiero.merge(neto_contable, on="Periodo", how="outer").sort_values("Periodo")
+
+            if neto_cmp.empty:
+                st.info(f"No se encuentran registros para comparar neto financiero y contable en {periodo_filtro_lbl}.")
+            else:
+                neto_cmp = neto_cmp.fillna(0)
+                st.markdown(
+                    f"""
+                    <div class="neto-chart-card">
+                        <div class="neto-card-head">
+                            <div>
+                                <div class="neto-card-title">Neto financiero vs neto contable — {periodo} · {periodo_filtro_lbl} ⓘ</div>
+                                <div class="neto-card-sub">Evolución mensual del resultado neto (ingresos menos egresos)</div>
+                            </div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                ctrl_1, ctrl_2, ctrl_3, ctrl_4 = st.columns([1.35, 1.35, 1.6, 0.3])
+                with ctrl_1:
+                    vista_neto_cmp = st.selectbox(
+                        "Visualizar",
+                        ["Neto", "Neto acumulado", "Ambos"],
+                        index=0,
+                        key="vista_neto_fin_cont",
+                    )
+                with ctrl_2:
+                    tipo_grafico_neto = st.selectbox(
+                        "Tipo de gráfico",
+                        ["Línea", "Área"],
+                        index=0,
+                        key="tipo_grafico_neto_fin_cont",
+                    )
+                with ctrl_3:
+                    rango_neto_cmp = st.selectbox(
+                        "Rango",
+                        ["Todos los períodos", "Últimos 12 meses", "Últimos 24 meses"],
+                        index=0,
+                        key="rango_neto_fin_cont",
+                    )
+                with ctrl_4:
+                    st.markdown(
+                        "<div style='height:38px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#081735;font-weight:900;background:#fff;margin-top:25px;'>⋮</div>",
+                        unsafe_allow_html=True,
+                    )
+
+                neto_plot = neto_cmp.copy()
+                if rango_neto_cmp != "Todos los períodos" and not neto_plot.empty:
+                    meses_rango = 11 if rango_neto_cmp == "Últimos 12 meses" else 23
+                    max_periodo_cmp = pd.to_datetime(neto_plot["Periodo"]).max()
+                    min_periodo_cmp = pd.to_datetime(neto_plot["Periodo"]).min()
+                    inicio_rango_cmp = max(max_periodo_cmp - pd.DateOffset(months=meses_rango), min_periodo_cmp)
+                    neto_plot = neto_plot[neto_plot["Periodo"].between(inicio_rango_cmp, max_periodo_cmp)]
+
+                metric_source = neto_plot if not neto_plot.empty else neto_cmp
+                fin_avg = float(metric_source["Financiero"].mean()) if "Financiero" in metric_source else 0.0
+                con_avg = float(metric_source["Contable"].mean()) if "Contable" in metric_source else 0.0
+                if not metric_source.empty and "Financiero" in metric_source:
+                    best_row = metric_source.loc[metric_source["Financiero"].idxmax()]
+                    worst_row = metric_source.loc[metric_source["Financiero"].idxmin()]
+                    best_val = float(best_row["Financiero"])
+                    worst_val = float(worst_row["Financiero"])
+                    best_lbl = pd.to_datetime(best_row["Periodo"]).strftime("%b %Y")
+                    worst_lbl = pd.to_datetime(worst_row["Periodo"]).strftime("%b %Y")
+                else:
+                    best_val = worst_val = 0.0
+                    best_lbl = worst_lbl = "-"
+
+                st.markdown(
+                    f"""
+                    <div class="neto-kpi-grid">
+                        <div class="neto-kpi-box" style="--metric:{'#059669' if fin_avg >= 0 else '#EF4444'};">
+                            <div class="neto-kpi-label">Promedio neto financiero</div>
+                            <div class="neto-kpi-value">{fmt_clp_largo(fin_avg)}</div>
+                        </div>
+                        <div class="neto-kpi-box" style="--metric:{'#059669' if con_avg >= 0 else '#EF4444'};">
+                            <div class="neto-kpi-label">Promedio neto contable</div>
+                            <div class="neto-kpi-value">{fmt_clp_largo(con_avg)}</div>
+                        </div>
+                        <div class="neto-kpi-box" style="--metric:#059669;">
+                            <div class="neto-kpi-label">Mejor mes (financiero)</div>
+                            <div class="neto-kpi-value">{fmt_clp_largo(best_val)}</div>
+                            <div class="neto-kpi-note">{best_lbl}</div>
+                        </div>
+                        <div class="neto-kpi-box" style="--metric:#EF4444;">
+                            <div class="neto-kpi-label">Peor mes (financiero)</div>
+                            <div class="neto-kpi-value">{fmt_clp_largo(worst_val)}</div>
+                            <div class="neto-kpi-note">{worst_lbl}</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                fig_neto_cmp = go.Figure()
+                fill_fin = "tozeroy" if tipo_grafico_neto == "Área" else None
+                fill_con = "tozeroy" if tipo_grafico_neto == "Área" else None
+
+                if vista_neto_cmp in ["Neto", "Ambos"]:
+                    fig_neto_cmp.add_trace(
+                        go.Scatter(
+                            x=neto_plot["Periodo"],
+                            y=neto_plot["Financiero"],
+                            mode="lines+markers",
+                            name="Neto financiero",
+                            line=dict(color="#1257FF", width=3.0, shape="spline"),
+                            marker=dict(size=7, color="#1257FF", line=dict(color="#FFFFFF", width=1.4)),
+                            fill=fill_fin,
+                            fillcolor="rgba(18,87,255,0.08)",
+                            hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
+                        )
+                    )
+                    fig_neto_cmp.add_trace(
+                        go.Scatter(
+                            x=neto_plot["Periodo"],
+                            y=neto_plot["Contable"],
+                            mode="lines+markers",
+                            name="Neto contable",
+                            line=dict(color="#FF7A1A", width=2.8, dash="dot", shape="spline"),
+                            marker=dict(size=7, color="#FF7A1A", line=dict(color="#FFFFFF", width=1.4)),
+                            fill=fill_con,
+                            fillcolor="rgba(255,122,26,0.07)",
+                            hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
+                        )
+                    )
+
+                if vista_neto_cmp in ["Neto acumulado", "Ambos"]:
+                    fig_neto_cmp.add_trace(
+                        go.Scatter(
+                            x=neto_plot["Periodo"],
+                            y=neto_plot["Financiero acumulado"],
+                            mode="lines+markers",
+                            name="Neto acumulado financiero",
+                            line=dict(color="#0F766E", width=3.0, dash="dash", shape="spline"),
+                            marker=dict(size=7, color="#0F766E", line=dict(color="#FFFFFF", width=1.4)),
+                            hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado financiero: $%{y:,.0f}<extra></extra>",
+                        )
+                    )
+                    fig_neto_cmp.add_trace(
+                        go.Scatter(
+                            x=neto_plot["Periodo"],
+                            y=neto_plot["Contable acumulado"],
+                            mode="lines+markers",
+                            name="Neto acumulado contable",
+                            line=dict(color="#B91C1C", width=3.0, dash="dashdot", shape="spline"),
+                            marker=dict(size=7, color="#B91C1C", line=dict(color="#FFFFFF", width=1.4)),
+                            hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado contable: $%{y:,.0f}<extra></extra>",
+                        )
+                    )
+                fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75)
+                if not neto_plot.empty and vista_neto_cmp in ["Neto", "Ambos"]:
+                    last_row_cmp = neto_plot.iloc[-1]
+                    fig_neto_cmp.add_annotation(
+                        x=last_row_cmp["Periodo"],
+                        y=last_row_cmp["Financiero"],
+                        text=fmt_clp_largo(float(last_row_cmp["Financiero"])),
+                        showarrow=False,
+                        xshift=46,
+                        bgcolor="#EFF6FF",
+                        bordercolor="#DBEAFE",
+                        borderwidth=1,
+                        font=dict(size=11, color="#1257FF"),
+                    )
+                    fig_neto_cmp.add_annotation(
+                        x=last_row_cmp["Periodo"],
+                        y=last_row_cmp["Contable"],
+                        text=fmt_clp_largo(float(last_row_cmp["Contable"])),
+                        showarrow=False,
+                        xshift=46,
+                        bgcolor="#FFF7ED",
+                        bordercolor="#FED7AA",
+                        borderwidth=1,
+                        font=dict(size=11, color="#EA580C"),
+                    )
+                fig_neto_cmp.update_layout(
+                    title=None,
+                    font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
+                    template="plotly_white",
+                    height=500,
+                    margin=dict(l=30, r=58, t=44, b=42),
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=1.05,
+                        xanchor="left",
+                        x=0.01,
+                        bgcolor="rgba(255,255,255,0)",
+                        font=dict(size=11, color="#334155"),
                     ),
-                    errors="coerce",
+                    hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=12, color="#0F172A")),
+                    hovermode="x unified",
+                    paper_bgcolor="#FFFFFF",
+                    plot_bgcolor="#FFFFFF",
                 )
-                chart_obs = chart_obs.dropna(subset=["Periodo_chart"])
+                fig_neto_cmp.update_xaxes(
+                    title_text=label_x,
+                    showgrid=False,
+                    tickformat=("%b %Y" if periodo == "Mensual" else "%Y"),
+                    linecolor="#CBD5E1",
+                    title_font=dict(size=12, color="#334155"),
+                    tickfont=dict(size=11, color="#475569"),
+                    rangeslider=dict(visible=True, thickness=0.07, bgcolor="#F1F5F9", bordercolor="#E2E8F0", borderwidth=1),
+                )
+                fig_neto_cmp.update_yaxes(
+                    title_text="Neto CLP",
+                    showgrid=True,
+                    gridcolor="#E5EAF2",
+                    zeroline=False,
+                    tickprefix="$",
+                    separatethousands=True,
+                    linecolor="#CBD5E1",
+                    title_font=dict(size=12, color="#334155"),
+                    tickfont=dict(size=11, color="#475569"),
+                )
+                st.plotly_chart(
+                    fig_neto_cmp,
+                    use_container_width=True,
+                    config={"displaylogo": False, "displayModeBar": True, "modeBarButtonsToAdd": ["toImage"]},
+                    key="neto_fin_cont_pro",
+                )
+                st.markdown(
+                    """
+                    <div class="neto-note">
+                        <span>ⓘ</span>
+                        <div>El neto financiero considera la clasificación financiera de los movimientos.<br>
+                        El neto contable considera la clasificación contable de los movimientos.</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-            if not chart_obs.empty:
-                chart_periodo = (
-                    chart_obs.groupby("Periodo_chart", as_index=False)
+        st.markdown("---")
+        @st.fragment
+        def render_riesgos_cobro_concentracion():
+            st.markdown(
+                """
+                <style>
+                .risk-pro-title-row {
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:16px;
+                    margin:8px 0 8px 0;
+                }
+                .risk-pro-title {
+                    color:#081735;
+                    font-size:22px;
+                    line-height:1.05;
+                    font-weight:950;
+                    letter-spacing:-0.025em;
+                }
+                .risk-pro-subtitle {
+                    margin-top:7px;
+                    color:#475569;
+                    font-size:14px;
+                    line-height:1.25;
+                    font-weight:650;
+                }
+                .risk-pro-actions {
+                    display:flex;
+                    gap:9px;
+                    align-items:center;
+                }
+                .risk-pro-action {
+                    min-height:32px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:8px;
+                    border:1px solid #dbe3ee;
+                    background:#ffffff;
+                    color:#0f1f3d;
+                    padding:0 11px;
+                    font-size:11px;
+                    font-weight:850;
+                    box-shadow:0 8px 16px rgba(15,23,42,0.035);
+                }
+                .risk-pro-action-primary {
+                    background:#0B3A86;
+                    border-color:#0B3A86;
+                    color:#ffffff;
+                }
+                .risk-filter-card {
+                    border:1px solid #dbe3ee;
+                    border-radius:10px;
+                    background:#ffffff;
+                    padding:10px 14px 8px 14px;
+                    margin:0 0 10px 0;
+                    box-shadow:0 8px 18px rgba(15,23,42,0.035);
+                }
+                .risk-filter-title {
+                    color:#081735;
+                    font-size:14px;
+                    font-weight:950;
+                    margin-bottom:6px;
+                }
+                .risk-pro-kpi {
+                    min-height:78px;
+                    border:1px solid var(--border);
+                    border-radius:10px;
+                    background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
+                    padding:9px 10px;
+                    display:grid;
+                    grid-template-columns:32px 1fr;
+                    gap:8px;
+                    box-shadow:0 8px 18px rgba(15,23,42,0.035);
+                }
+                .risk-pro-kpi-icon {
+                    width:28px;
+                    height:28px;
+                    border-radius:999px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:var(--halo);
+                    color:var(--accent);
+                    font-size:14px;
+                    font-weight:950;
+                }
+                .risk-pro-kpi-title {
+                    color:#0f1f3d;
+                    font-size:9.5px;
+                    line-height:1.15;
+                    font-weight:950;
+                    text-transform:uppercase;
+                    letter-spacing:.012em;
+                }
+                .risk-pro-kpi-value {
+                    margin-top:4px;
+                    color:var(--accent);
+                    font-size:17px;
+                    line-height:1;
+                    font-weight:950;
+                    letter-spacing:-0.03em;
+                    white-space:nowrap;
+                }
+                .risk-pro-kpi-note {
+                    margin-top:4px;
+                    color:#64748b;
+                    font-size:9px;
+                    line-height:1.2;
+                    font-weight:750;
+                }
+                .risk-chart-card {
+                    border:1px solid #dbe3ee;
+                    border-radius:10px;
+                    background:#ffffff;
+                    padding:10px 12px 10px 12px;
+                    margin-top:8px;
+                    box-shadow:0 8px 18px rgba(15,23,42,0.035);
+                }
+                .risk-note-card {
+                    display:flex;
+                    gap:9px;
+                    align-items:flex-start;
+                    border:1px solid #dbeafe;
+                    background:#eff6ff;
+                    color:#334155;
+                    border-radius:8px;
+                    padding:10px 12px;
+                    font-size:12px;
+                    font-weight:650;
+                    margin-top:8px;
+                }
+                </style>
+                <div class="risk-pro-title-row">
+                    <div>
+                        <div class="risk-pro-title">⚠️ Riesgos de cobro y concentración de montos</div>
+                        <div class="risk-pro-subtitle">Monitoreo de riesgos y concentración de montos · Vista analítica de cobranza</div>
+                    </div>
+                    <div class="risk-pro-actions">
+                        <div class="risk-pro-action risk-pro-action-primary">⇩ Descargar reporte</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                '<div id="riesgos-selectores-anchor"></div>'
+                '<div class="risk-filter-card"><div class="risk-filter-title">Filtro por centro de costo / situación</div>',
+                unsafe_allow_html=True,
+            )
+            render_flujo_selector_scroll("riesgos-selectores-anchor")
+
+            c_top1, c_top2, c_top3, c_top4 = st.columns([2, 1, 1, 1])
+            with c_top1:
+                dim = st.selectbox(
+                    "Dimensión",
+                    ["Obs", "CC1", "Sit", "CC"],
+                    index=1,
+                    key="dim_pro",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("riesgos-selectores-anchor",),
+                )
+            with c_top2:
+                order_by = st.radio(
+                    "Ordenar por",
+                    ["Total CLP", "N° Transacciones"],
+                    horizontal=True,
+                    index=0,
+                    key="order_by_pro",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("riesgos-selectores-anchor",),
+                )
+            with c_top3:
+                chart_type = st.selectbox(
+                    "Visualización",
+                    ["Barras", "Treemap"],
+                    index=0,
+                    key="chart_type_pro",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("riesgos-selectores-anchor",),
+                )
+            with c_top4:
+                top_n = st.slider(
+                    "Top N",
+                    min_value=5,
+                    max_value=30,
+                    value=12,
+                    step=1,
+                    key="topn_pro",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("riesgos-selectores-anchor",),
+                )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            df_riesgos = df_ie_base_periodo.dropna(subset=["Monto"]).copy()
+            df_riesgos[dim] = df_riesgos[dim].astype(str).str.strip()
+            df_riesgos = df_riesgos[
+                df_riesgos[dim].notna()
+                & (df_riesgos[dim] != "")
+                & (df_riesgos[dim].str.upper() != "NAN")
+            ]
+            if df_riesgos.empty:
+                st.info(f"No se encuentran registros para {periodo_filtro_lbl} en análisis {tipo_analisis.lower()}.")
+                st.stop()
+
+            topN_raw = (
+                df_riesgos.groupby(dim)["Monto"]
+                .agg(["sum", "count"])
+                .rename(columns={"sum": "Total CLP", "count": "N° Transacciones"})
+                .reset_index()
+            )
+
+            sort_col = "Total CLP" if order_by == "Total CLP" else "N° Transacciones"
+            topN = topN_raw.sort_values(sort_col, ascending=False).head(top_n).copy()
+
+            def color_by_sign_or_cc(series_values, series_dim=None):
+                if series_dim == "CC":
+                    return series_values.map(
+                        {"INGRESO": CHART_TEAL, "EGRESO": CHART_RED}
+                    ).fillna(CHART_DARK)
+                return series_values.apply(lambda v: CHART_TEAL if v >= 0 else CHART_RED)
+
+            if chart_type == "Barras":
+                top_keys = topN[dim].tolist()
+                df_dim = df_riesgos[df_riesgos[dim].isin(top_keys)].copy()
+                df_dim["CC"] = df_dim["CC"].astype(str).str.strip().str.upper()
+
+                group_cols_dim_cc = [dim] if dim == "CC" else [dim, "CC"]
+                agg_cc = (
+                    df_dim.groupby(group_cols_dim_cc, as_index=False)["Monto"]
+                    .sum()
+                )
+
+                ingresos = agg_cc[agg_cc["CC"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
+                egresos = agg_cc[agg_cc["CC"] == "EGRESO"].rename(columns={"Monto": "Egresos"})
+
+                base_dim = pd.DataFrame({dim: top_keys})
+                base_dim = base_dim.merge(ingresos[[dim, "Ingresos"]], on=dim, how="left")
+                base_dim = base_dim.merge(egresos[[dim, "Egresos"]], on=dim, how="left")
+                base_dim = base_dim.fillna(0)
+
+                base_dim["Egresos_abs"] = base_dim["Egresos"].abs()
+                base_dim["Neto"] = base_dim["Ingresos"] - base_dim["Egresos_abs"]
+                base_dim = base_dim.merge(topN[[dim, "Total CLP", "N° Transacciones"]], on=dim, how="left")
+                base_dim["Impacto_abs"] = base_dim["Ingresos"].abs() + base_dim["Egresos_abs"]
+                impacto_total = base_dim["Impacto_abs"].sum()
+                base_dim["Concentración"] = np.where(impacto_total != 0, base_dim["Impacto_abs"] / impacto_total, 0.0)
+                base_dim["Neto_color"] = np.where(base_dim["Neto"] >= 0, "#7EA9A2", "#EF524C")
+                base_dim["Neto_pos"] = base_dim["Neto"].clip(lower=0)
+                base_dim["Neto_neg"] = base_dim["Neto"].clip(upper=0)
+                base_dim["Tooltip"] = (
+                    "Ingresos: $" + base_dim["Ingresos"].map(lambda v: f"{v:,.0f}")
+                    + "<br>Egresos: $" + base_dim["Egresos_abs"].map(lambda v: f"{v:,.0f}")
+                    + "<br>Neto: $" + base_dim["Neto"].map(lambda v: f"{v:,.0f}")
+                    + "<br>Transacciones: " + base_dim["N° Transacciones"].fillna(0).astype(int).astype(str)
+                    + "<br>Concentración: " + base_dim["Concentración"].map(lambda v: f"{v:.1%}")
+                )
+                total_neto_pos = float(base_dim["Neto_pos"].sum())
+                total_neto_neg = float(base_dim["Neto_neg"].sum())
+                total_neto_dim = float(base_dim["Neto"].sum())
+                total_tx_dim = int(base_dim["N° Transacciones"].fillna(0).sum())
+                neto_base_pct = abs(total_neto_pos) + abs(total_neto_neg)
+                periodo_card = (
+                    pd.to_datetime(base["Periodo"]).max().strftime("%b %Y")
+                    if "base" in locals() and not base.empty and periodo == "Mensual"
+                    else periodo_filtro_lbl
+                )
+
+                def risk_pro_kpi(title, value, note, icon, accent, soft, halo, border):
+                    return f"""
+                    <div class="risk-pro-kpi" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};">
+                        <div class="risk-pro-kpi-icon">{icon}</div>
+                        <div>
+                            <div class="risk-pro-kpi-title">{title}</div>
+                            <div class="risk-pro-kpi-value">{value}</div>
+                            <div class="risk-pro-kpi-note">{note}</div>
+                        </div>
+                    </div>
+                    """
+
+                rk1, rk2, rk3, rk4, rk5 = st.columns(5)
+                with rk1:
+                    st.markdown(
+                        risk_pro_kpi(
+                            "TOTAL INGRESOS (NETO)",
+                            fmt_clp_largo(total_neto_pos),
+                            f"{(total_neto_pos / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
+                            "↑",
+                            "#16A34A",
+                            "#f6fffb",
+                            "#dcfce7",
+                            "#cfe9de",
+                        ),
+                        unsafe_allow_html=True,
+                    )
+                with rk2:
+                    st.markdown(
+                        risk_pro_kpi(
+                            "TOTAL EGRESOS (NETO)",
+                            fmt_clp_largo(total_neto_neg),
+                            f"{(abs(total_neto_neg) / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
+                            "↓",
+                            "#EF4444",
+                            "#fff7f7",
+                            "#fee2e2",
+                            "#f1caca",
+                        ),
+                        unsafe_allow_html=True,
+                    )
+                with rk3:
+                    st.markdown(
+                        risk_pro_kpi(
+                            "NETO TOTAL",
+                            fmt_clp_largo(total_neto_dim),
+                            f"{(total_neto_dim / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
+                            "=",
+                            "#2563EB" if total_neto_dim >= 0 else "#EF4444",
+                            "#f6f9ff" if total_neto_dim >= 0 else "#fff7f7",
+                            "#dbeafe" if total_neto_dim >= 0 else "#fee2e2",
+                            "#d4e1f6" if total_neto_dim >= 0 else "#f1caca",
+                        ),
+                        unsafe_allow_html=True,
+                    )
+                with rk4:
+                    st.markdown(
+                        risk_pro_kpi(
+                            "N° TRANSACCIONES",
+                            f"{total_tx_dim:,.0f}",
+                            "Registros en el período",
+                            "▥",
+                            "#0f2d52",
+                            "#ffffff",
+                            "#f1f5f9",
+                            "#e5ebf3",
+                        ),
+                        unsafe_allow_html=True,
+                    )
+                with rk5:
+                    st.markdown(
+                        risk_pro_kpi(
+                            "PERÍODO",
+                            periodo_card,
+                            periodo_filtro_lbl,
+                            "▣",
+                            "#0f2d52",
+                            "#ffffff",
+                            "#f1f5f9",
+                            "#e5ebf3",
+                        ),
+                        unsafe_allow_html=True,
+                    )
+
+                if order_by == "Total CLP":
+                    base_dim = base_dim.sort_values("Impacto_abs", ascending=True)
+                else:
+                    base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
+
+                st.markdown('<div id="riesgos-vista-selector-anchor"></div>', unsafe_allow_html=True)
+                render_flujo_selector_scroll("riesgos-vista-selector-anchor")
+                view_metric_risk = st.radio(
+                    "Vista",
+                    ["Monto (CLP)", "% del neto"],
+                    horizontal=True,
+                    index=0,
+                    key="risk_view_metric_pro",
+                    label_visibility="collapsed",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("riesgos-vista-selector-anchor",),
+                )
+                if view_metric_risk == "% del neto":
+                    denom_risk = neto_base_pct if neto_base_pct else 1.0
+                    base_dim["X_pos"] = base_dim["Neto_pos"] / denom_risk
+                    base_dim["X_neg"] = base_dim["Neto_neg"] / denom_risk
+                    base_dim["X_neto"] = base_dim["Neto"] / denom_risk
+                    x_title_risk = "% del neto"
+                    x_tickformat_risk = ".0%"
+                    x_tickprefix_risk = None
+                else:
+                    base_dim["X_pos"] = base_dim["Neto_pos"]
+                    base_dim["X_neg"] = base_dim["Neto_neg"]
+                    base_dim["X_neto"] = base_dim["Neto"]
+                    x_title_risk = "Monto CLP"
+                    x_tickformat_risk = None
+                    x_tickprefix_risk = "$"
+
+                fig_top = go.Figure()
+
+                fig_top.add_trace(
+                    go.Scatter(
+                        x=base_dim["X_neto"],
+                        y=base_dim[dim],
+                        mode="markers",
+                        name="Resumen",
+                        marker=dict(size=18, color="rgba(0,0,0,0)"),
+                        showlegend=False,
+                        customdata=base_dim[["Tooltip"]],
+                        hovertemplate="<b>%{y}</b><br>%{customdata[0]}<extra></extra>",
+                    )
+                )
+
+                fig_top.add_trace(
+                    go.Bar(
+                        x=base_dim["X_pos"],
+                        y=base_dim[dim],
+                        orientation="h",
+                        name="Netos positivos (ingresos > egresos)",
+                        marker=dict(color="rgba(126,169,162,0.88)", line=dict(color="rgba(126,169,162,0.88)", width=0)),
+                        hoverinfo="skip",
+                    )
+                )
+                fig_top.add_trace(
+                    go.Bar(
+                        x=base_dim["X_neg"],
+                        y=base_dim[dim],
+                        orientation="h",
+                        name="Netos negativos (egresos > ingresos)",
+                        marker=dict(color="rgba(239,82,76,0.90)", line=dict(color="rgba(239,82,76,0.90)", width=0)),
+                        hoverinfo="skip",
+                    )
+                )
+                fig_top.add_trace(
+                    go.Scatter(
+                        x=base_dim["X_neto"],
+                        y=base_dim[dim],
+                        mode="markers",
+                        name="Neto",
+                        marker=dict(
+                            size=14,
+                            color=base_dim["Neto_color"],
+                            line=dict(color="#FFFFFF", width=2),
+                            symbol="diamond",
+                        ),
+                        hoverinfo="skip",
+                    )
+                )
+
+                max_abs_riesgo = max(
+                    float(base_dim["X_pos"].abs().max()) if not base_dim.empty else 0.0,
+                    float(base_dim["X_neg"].abs().max()) if not base_dim.empty else 0.0,
+                    float(base_dim["X_neto"].abs().max()) if not base_dim.empty else 0.0,
+                    1.0,
+                )
+                for _, row_risk in base_dim.iterrows():
+                    if row_risk["X_neto"] == 0:
+                        continue
+                    fig_top.add_annotation(
+                        x=row_risk["X_neto"],
+                        y=row_risk[dim],
+                        text=(f"{row_risk['X_neto']:.1%}" if view_metric_risk == "% del neto" else fmt_clp_largo(row_risk["Neto"])),
+                        showarrow=False,
+                        xshift=26 if row_risk["X_neto"] >= 0 else -26,
+                        font=dict(size=10, color="#334155"),
+                    )
+
+                fig_top.update_layout(
+                    title=dict(
+                        text=f"Exposición y concentración Top {top_n} por {dim} · {periodo_filtro_lbl} &nbsp; ⓘ",
+                        x=0.02,
+                        xanchor="left",
+                        font=dict(size=17, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                    ),
+                    template="plotly_white",
+                    height=max(360, 26 * len(base_dim) + 130),
+                    margin=dict(l=24, r=40, t=62, b=32),
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=1.02,
+                        xanchor="left",
+                        x=0.01,
+                        bgcolor="rgba(255,255,255,0)",
+                        font=dict(size=11, color="#334155"),
+                    ),
+                    hovermode="closest",
+                    font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
+                    paper_bgcolor="#FFFFFF",
+                    plot_bgcolor="#FFFFFF",
+                    barmode="relative",
+                )
+                fig_top.add_vline(x=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75)
+                fig_top.update_xaxes(
+                    title_text=x_title_risk,
+                    showgrid=True,
+                    gridcolor="#E8EEF6",
+                    zeroline=False,
+                    tickprefix=x_tickprefix_risk,
+                    tickformat=x_tickformat_risk,
+                    separatethousands=True,
+                    range=[-max_abs_riesgo * 1.18, max_abs_riesgo * 1.18],
+                    linecolor="#CBD5E1",
+                    title_font=dict(size=12, color="#334155"),
+                    tickfont=dict(size=11, color="#475569"),
+                )
+                fig_top.update_yaxes(
+                    title_text=dim,
+                    showgrid=False,
+                    linecolor="#CBD5E1",
+                    title_font=dict(size=12, color="#334155"),
+                    tickfont=dict(size=11, color="#475569"),
+                    automargin=True,
+                )
+
+                st.markdown('<div class="risk-chart-card">', unsafe_allow_html=True)
+                st.plotly_chart(
+                    fig_top,
+                    use_container_width=True,
+                    config={
+                        "displaylogo": False,
+                        "displayModeBar": True,
+                        "modeBarButtonsToAdd": ["toImage"],
+                    },
+                    key="riesgos_concentracion_pro",
+                )
+                st.markdown(
+                    """
+                    <div class="risk-note-card">
+                        <span>ⓘ</span>
+                        <div>Los montos netos se calculan como ingresos menos egresos. Haga clic en las barras para ver el detalle de movimientos por concepto.</div>
+                    </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                treemap_df = topN.copy()
+                treemap_df["Impacto_abs"] = treemap_df["Total CLP"].abs()
+                treemap_df["Neto_color"] = treemap_df["Total CLP"]
+                if dim == "CC":
+                    color_col = dim
+                    color_scale = None
+                else:
+                    color_col = "Neto_color"
+                    color_scale = [CHART_RED, CHART_GOLD, CHART_TEAL]
+
+                fig_tree = px.treemap(
+                    treemap_df,
+                    path=[dim],
+                    values="Impacto_abs" if order_by == "Total CLP" else "N° Transacciones",
+                    color=color_col,
+                    color_continuous_scale=color_scale,
+                    title=f"Concentración Top {top_n} por {dim} · {order_by} · {periodo_filtro_lbl}",
+                )
+                if dim == "CC":
+                    fig_tree.update_traces(
+                        marker_colors=color_by_sign_or_cc(
+                            treemap_df[dim], series_dim="CC"
+                        )
+                    )
+                fig_tree.update_traces(
+                    hovertemplate="<b>%{label}</b><br>Impacto: $%{value:,.0f}<extra></extra>",
+                    textinfo="label+percent entry",
+                    textfont=dict(size=12),
+                )
+                fig_tree.update_layout(
+                    margin=dict(l=0, r=0, t=72, b=0),
+                    template="plotly_white",
+                    paper_bgcolor="#F8FAFC",
+                    plot_bgcolor="#FFFFFF",
+                    title=dict(
+                        x=0.01,
+                        xanchor="left",
+                        font=dict(size=18, color="#0F2D52"),
+                    ),
+                )
+                st.plotly_chart(
+                    fig_tree,
+                    use_container_width=True,
+                    config={
+                        "displaylogo": False,
+                        "displayModeBar": True,
+                        "modeBarButtonsToAdd": ["toImage"],
+                    },
+                )
+
+            st.caption(f"Nota: este gráfico usa análisis {tipo_analisis.lower()} y el período seleccionado arriba: {periodo_filtro_lbl}.")
+
+
+        render_riesgos_cobro_concentracion()
+
+        @st.fragment
+        def render_detalle_filtrable_movimientos():
+            st.markdown("---")
+            st.markdown(
+                section_heading("⚠️", "Detalle filtrable de movimientos", weight_class="section-heading-title-soft"),
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                """
+                <div style="
+                    background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    margin: 8px 0 10px 0;
+                    color: #FFFFFF;
+                    font-size: 13px;
+                    font-weight: 600;">
+                    Monitoreo detallado por filtros · CC1, OBS y Responsable
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.caption("Filtra por CC1, OBS y Responsable para revisar el detalle al final de esta pestaña.")
+            st.markdown('<div id="detalle-selectores-anchor"></div>', unsafe_allow_html=True)
+            render_flujo_selector_scroll("detalle-selectores-anchor")
+
+            df_det = df_ie.copy().dropna(subset=["Monto"]).copy()
+            for c in ["CC1", "Obs", "Responsable"]:
+                df_det[c] = df_det[c].astype(str).str.strip()
+
+            buscador_cols = [
+                c for c in ["Responsable", "CC1", "Obs", "Sit", "CC", "Esp", "Fecha", "Año", "Mes", "Monto"]
+                if c in df_det.columns
+            ]
+            busqueda_det = st.text_input(
+                "Buscador inteligente",
+                value="",
+                placeholder="Buscar por responsable, OBS, CC1, situación, monto, fecha...",
+                key="det_buscador_inteligente",
+                on_change=queue_flujo_selector_scroll,
+                args=("detalle-selectores-anchor",),
+            ).strip()
+
+            df_det_search = df_det.copy()
+            search_blob = pd.Series("", index=df_det_search.index, dtype="object")
+            for c in buscador_cols:
+                if c == "Fecha":
+                    search_piece = pd.to_datetime(df_det_search[c], errors="coerce").dt.strftime("%Y-%m-%d").fillna("")
+                else:
+                    search_piece = df_det_search[c].astype(str).fillna("")
+                search_blob = search_blob + " " + search_piece
+            search_blob = search_blob.str.lower()
+
+            if busqueda_det:
+                terms = [t.lower() for t in busqueda_det.split() if t.strip()]
+                mask_busqueda = pd.Series(True, index=df_det_search.index)
+                for term in terms:
+                    mask_busqueda &= search_blob.str.contains(term, regex=False, na=False)
+                df_det_search = df_det_search[mask_busqueda]
+
+                resumen_busqueda_items = []
+                for c in ["Responsable", "CC1", "Obs", "Sit", "CC"]:
+                    if c not in df_det_search.columns:
+                        continue
+                    vals = (
+                        df_det_search[c]
+                        .astype(str)
+                        .str.strip()
+                        .replace("", pd.NA)
+                        .dropna()
+                        .drop_duplicates()
+                        .head(25)
+                        .tolist()
+                    )
+                    if vals:
+                        resumen_busqueda_items.append(f"{c}: {', '.join(vals[:6])}")
+                resumen_busqueda = " · ".join(resumen_busqueda_items) if resumen_busqueda_items else "Sin coincidencias nominales."
+                st.caption(f"Coincidencias para '{busqueda_det}': {len(df_det_search):,} registros · {resumen_busqueda}".replace(",", "."))
+
+            d1, d2, d3, d4, d5 = st.columns([1, 1, 1, 1, 1])
+            with d1:
+                cc1_opts = ["Todos"] + sorted([v for v in df_det_search["CC1"].dropna().unique().tolist() if v != ""])
+                sel_cc1_det = st.selectbox(
+                    "CC1",
+                    cc1_opts,
+                    index=0,
+                    key="det_cc1",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("detalle-selectores-anchor",),
+                )
+
+            df_det_f = df_det_search.copy()
+            if sel_cc1_det != "Todos":
+                df_det_f = df_det_f[df_det_f["CC1"] == sel_cc1_det]
+
+            with d2:
+                obs_opts = ["Todos"] + sorted([v for v in df_det_f["Obs"].dropna().unique().tolist() if v != ""])
+                sel_obs_det = st.selectbox(
+                    "OBS",
+                    obs_opts,
+                    index=0,
+                    key="det_obs",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("detalle-selectores-anchor",),
+                )
+            if sel_obs_det != "Todos":
+                df_det_f = df_det_f[df_det_f["Obs"] == sel_obs_det]
+
+            with d3:
+                resp_opts = ["Todos"] + sorted([v for v in df_det_f["Responsable"].dropna().unique().tolist() if v != ""])
+                sel_resp_det = st.selectbox(
+                    "Responsable",
+                    resp_opts,
+                    index=0,
+                    key="det_resp",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("detalle-selectores-anchor",),
+                )
+            if sel_resp_det != "Todos":
+                df_det_f = df_det_f[df_det_f["Responsable"] == sel_resp_det]
+
+            with d4:
+                anio_vals = pd.to_numeric(df_det_f["Año_sel"], errors="coerce").dropna().astype(int).unique().tolist()
+                anio_opts = ["Todos"] + [str(y) for y in sorted(anio_vals)]
+                sel_anio_det = st.selectbox(
+                    "Año",
+                    anio_opts,
+                    index=0,
+                    key="det_anio",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("detalle-selectores-anchor",),
+                )
+            if sel_anio_det != "Todos":
+                df_det_f = df_det_f[pd.to_numeric(df_det_f["Año_sel"], errors="coerce").astype("Int64") == int(sel_anio_det)]
+
+            with d5:
+                if "Mes_sel" in df_det_f.columns:
+                    mes_vals = pd.to_numeric(df_det_f["Mes_sel"], errors="coerce").dropna().astype(int).unique().tolist()
+                    mes_opts = ["Todos"] + sorted(mes_vals)
+                else:
+                    mes_opts = ["Todos"]
+                sel_mes_det = st.selectbox(
+                    "Mes",
+                    mes_opts,
+                    index=0,
+                    key="det_mes",
+                    on_change=queue_flujo_selector_scroll,
+                    args=("detalle-selectores-anchor",),
+                )
+            if sel_mes_det != "Todos" and "Mes_sel" in df_det_f.columns:
+                df_det_f = df_det_f[pd.to_numeric(df_det_f["Mes_sel"], errors="coerce").astype("Int64") == int(sel_mes_det)]
+
+            # KPIs de detalle (debajo de selectores)
+            sit_det = df_det_f["Sit"].astype(str).str.strip().str.upper() if "Sit" in df_det_f.columns else pd.Series([], dtype=str)
+            monto_total_det = float(df_det_f["Monto"].sum()) if not df_det_f.empty else 0.0
+            monto_por_pagar_det = abs(float(df_det_f.loc[sit_det == "NO PAGADO", "Monto"].sum())) if not df_det_f.empty else 0.0
+            monto_pagado_det = abs(float(df_det_f.loc[sit_det == "PAGADO", "Monto"].sum())) if not df_det_f.empty else 0.0
+            monto_abonos_det = float(
+                df_det_f.loc[df_det_f["Obs"].astype(str).str.contains("abono", case=False, na=False), "Monto"].abs().sum()
+            ) if not df_det_f.empty else 0.0
+
+            resumen_obs_export = pd.DataFrame()
+            grafico_obs_export = pd.DataFrame()
+            if "Obs" in df_det_f.columns and not df_det_f.empty:
+                resumen_obs = df_det_f.copy()
+                resumen_obs["Obs_resumen"] = resumen_obs["Obs"].astype(str).str.strip().replace("", "Sin OBS")
+                resumen_obs["Sit_resumen"] = resumen_obs["Sit"].astype(str).str.strip().str.upper() if "Sit" in resumen_obs.columns else ""
+                resumen_obs["Monto_pagado_obs"] = np.where(resumen_obs["Sit_resumen"].eq("PAGADO"), resumen_obs["Monto"], 0.0)
+                resumen_obs["Monto_no_pagado_obs"] = np.where(resumen_obs["Sit_resumen"].eq("NO PAGADO"), resumen_obs["Monto"], 0.0)
+                mask_abono_obs_det = (
+                    resumen_obs["Sit_resumen"].str.startswith("ABONO") |
+                    resumen_obs["Obs_resumen"].astype(str).str.contains("abono", case=False, na=False)
+                )
+                resumen_obs["Monto_abono_obs"] = np.where(mask_abono_obs_det, resumen_obs["Monto"], 0.0)
+                resumen_obs_tbl = (
+                    resumen_obs.groupby("Obs_resumen", dropna=False)
                     .agg(
                         Registros=("Monto", "size"),
                         Pagado=("Monto_pagado_obs", "sum"),
                         **{"No pagado": ("Monto_no_pagado_obs", "sum")},
                         Abono=("Monto_abono_obs", "sum"),
                     )
-                    .sort_values("Periodo_chart")
+                    .reset_index()
+                    .rename(columns={"Obs_resumen": "OBS"})
                 )
-                chart_periodo["RESULTADO"] = chart_periodo["Pagado"] + chart_periodo["No pagado"]
-                chart_periodo["Deuda a la fecha"] = np.where(
-                    (chart_periodo["Pagado"] < 0) & (chart_periodo["No pagado"] < 0),
-                    chart_periodo["No pagado"] + chart_periodo["Abono"],
+                resumen_obs_tbl["RESULTADO"] = resumen_obs_tbl["Pagado"] + resumen_obs_tbl["No pagado"]
+                resumen_obs_tbl["Deuda a la fecha"] = np.where(
+                    (resumen_obs_tbl["Pagado"] < 0) & (resumen_obs_tbl["No pagado"] < 0),
+                    resumen_obs_tbl["No pagado"] + resumen_obs_tbl["Abono"],
                     np.where(
-                        chart_periodo["Pagado"] < 0,
-                        chart_periodo["Pagado"] + chart_periodo["Abono"],
-                        chart_periodo["No pagado"] - chart_periodo["Abono"],
+                        resumen_obs_tbl["Pagado"] < 0,
+                        resumen_obs_tbl["Pagado"] + resumen_obs_tbl["Abono"],
+                        resumen_obs_tbl["No pagado"] - resumen_obs_tbl["Abono"],
                     ),
                 )
-                chart_periodo["Periodo_txt"] = chart_periodo["Periodo_chart"].dt.strftime("%Y-%m")
-                chart_periodo["Hover"] = (
-                    "Registros: " + chart_periodo["Registros"].astype(int).astype(str)
-                    + "<br>Pagado: $" + chart_periodo["Pagado"].map(lambda v: f"{v:,.0f}")
-                    + "<br>No pagado: $" + chart_periodo["No pagado"].map(lambda v: f"{v:,.0f}")
-                    + "<br>Abono: $" + chart_periodo["Abono"].map(lambda v: f"{v:,.0f}")
-                    + "<br>Deuda: $" + chart_periodo["Deuda a la fecha"].map(lambda v: f"{v:,.0f}")
+                resumen_obs_tbl = (
+                    resumen_obs_tbl.sort_values("Pagado", ascending=True)
+                    .reset_index(drop=True)
+                )
+                if not resumen_obs_tbl.empty:
+                    mostrar_fila_total_obs = len(resumen_obs_tbl) > 1
+                    if mostrar_fila_total_obs:
+                        resumen_obs_tbl = pd.concat(
+                            [
+                                resumen_obs_tbl,
+                                pd.DataFrame(
+                                    [
+                                        {
+                                            "OBS": "TOTAL TABLA (FILTRO)",
+                                            "Registros": len(resumen_obs),
+                                            "Pagado": resumen_obs["Monto_pagado_obs"].sum(),
+                                            "No pagado": resumen_obs["Monto_no_pagado_obs"].sum(),
+                                            "RESULTADO": resumen_obs["Monto_pagado_obs"].sum() + resumen_obs["Monto_no_pagado_obs"].sum(),
+                                            "Abono": resumen_obs["Monto_abono_obs"].sum(),
+                                            "Deuda a la fecha": (
+                                                resumen_obs["Monto_no_pagado_obs"].sum() + resumen_obs["Monto_abono_obs"].sum()
+                                                if resumen_obs["Monto_pagado_obs"].sum() < 0 and resumen_obs["Monto_no_pagado_obs"].sum() < 0
+                                                else (
+                                                    resumen_obs["Monto_pagado_obs"].sum() + resumen_obs["Monto_abono_obs"].sum()
+                                                    if resumen_obs["Monto_pagado_obs"].sum() < 0
+                                                    else resumen_obs["Monto_no_pagado_obs"].sum() - resumen_obs["Monto_abono_obs"].sum()
+                                                )
+                                            ),
+                                        }
+                                    ]
+                                ),
+                            ],
+                            ignore_index=True,
+                        )
+                    resumen_obs_export = resumen_obs_tbl.copy()
+                    resumen_obs_items = []
+                    for _, row in resumen_obs_tbl.iterrows():
+                        resumen_obs_items.append(
+                            {
+                                "label": escape(str(row["OBS"])),
+                                "meta": f'{int(row["Registros"]):,} registros'.replace(",", "."),
+                                "pagado": fmt_clp_largo(float(row["Pagado"])),
+                                "no_pagado": fmt_clp_largo(float(row["No pagado"])),
+                                "resultado": fmt_clp_largo(float(row["RESULTADO"])),
+                                "abono": fmt_clp_largo(float(row["Abono"])),
+                                "pendiente_deuda": fmt_clp_largo(float(row["Deuda a la fecha"])),
+                            }
+                        )
+                    st.markdown(
+                        '<div class="kpi-summary-compact">'
+                        + kpi_resumen_obs_panel(
+                            "Resumen de montos por OBS",
+                            "Montos agrupados según los filtros activos del detalle",
+                            resumen_obs_items,
+                        )
+                        + "</div>",
+                        unsafe_allow_html=True,
+                    )
+
+                    chart_obs = resumen_obs.copy()
+                    chart_obs["Año_chart"] = pd.to_numeric(chart_obs.get("Año_sel"), errors="coerce")
+                    chart_obs["Mes_chart"] = pd.to_numeric(chart_obs.get("Mes_sel"), errors="coerce")
+                    chart_obs = chart_obs.dropna(subset=["Año_chart", "Mes_chart", "Monto"])
+                    if not chart_obs.empty:
+                        chart_obs["Periodo_chart"] = pd.to_datetime(
+                            dict(
+                                year=chart_obs["Año_chart"].astype(int),
+                                month=chart_obs["Mes_chart"].astype(int),
+                                day=1,
+                            ),
+                            errors="coerce",
+                        )
+                        chart_obs = chart_obs.dropna(subset=["Periodo_chart"])
+
+                    if not chart_obs.empty:
+                        chart_periodo = (
+                            chart_obs.groupby("Periodo_chart", as_index=False)
+                            .agg(
+                                Registros=("Monto", "size"),
+                                Pagado=("Monto_pagado_obs", "sum"),
+                                **{"No pagado": ("Monto_no_pagado_obs", "sum")},
+                                Abono=("Monto_abono_obs", "sum"),
+                            )
+                            .sort_values("Periodo_chart")
+                        )
+                        chart_periodo["RESULTADO"] = chart_periodo["Pagado"] + chart_periodo["No pagado"]
+                        chart_periodo["Deuda a la fecha"] = np.where(
+                            (chart_periodo["Pagado"] < 0) & (chart_periodo["No pagado"] < 0),
+                            chart_periodo["No pagado"] + chart_periodo["Abono"],
+                            np.where(
+                                chart_periodo["Pagado"] < 0,
+                                chart_periodo["Pagado"] + chart_periodo["Abono"],
+                                chart_periodo["No pagado"] - chart_periodo["Abono"],
+                            ),
+                        )
+                        chart_periodo["Periodo_txt"] = chart_periodo["Periodo_chart"].dt.strftime("%Y-%m")
+                        chart_periodo["Hover"] = (
+                            "Registros: " + chart_periodo["Registros"].astype(int).astype(str)
+                            + "<br>Pagado: $" + chart_periodo["Pagado"].map(lambda v: f"{v:,.0f}")
+                            + "<br>No pagado: $" + chart_periodo["No pagado"].map(lambda v: f"{v:,.0f}")
+                            + "<br>Abono: $" + chart_periodo["Abono"].map(lambda v: f"{v:,.0f}")
+                            + "<br>Deuda: $" + chart_periodo["Deuda a la fecha"].map(lambda v: f"{v:,.0f}")
+                        )
+
+                        st.markdown(
+                            section_heading(
+                                "📊",
+                                "Evolución por año y mes según OBS",
+                                "Montos calculados con los mismos selectores del resumen",
+                                weight_class="section-heading-title-soft",
+                            ),
+                            unsafe_allow_html=True,
+                        )
+
+                        grafico_obs_export = chart_periodo.copy()
+                        fig_obs_periodo = build_obs_periodo_figure(chart_periodo)
+                        st.plotly_chart(fig_obs_periodo, use_container_width=True)
+            if "Fecha" in df_det_f.columns:
+                df_det_f["Fecha"] = pd.to_datetime(df_det_f["Fecha"], errors="coerce")
+                df_det_f = df_det_f.sort_values(["Fecha", "Año", "Mes"], ascending=[False, False, False], na_position="last")
+            else:
+                df_det_f = df_det_f.sort_values(["Año", "Mes"], ascending=[False, False], na_position="last")
+
+            cols_det = [c for c in ["Fecha", "Año", "Mes", "Esp", "Responsable", "CC", "CC1", "Obs", "Sit", "Monto"] if c in df_det_f.columns]
+            df_det_view = df_det_f[cols_det].copy()
+
+            st.caption(f"Registros encontrados: {len(df_det_view):,}".replace(",", "."))
+            if df_det_view.empty:
+                st.info("No hay movimientos para los filtros seleccionados.")
+            else:
+                df_det_show = df_det_view.copy()
+                if "Fecha" in df_det_show.columns:
+                    df_det_show["Fecha"] = (
+                        pd.to_datetime(df_det_show["Fecha"], errors="coerce")
+                        .dt.strftime("%Y-%m-%d")
+                        .fillna("Sin fecha")
+                    )
+
+                filtros_det_export = {
+                    "Búsqueda": busqueda_det if busqueda_det else "Sin búsqueda",
+                    "CC1": sel_cc1_det,
+                    "OBS": sel_obs_det,
+                    "Responsable": sel_resp_det,
+                    "Año": sel_anio_det,
+                    "Mes": sel_mes_det,
+                    "Registros": str(len(df_det_view)),
+                }
+                kpis_det_export = {
+                    "Total tabla (filtro)": monto_total_det,
+                    "Monto por pagar": monto_por_pagar_det,
+                    "Monto pagado": monto_pagado_det,
+                    "Abonos": monto_abonos_det,
+                }
+                pdf_detalle = build_detalle_movimientos_pdf(
+                    df_det_view,
+                    filtros_det_export,
+                    kpis_det_export,
+                    resumen_obs_export,
+                    grafico_obs_export,
+                )
+                excel_detalle = build_detalle_movimientos_excel(
+                    df_det_view,
+                    filtros_det_export,
+                    kpis_det_export,
+                    resumen_obs_export,
+                    grafico_obs_export,
                 )
 
-                st.markdown(
-                    section_heading(
-                        "📊",
-                        "Evolución por año y mes según OBS",
-                        "Montos calculados con los mismos selectores del resumen",
-                        weight_class="section-heading-title-soft",
-                    ),
-                    unsafe_allow_html=True,
+                dl_pdf_det, dl_excel_det, _ = st.columns([1.1, 1.15, 5])
+                with dl_pdf_det:
+                    st.download_button(
+                        "📄 Descargar PDF",
+                        data=pdf_detalle,
+                        file_name="detalle_movimientos_filtrado.pdf",
+                        mime="application/pdf",
+                        key="download_detalle_movimientos_pdf",
+                    )
+                with dl_excel_det:
+                    st.download_button(
+                        "📊 Descargar Excel",
+                        data=excel_detalle,
+                        file_name="detalle_movimientos_filtrado.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="download_detalle_movimientos_excel",
+                    )
+
+                st.caption("Vista acotada a 20 filas visibles. Usa el scroll interno de la tabla para recorrer todo.")
+                visible_rows = 20
+                row_height_px = 35
+                header_px = 38
+                table_height = header_px + (visible_rows * row_height_px)
+                left_cols_det = [c for c in ["Responsable", "CC1", "Obs"] if c in df_det_show.columns]
+                sit_cols_det = [c for c in ["Sit"] if c in df_det_show.columns]
+                cc_cols_det = [c for c in ["CC"] if c in df_det_show.columns]
+                monto_cols_det = [c for c in ["Monto"] if c in df_det_show.columns]
+
+                def _highlight_first_row(row):
+                    if row.name == 0:
+                        return ["background-color:#E8F1FF; font-weight:700;"] * len(row)
+                    return [""] * len(row)
+
+                def _style_sit(v):
+                    s = str(v).strip().upper()
+                    if s == "NO PAGADO":
+                        return "background-color:#FEE4E2; color:#B42318; font-weight:700;"
+                    if s == "PAGADO":
+                        return "background-color:#ECFDF3; color:#027A48; font-weight:700;"
+                    return ""
+
+                def _style_cc(v):
+                    s = str(v).strip().upper()
+                    if s == "EGRESO":
+                        return "color:#B42318; font-weight:700;"
+                    if s == "INGRESO":
+                        return "color:#027A48; font-weight:700;"
+                    return ""
+
+                def _style_monto(v):
+                    try:
+                        n = float(v)
+                        if n < 0:
+                            return "background-color:#FEE4E2; color:#B42318; font-weight:800;"
+                        if n > 0:
+                            return "background-color:#ECFDF3; color:#027A48; font-weight:800;"
+                        return "background-color:#F2F4F7; color:#344054; font-weight:700;"
+                    except Exception:
+                        pass
+                    return ""
+
+                styler_det = (
+                    df_det_show.style
+                    .format({"Monto": "${:,.0f}"})
+                    .set_table_styles([
+                        {
+                            "selector": "thead th",
+                            "props": [
+                                ("background-color", "#163A5F"),
+                                ("color", "white"),
+                                ("font-weight", "700"),
+                                ("font-size", "13px"),
+                                ("border-bottom", "1px solid #0F2740"),
+                                ("text-align", "center"),
+                                ("padding", "8px"),
+                            ],
+                        },
+                        {
+                            "selector": "tbody td",
+                            "props": [
+                                ("font-size", "12px"),
+                                ("padding", "7px 8px"),
+                                ("border-bottom", "1px solid #E5E7EB"),
+                            ],
+                        },
+                        {
+                            "selector": "tbody tr:nth-child(even)",
+                            "props": [("background-color", "#F8FAFC")],
+                        },
+                        {
+                            "selector": "tbody tr:hover",
+                            "props": [("background-color", "#EEF2F7")],
+                        },
+                    ])
+                    .set_properties(subset=left_cols_det, **{"text-align": "left"})
+                    .set_properties(subset=monto_cols_det, **{"font-weight": "800"})
+                    .apply(_highlight_first_row, axis=1)
+                )
+                if sit_cols_det:
+                    styler_det = styler_det.map(_style_sit, subset=sit_cols_det)
+                if cc_cols_det:
+                    styler_det = styler_det.map(_style_cc, subset=cc_cols_det)
+                if monto_cols_det:
+                    styler_det = styler_det.map(_style_monto, subset=monto_cols_det)
+                st.caption("Colores guía: fila principal azul suave · PAGADO verde · NO PAGADO rojo · EGRESO rojo / INGRESO verde.")
+                st.dataframe(
+                    styler_det,
+                    use_container_width=True,
+                    height=table_height,
                 )
 
-                grafico_obs_export = chart_periodo.copy()
-                fig_obs_periodo = build_obs_periodo_figure(chart_periodo)
-                st.plotly_chart(fig_obs_periodo, use_container_width=True)
-    if "Fecha" in df_det_f.columns:
-        df_det_f["Fecha"] = pd.to_datetime(df_det_f["Fecha"], errors="coerce")
-        df_det_f = df_det_f.sort_values(["Fecha", "Año", "Mes"], ascending=[False, False, False], na_position="last")
-    else:
-        df_det_f = df_det_f.sort_values(["Año", "Mes"], ascending=[False, False], na_position="last")
+        render_detalle_filtrable_movimientos()
 
-    cols_det = [c for c in ["Fecha", "Año", "Mes", "Esp", "Responsable", "CC", "CC1", "Obs", "Sit", "Monto"] if c in df_det_f.columns]
-    df_det_view = df_det_f[cols_det].copy()
-
-    st.caption(f"Registros encontrados: {len(df_det_view):,}".replace(",", "."))
-    if df_det_view.empty:
-        st.info("No hay movimientos para los filtros seleccionados.")
-    else:
-        df_det_show = df_det_view.copy()
-        if "Fecha" in df_det_show.columns:
-            df_det_show["Fecha"] = (
-                pd.to_datetime(df_det_show["Fecha"], errors="coerce")
-                .dt.strftime("%Y-%m-%d")
-                .fillna("Sin fecha")
-            )
-
-        filtros_det_export = {
-            "Búsqueda": busqueda_det if busqueda_det else "Sin búsqueda",
-            "CC1": sel_cc1_det,
-            "OBS": sel_obs_det,
-            "Responsable": sel_resp_det,
-            "Año": sel_anio_det,
-            "Mes": sel_mes_det,
-            "Registros": str(len(df_det_view)),
-        }
-        kpis_det_export = {
-            "Total tabla (filtro)": monto_total_det,
-            "Monto por pagar": monto_por_pagar_det,
-            "Monto pagado": monto_pagado_det,
-            "Abonos": monto_abonos_det,
-        }
-        pdf_detalle = build_detalle_movimientos_pdf(
-            df_det_view,
-            filtros_det_export,
-            kpis_det_export,
-            resumen_obs_export,
-            grafico_obs_export,
-        )
-        excel_detalle = build_detalle_movimientos_excel(
-            df_det_view,
-            filtros_det_export,
-            kpis_det_export,
-            resumen_obs_export,
-            grafico_obs_export,
-        )
-
-        dl_pdf_det, dl_excel_det, _ = st.columns([1.1, 1.15, 5])
-        with dl_pdf_det:
-            st.download_button(
-                "📄 Descargar PDF",
-                data=pdf_detalle,
-                file_name="detalle_movimientos_filtrado.pdf",
-                mime="application/pdf",
-                key="download_detalle_movimientos_pdf",
-            )
-        with dl_excel_det:
-            st.download_button(
-                "📊 Descargar Excel",
-                data=excel_detalle,
-                file_name="detalle_movimientos_filtrado.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key="download_detalle_movimientos_excel",
-            )
-
-        st.caption("Vista acotada a 20 filas visibles. Usa el scroll interno de la tabla para recorrer todo.")
-        visible_rows = 20
-        row_height_px = 35
-        header_px = 38
-        table_height = header_px + (visible_rows * row_height_px)
-        left_cols_det = [c for c in ["Responsable", "CC1", "Obs"] if c in df_det_show.columns]
-        sit_cols_det = [c for c in ["Sit"] if c in df_det_show.columns]
-        cc_cols_det = [c for c in ["CC"] if c in df_det_show.columns]
-        monto_cols_det = [c for c in ["Monto"] if c in df_det_show.columns]
-
-        def _highlight_first_row(row):
-            if row.name == 0:
-                return ["background-color:#E8F1FF; font-weight:700;"] * len(row)
-            return [""] * len(row)
-
-        def _style_sit(v):
-            s = str(v).strip().upper()
-            if s == "NO PAGADO":
-                return "background-color:#FEE4E2; color:#B42318; font-weight:700;"
-            if s == "PAGADO":
-                return "background-color:#ECFDF3; color:#027A48; font-weight:700;"
-            return ""
-
-        def _style_cc(v):
-            s = str(v).strip().upper()
-            if s == "EGRESO":
-                return "color:#B42318; font-weight:700;"
-            if s == "INGRESO":
-                return "color:#027A48; font-weight:700;"
-            return ""
-
-        def _style_monto(v):
-            try:
-                n = float(v)
-                if n < 0:
-                    return "background-color:#FEE4E2; color:#B42318; font-weight:800;"
-                if n > 0:
-                    return "background-color:#ECFDF3; color:#027A48; font-weight:800;"
-                return "background-color:#F2F4F7; color:#344054; font-weight:700;"
-            except Exception:
-                pass
-            return ""
-
-        styler_det = (
-            df_det_show.style
-            .format({"Monto": "${:,.0f}"})
-            .set_table_styles([
-                {
-                    "selector": "thead th",
-                    "props": [
-                        ("background-color", "#163A5F"),
-                        ("color", "white"),
-                        ("font-weight", "700"),
-                        ("font-size", "13px"),
-                        ("border-bottom", "1px solid #0F2740"),
-                        ("text-align", "center"),
-                        ("padding", "8px"),
-                    ],
-                },
-                {
-                    "selector": "tbody td",
-                    "props": [
-                        ("font-size", "12px"),
-                        ("padding", "7px 8px"),
-                        ("border-bottom", "1px solid #E5E7EB"),
-                    ],
-                },
-                {
-                    "selector": "tbody tr:nth-child(even)",
-                    "props": [("background-color", "#F8FAFC")],
-                },
-                {
-                    "selector": "tbody tr:hover",
-                    "props": [("background-color", "#EEF2F7")],
-                },
-            ])
-            .set_properties(subset=left_cols_det, **{"text-align": "left"})
-            .set_properties(subset=monto_cols_det, **{"font-weight": "800"})
-            .apply(_highlight_first_row, axis=1)
-        )
-        if sit_cols_det:
-            styler_det = styler_det.map(_style_sit, subset=sit_cols_det)
-        if cc_cols_det:
-            styler_det = styler_det.map(_style_cc, subset=cc_cols_det)
-        if monto_cols_det:
-            styler_det = styler_det.map(_style_monto, subset=monto_cols_det)
-        st.caption("Colores guía: fila principal azul suave · PAGADO verde · NO PAGADO rojo · EGRESO rojo / INGRESO verde.")
-        st.dataframe(
-            styler_det,
-            use_container_width=True,
-            height=table_height,
-        )
+    render_flujo_operacional()
 
 # =========================================================
 # 🏗️ TAB 6: CAPEX

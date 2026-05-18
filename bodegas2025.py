@@ -41,7 +41,6 @@ HERO_URI = data_uri("IMG_7331.jpeg")
 
 section_options = [
     "🏠 Overview Ejecutivo",
-    "🏠 Overview Ejecutivo 2",
     "📈 Flujo Operacional",
     "⚠️ Riesgo & Cobranza",
     "🏢 Canon & Contratos",
@@ -128,8 +127,8 @@ aside[data-testid="stSidebar"] {
     width: 252px !important;
     min-width: 252px !important;
     max-width: 252px !important;
-    background: linear-gradient(180deg, #061d3b 0%, #031326 62%, #020b17 100%) !important;
-    border-right: 1px solid rgba(148, 163, 184, 0.16);
+    background: linear-gradient(180deg, #031B34 0%, #021326 100%) !important;
+    border-right: 1px solid rgba(148, 163, 184, 0.10);
     transition: margin-left 160ms ease, width 160ms ease, min-width 160ms ease, opacity 120ms ease;
     z-index: 999;
     transform: translateX(0) !important;
@@ -254,17 +253,19 @@ section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] >
     border-radius: 8px;
     border: 1px solid transparent;
     background: transparent;
-    transition: all 0.15s ease;
+    transition: all 0.25s ease;
     align-items: center !important;
 }
 section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label:hover {
-    background: rgba(59, 130, 246, 0.14);
-    border-color: rgba(147, 197, 253, 0.14);
+    background: #0F2E57;
+    border-color: rgba(255,255,255,0.08);
+    transform: translateX(2px);
 }
 section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label:has(input:checked) {
-    background: linear-gradient(135deg, #1D4ED8 0%, #163A8A 100%);
-    border-color: rgba(191, 219, 254, 0.16);
-    box-shadow: 0 0 24px rgba(37,99,235,0.25), 0 12px 26px rgba(29, 78, 216, 0.18);
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 8px 24px rgba(37,99,235,0.28);
+    transform: translateX(2px);
 }
 section[data-testid="stSidebar"] div[role="radiogroup"][aria-label="Sección"] > label > div:last-child {
     color: #dbeafe;
@@ -289,7 +290,12 @@ section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] 
     border-radius: 8px !important;
     border: 1px solid transparent !important;
     background: transparent !important;
-    transition: all 0.15s ease !important;
+    transition: all 0.25s ease !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label:hover {
+    background: #0F2E57 !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    transform: translateX(2px);
 }
 section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child {
     display: none !important;
@@ -301,9 +307,10 @@ section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] 
     font-weight: 780 !important;
 }
 section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) {
-    background: linear-gradient(135deg, #2b6fd6 0%, #174a9b 100%) !important;
-    border-color: rgba(191, 219, 254, 0.24) !important;
-    box-shadow: 0 12px 26px rgba(29, 78, 216, 0.28) !important;
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.28) !important;
+    transform: translateX(2px);
 }
 section[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) [data-testid="stMarkdownContainer"] p {
     color: #ffffff !important;
@@ -455,7 +462,7 @@ components.html(
             } catch (err) {}
             const sidebar = doc.querySelector('section[data-testid="stSidebar"], aside[data-testid="stSidebar"]');
             if (sidebar && !value) {
-                sidebar.style.background = "linear-gradient(180deg, #061d3b 0%, #031326 62%, #020b17 100%)";
+                sidebar.style.background = "linear-gradient(180deg, #031B34 0%, #021326 100%)";
                 sidebar.style.visibility = "visible";
                 sidebar.style.opacity = "1";
                 sidebar.style.transform = "translateX(0)";
@@ -2745,7 +2752,7 @@ st.markdown("""
 # =========================================================
 # 🏠 TAB 1: VISIÓN GENERAL
 # =========================================================
-if active_section == "🏠 Overview Ejecutivo":
+if active_section == "🏠 Overview Ejecutivo Legacy":
     import plotly.graph_objects as go
 
     data_src = df_f.copy()
@@ -4436,7 +4443,7 @@ if active_section == "🏠 Overview Ejecutivo":
 # =========================================================
 # 🏠 TAB 1B: OVERVIEW EJECUTIVO 2
 # =========================================================
-if active_section == "🏠 Overview Ejecutivo 2":
+if active_section == "🏠 Overview Ejecutivo":
     import plotly.graph_objects as go
 
     data_v2 = df_f.copy()
@@ -4541,6 +4548,57 @@ if active_section == "🏠 Overview Ejecutivo 2":
     health_delta_90 = 4 if utilidad_operativa >= 0 else -4
     liquidity_state = "crítica" if cobertura_egresos < 1 else ("controlada" if cobertura_egresos < 3 else "sólida")
     net_state = "negativo" if utilidad_operativa < 0 else "positivo"
+    priority_label_ov2 = "Reforzar caja y cobranza" if cobertura_egresos < 1 or posicion_neta < 0 else "Mantener disciplina operativa"
+    priority_copy_ov2 = (
+        f"Priorizar recuperación de liquidez: caja cubre {cobertura_egresos:.1f} meses y el resultado acumulado sigue bajo presión."
+        if cobertura_egresos < 1 or posicion_neta < 0
+        else f"Mantener control de egresos y monitoreo de canon; la cobertura financiera se mantiene en {cobertura_egresos:.1f}x."
+    )
+    honorario_base_cu = 1_700_000
+    honorario_actual_cu = 1_500_000
+    honorario_personas = 2
+    neto_a_cubrir_ov2 = max(0.0, abs(float(posicion_neta)) if posicion_neta < 0 else abs(float(utilidad_operativa)) if utilidad_operativa < 0 else 0.0)
+    honorario_scenarios_ov2 = []
+    for plazo_meses in (6, 8, 12):
+        reducir_cu = neto_a_cubrir_ov2 / plazo_meses / honorario_personas if plazo_meses and honorario_personas else 0.0
+        sueldo_cu = max(0.0, honorario_base_cu - reducir_cu)
+        honorario_scenarios_ov2.append((plazo_meses, reducir_cu, sueldo_cu))
+    ahorro_actual_mes_ov2 = max(0.0, honorario_base_cu - honorario_actual_cu) * honorario_personas
+    meses_cubre_actual_ov2 = neto_a_cubrir_ov2 / ahorro_actual_mes_ov2 if ahorro_actual_mes_ov2 else 0.0
+    today_ov2 = pd.Timestamp.today().normalize()
+    fecha_ov2 = pd.to_datetime(data_v2.get("Fecha_dt", data_v2.get("Fecha")), errors="coerce").dt.normalize()
+    short_window_ov2 = fecha_ov2.between(today_ov2 - pd.Timedelta(days=30), today_ov2 + pd.Timedelta(days=30), inclusive="both")
+    pending_ov2 = data_v2["Sit_norm"].eq("NO PAGADO") & short_window_ov2
+    cxc_30_ov2 = float(data_v2.loc[pending_ov2 & data_v2["CC_norm"].eq("INGRESO"), "Monto"].abs().sum())
+    cxp_30_ov2 = float(data_v2.loc[pending_ov2 & data_v2["CC_norm"].eq("EGRESO"), "Monto"].abs().sum())
+    gap_corto_ov2 = cxc_30_ov2 - cxp_30_ov2
+    salida_diaria_ov2 = (cxp_30_ov2 / 30) if cxp_30_ov2 > 0 else (abs(float(egreso_mensual_promedio)) / 30 if egreso_mensual_promedio else 0)
+    cobertura_dias_ov2 = max(0.0, float(balance_kpi) / salida_diaria_ov2) if salida_diaria_ov2 else 0.0
+
+    def ov2_status(value: float, kind: str) -> tuple[str, str]:
+        if kind == "cxc":
+            if value <= 0:
+                return "pressure", "Sin entrada"
+            if value >= cxp_30_ov2:
+                return "healthy", "Saludable"
+            return "attention", "Atención"
+        if kind == "cxp":
+            if value <= 0:
+                return "healthy", "Sin presión"
+            if value <= cxc_30_ov2:
+                return "attention", "Cubierto"
+            return "pressure", "Presión"
+        if kind == "gap":
+            if value >= 0:
+                return "healthy", "Saludable"
+            if abs(value) <= max(float(balance_kpi), 0):
+                return "attention", "Atención"
+            return "pressure", "Presión"
+        if value >= 30:
+            return "healthy", "Saludable"
+        if value >= 15:
+            return "attention", "Atención"
+        return "pressure", "Presión"
 
     flow_ov2 = data_v2.dropna(subset=["Monto", "Periodo_ref"]).copy()
     flow_ov2 = flow_ov2[flow_ov2["CC_norm"].isin(["INGRESO", "EGRESO"])]
@@ -4560,30 +4618,30 @@ if active_section == "🏠 Overview Ejecutivo 2":
         """
         <style>
         .tab-title-row {
-            margin:-61px 0 8px 0;
+            margin:-61px 0 4px 0;
         }
         .tab-title-main {
-            font-size:25px;
+            font-size:24px;
         }
         .tab-title-sub {
-            margin-top:5px;
-            font-size:12px;
+            margin-top:3px;
+            font-size:11.5px;
             font-weight:500;
             letter-spacing:0.2px;
         }
         .ov2-hero-kpis {
             display:grid;
             grid-template-columns:repeat(5,minmax(0,1fr));
-            gap:8px;
-            margin:6px 0 8px 0;
+            gap:7px;
+            margin:4px 0 6px 0;
         }
         .ov2-kpi {
-            min-height:92px;
+            min-height:78px;
             border:1px solid rgba(219,227,238,0.72);
             border-radius:14px;
             background:linear-gradient(135deg,#ffffff 0%,var(--soft) 100%);
             box-shadow:0 4px 18px rgba(15,23,42,0.045);
-            padding:9px 11px 8px 11px;
+            padding:8px 10px 6px 10px;
             display:flex;
             flex-direction:column;
             justify-content:space-between;
@@ -4602,12 +4660,12 @@ if active_section == "🏠 Overview Ejecutivo 2":
         }
         .ov2-kpi-main {
             display:grid;
-            grid-template-columns:28px 1fr;
-            gap:7px;
+            grid-template-columns:25px 1fr;
+            gap:6px;
         }
         .ov2-icon {
-            width:26px;
-            height:26px;
+            width:24px;
+            height:24px;
             border-radius:999px;
             background:var(--halo);
             color:var(--accent);
@@ -4616,52 +4674,52 @@ if active_section == "🏠 Overview Ejecutivo 2":
             justify-content:center;
         }
         .ov2-icon svg {
-            width:15px;
-            height:15px;
+            width:14px;
+            height:14px;
         }
         .ov2-kpi-title {
             color:#081735;
-            font-size:9px;
+            font-size:8.5px;
             line-height:1.12;
             font-weight:950;
             text-transform:uppercase;
         }
         .ov2-kpi-value {
-            margin-top:4px;
+            margin-top:3px;
             color:var(--accent);
-            font-size:17px;
+            font-size:15.5px;
             line-height:1.02;
             font-weight:950;
             letter-spacing:0;
             white-space:nowrap;
         }
         .ov2-kpi-sub {
-            margin-top:4px;
+            margin-top:3px;
             color:#64748b;
-            font-size:8.7px;
+            font-size:8.2px;
             line-height:1.2;
             font-weight:500;
             letter-spacing:0.2px;
         }
         .ov2-spark {
             width:100%;
-            height:17px;
-            margin-top:4px;
+            height:13px;
+            margin-top:2px;
             display:block;
         }
         .ov2-main-grid {
             display:grid;
-            grid-template-columns:2.25fr .95fr;
-            gap:10px;
+            grid-template-columns:2.94fr .83fr;
+            gap:8px;
             align-items:stretch;
-            margin-bottom:10px;
+            margin-bottom:2px;
         }
         .ov2-card {
             border:1px solid rgba(219,227,238,0.72);
             border-radius:12px;
             background:#ffffff;
             box-shadow:0 4px 18px rgba(15,23,42,0.045);
-            padding:10px;
+            padding:8px;
             min-height:0;
         }
         .ov2-main-grid [data-testid="stPlotlyChart"] {
@@ -4669,28 +4727,54 @@ if active_section == "🏠 Overview Ejecutivo 2":
             border-radius:12px;
             background:#ffffff;
             box-shadow:0 4px 18px rgba(15,23,42,0.045);
-            padding:10px;
+            padding:8px;
+        }
+        .ov2-main-anchor {
+            height:0;
+            min-height:0;
+            margin:0;
+            padding:0;
+            overflow:hidden;
+        }
+        div[data-testid="stVerticalBlock"]:has(.ov2-main-anchor) > div[data-testid="stHorizontalBlock"] {
+            gap:0.55rem;
+            align-items:flex-start;
+            margin-bottom:0;
+        }
+        div[data-testid="stVerticalBlock"]:has(.ov2-main-anchor) div[data-testid="stElementContainer"] {
+            margin-bottom:0 !important;
+        }
+        div[data-testid="stVerticalBlock"]:has(.ov2-main-anchor) [data-testid="stPlotlyChart"] {
+            border:0;
+            border-radius:12px;
+            background:#ffffff;
+            box-shadow:0 4px 18px rgba(15,23,42,0.045);
+            padding:7px 7px 3px 7px;
+            min-height:416px;
+        }
+        div[data-testid="stVerticalBlock"]:has(.ov2-main-anchor) [data-testid="stPlotlyChart"] > div {
+            min-height:400px;
         }
         .ov2-card-title {
             color:#081735;
-            font-size:14px;
+            font-size:13px;
             line-height:1.1;
             font-weight:950;
-            margin-bottom:7px;
+            margin-bottom:5px;
         }
         .ov2-intelligence-grid {
             display:grid;
             grid-template-columns:repeat(4,minmax(0,1fr));
-            gap:8px;
+            gap:7px;
             margin-top:4px;
         }
         .ov2-insight {
-            min-height:158px;
+            min-height:128px;
             border:1px solid rgba(229,235,243,0.86);
             border-radius:12px;
             background:#ffffff;
             box-shadow:0 4px 18px rgba(15,23,42,0.035);
-            padding:14px;
+            padding:11px 12px;
             display:flex;
             flex-direction:column;
             justify-content:space-between;
@@ -4700,86 +4784,211 @@ if active_section == "🏠 Overview Ejecutivo 2":
         .ov2-insight-head {
             display:flex;
             align-items:center;
-            gap:6px;
+            gap:5px;
             color:#081735;
-            font-size:10.5px;
+            font-size:10px;
             font-weight:950;
-            margin-bottom:6px;
+            margin-bottom:4px;
         }
         .ov2-insight-head .ov2-icon {
-            width:22px;
-            height:22px;
+            width:20px;
+            height:20px;
             flex:0 0 auto;
         }
         .ov2-insight-value {
             color:var(--accent);
-            font-size:24px;
+            font-size:20px;
             line-height:1;
             font-weight:950;
         }
         .ov2-insight-copy {
-            margin-top:5px;
+            margin-top:4px;
             color:#475569;
-            font-size:11px;
-            line-height:1.35;
+            font-size:10px;
+            line-height:1.28;
             font-weight:500;
             letter-spacing:0.2px;
         }
         .ov2-health {
-            height:100%;
+            min-height:416px;
             display:flex;
             flex-direction:column;
-            justify-content:space-between;
+            justify-content:flex-start;
+            gap:10px;
+            padding:10px;
         }
         .ov2-health-gauge {
             display:grid;
-            grid-template-columns:150px 1fr;
-            gap:14px;
+            grid-template-columns:78px 1fr;
+            gap:8px;
             align-items:center;
-            margin:18px 0 18px 0;
+            margin:2px 0 0 0;
+        }
+        .ov2-health-gauge svg {
+            width:78px;
+            height:48px;
+            display:block;
         }
         .ov2-health-score {
             color:#081735;
-            font-size:40px;
+            font-size:32px;
             line-height:1;
             font-weight:950;
         }
         .ov2-health-state {
-            margin-top:5px;
+            margin-top:4px;
             display:inline-flex;
             align-items:center;
             justify-content:center;
-            height:27px;
-            min-width:92px;
-            border-radius:8px;
-            background:var(--state);
-            color:#ffffff;
-            font-size:11px;
+            min-height:20px;
+            min-width:0;
+            padding:3px 8px;
+            border-radius:999px;
+            background:rgba(245,158,11,0.14);
+            color:#D97706;
+            font-size:8.6px;
             font-weight:950;
         }
         .ov2-health-metrics {
             display:grid;
             grid-template-columns:repeat(3,minmax(0,1fr));
-            gap:8px;
-            margin-top:auto;
+            gap:5px;
+            margin-top:2px;
         }
         .ov2-health-metric {
             border:1px solid #e5ebf3;
-            border-radius:9px;
-            padding:10px;
+            border-radius:8px;
+            padding:5px 6px;
             background:#fbfdff;
         }
         .ov2-health-label {
             color:#64748b;
-            font-size:9px;
+            font-size:7.6px;
             font-weight:900;
             text-transform:uppercase;
         }
         .ov2-health-value {
-            margin-top:4px;
+            margin-top:2px;
             color:#081735;
-            font-size:13px;
+            font-size:9.4px;
             font-weight:950;
+        }
+        .ov2-short-pressure {
+            margin-top:4px;
+            padding-top:7px;
+            border-top:1px solid rgba(226,232,240,0.86);
+            display:flex;
+            flex-direction:column;
+            gap:5px;
+        }
+        .ov2-short-title {
+            color:#081735;
+            font-size:9.4px;
+            line-height:1.1;
+            font-weight:950;
+            text-transform:uppercase;
+        }
+        .ov2-short-kpi {
+            border:1px solid rgba(226,232,240,0.92);
+            border-radius:8px;
+            background:#fbfdff;
+            padding:6px 7px;
+            display:grid;
+            grid-template-columns:1fr auto;
+            gap:6px;
+            align-items:center;
+        }
+        .ov2-short-label {
+            color:#64748b;
+            font-size:8.4px;
+            line-height:1.12;
+            font-weight:850;
+        }
+        .ov2-short-value {
+            margin-top:2px;
+            color:#081735;
+            font-size:12px;
+            line-height:1;
+            font-weight:950;
+        }
+        .ov2-short-badge {
+            border-radius:999px;
+            padding:3px 7px;
+            font-size:7.8px;
+            line-height:1;
+            font-weight:950;
+            white-space:nowrap;
+        }
+        .ov2-short-badge.healthy {
+            background:rgba(34,197,94,0.13);
+            color:#15803D;
+        }
+        .ov2-short-badge.attention {
+            background:rgba(245,158,11,0.14);
+            color:#D97706;
+        }
+        .ov2-short-badge.pressure {
+            background:rgba(248,113,113,0.14);
+            color:#DC2626;
+        }
+        .ov2-priority {
+            margin:2px 0 0 0;
+            min-height:52px;
+            border:1px solid rgba(219,227,238,0.78);
+            border-radius:12px;
+            background:#ffffff;
+            box-shadow:0 4px 18px rgba(15,23,42,0.035);
+            padding:8px 12px;
+            display:grid;
+            grid-template-columns:175px 1fr;
+            gap:10px;
+            align-items:center;
+        }
+        .ov2-priority-label {
+            color:#081735;
+            font-size:10.5px;
+            line-height:1.1;
+            font-weight:950;
+        }
+        .ov2-priority-action {
+            margin-top:2px;
+            color:#2563EB;
+            font-size:14px;
+            line-height:1.05;
+            font-weight:950;
+        }
+        .ov2-honorario-scenario {
+            margin-top:6px;
+            padding-top:6px;
+            border-top:1px solid rgba(226,232,240,0.9);
+        }
+        .ov2-honorario-title {
+            color:#081735;
+            font-size:9.2px;
+            line-height:1.1;
+            font-weight:950;
+            text-transform:uppercase;
+        }
+        .ov2-honorario-grid {
+            display:grid;
+            grid-template-columns:0.55fr 1fr 1fr;
+            gap:3px 6px;
+            margin-top:5px;
+            color:#475569;
+            font-size:8.7px;
+            line-height:1.15;
+            font-weight:700;
+        }
+        .ov2-honorario-grid strong {
+            color:#081735;
+            font-weight:950;
+        }
+        .ov2-honorario-note {
+            margin-top:5px;
+            color:#64748b;
+            font-size:8.8px;
+            line-height:1.2;
+            font-weight:600;
         }
         .ov2-actions {
             display:grid;
@@ -4810,7 +5019,7 @@ if active_section == "🏠 Overview Ejecutivo 2":
 
     st.markdown(
         f"""
-        {tab_header("Overview Ejecutivo 2", "Executive Asset Intelligence · dirección ejecutiva en 10 segundos")}
+        {tab_header("Overview Ejecutivo", "Executive Asset Intelligence · dirección ejecutiva en 10 segundos")}
         <div class="ov2-hero-kpis">
             <div class="ov2-kpi" style="--accent:#F87171;--soft:#fff7f7;--halo:#fee2e2;">
                 <div class="ov2-kpi-main"><div class="ov2-icon">{ov2_icon("liquidity")}</div><div><div class="ov2-kpi-title">Liquidez Operacional</div><div class="ov2-kpi-value">{fmt_clp_largo(balance_kpi)}</div><div class="ov2-kpi-sub">Runway operacional: {cobertura_egresos:.1f} meses</div></div></div>
@@ -4874,14 +5083,14 @@ if active_section == "🏠 Overview Ejecutivo 2":
         ))
     fig_ov2.add_hline(y=0, line_width=1, line_color="#CBD5E1")
     fig_ov2.update_layout(
-        title=dict(text="Flujo operacional consolidado", x=0.02, y=0.98, xanchor="left", font=dict(size=18, color="#081735")),
+        title=dict(text="Flujo operacional consolidado", x=0.02, y=0.98, xanchor="left", font=dict(size=17, color="#081735")),
         template="plotly_white",
-        height=420,
-        margin=dict(l=10, r=12, t=48, b=18),
+        height=400,
+        margin=dict(l=0, r=2, t=38, b=6),
         barmode="relative",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#FFFFFF",
-        legend=dict(orientation="h", y=1.01, x=0.02, bgcolor="rgba(255,255,255,0)", font=dict(size=11, color="#334155")),
+        legend=dict(orientation="h", y=1.015, x=0.02, bgcolor="rgba(255,255,255,0)", font=dict(size=10, color="#334155")),
         hovermode="x unified",
         hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
     )
@@ -4895,51 +5104,87 @@ if active_section == "🏠 Overview Ejecutivo 2":
         ticks="",
     )
     fig_ov2.update_xaxes(title_text="", tickformat="%b %Y", showgrid=False, showline=False, ticks="", rangeslider=dict(visible=False))
+    cxc_status_class, cxc_status_label = ov2_status(cxc_30_ov2, "cxc")
+    cxp_status_class, cxp_status_label = ov2_status(cxp_30_ov2, "cxp")
+    gap_status_class, gap_status_label = ov2_status(gap_corto_ov2, "gap")
+    coverage_status_class, coverage_status_label = ov2_status(cobertura_dias_ov2, "coverage")
 
-    st.markdown('<div class="ov2-main-grid">', unsafe_allow_html=True)
-    left_ov2, right_ov2 = st.columns([2.15, 1])
-    with left_ov2:
-        st.plotly_chart(fig_ov2, use_container_width=True, config={"displaylogo": False}, key="overview2_flujo_operacional")
-    with right_ov2:
-        st.markdown(
-            f"""
-            <div class="ov2-card ov2-health">
-                <div class="ov2-card-title">Asset Health Score</div>
-                <div class="ov2-insight-copy" style="margin-top:-4px;">Operational stability · {health_delta_90:+d} pts últimos 90 días</div>
-                <div class="ov2-health-gauge">
-                    <svg viewBox="0 0 120 72" aria-hidden="true">
-                        <defs>
-                            <linearGradient id="ov2HealthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="{health_color_ov2}"/>
-                                <stop offset="100%" stop-color="#FBBF24"/>
-                            </linearGradient>
-                        </defs>
-                        <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="#E5EAF2" stroke-width="9.5" stroke-linecap="round" pathLength="100"/>
-                        <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="url(#ov2HealthGradient)" stroke-width="9.5" stroke-linecap="round" pathLength="100" stroke-dasharray="{health_score_ov2} 100"/>
-                    </svg>
+    main_ov2 = st.container()
+    with main_ov2:
+        st.markdown('<div class="ov2-main-anchor"></div>', unsafe_allow_html=True)
+        left_ov2, right_ov2 = st.columns([2.94, .83], gap="small")
+        with left_ov2:
+            st.plotly_chart(fig_ov2, use_container_width=True, config={"displaylogo": False}, key="overview2_flujo_operacional")
+        with right_ov2:
+            st.markdown(
+                f"""
+                <div class="ov2-card ov2-health">
                     <div>
-                        <div class="ov2-health-score">{health_score_ov2}<span style="font-size:18px;color:#64748b;">/100</span></div>
-                        <div class="ov2-health-state" style="--state:{health_color_ov2};">{health_state_ov2}</div>
+                        <div class="ov2-card-title">Asset Health Score</div>
+                        <div class="ov2-insight-copy" style="margin-top:-4px;">Operational stability · {health_delta_90:+d} pts últimos 90 días</div>
+                    </div>
+                    <div class="ov2-health-gauge">
+                        <svg viewBox="0 0 120 72" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="ov2HealthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="{health_color_ov2}"/>
+                                    <stop offset="100%" stop-color="#FBBF24"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M18 58 A42 42 0 0 1 102 58" fill="none" stroke="#E7ECF3" stroke-width="6.4" stroke-linecap="round" pathLength="100"/>
+                            <path d="M18 58 A42 42 0 0 1 102 58" fill="none" stroke="url(#ov2HealthGradient)" stroke-width="6.4" stroke-linecap="round" pathLength="100" stroke-dasharray="{health_score_ov2} 100"/>
+                        </svg>
+                        <div>
+                            <div class="ov2-health-score">{health_score_ov2}<span style="font-size:18px;color:#64748b;">/100</span></div>
+                            <div class="ov2-health-state" style="--state:{health_color_ov2};">{health_state_ov2}</div>
+                        </div>
+                    </div>
+                    <div class="ov2-health-metrics">
+                        <div class="ov2-health-metric"><div class="ov2-health-label">Riesgo</div><div class="ov2-health-value">{health_state_ov2}</div></div>
+                        <div class="ov2-health-metric"><div class="ov2-health-label">Caja</div><div class="ov2-health-value">{liquidity_state}</div></div>
+                        <div class="ov2-health-metric"><div class="ov2-health-label">CAPEX</div><div class="ov2-health-value">{cobertura_capex:.0%}</div></div>
+                    </div>
+                    <div class="ov2-short-pressure">
+                        <div class="ov2-short-title">Presión financiera 30 días</div>
+                        <div class="ov2-short-kpi">
+                            <div><div class="ov2-short-label">Cuentas por cobrar &lt;30 días</div><div class="ov2-short-value">{fmt_clp_largo(cxc_30_ov2)}</div></div>
+                            <div class="ov2-short-badge {cxc_status_class}">{cxc_status_label}</div>
+                        </div>
+                        <div class="ov2-short-kpi">
+                            <div><div class="ov2-short-label">Cuentas por pagar &lt;30 días</div><div class="ov2-short-value">{fmt_clp_largo(cxp_30_ov2)}</div></div>
+                            <div class="ov2-short-badge {cxp_status_class}">{cxp_status_label}</div>
+                        </div>
+                        <div class="ov2-short-kpi">
+                            <div><div class="ov2-short-label">Gap operativo corto plazo</div><div class="ov2-short-value">{fmt_clp_largo(gap_corto_ov2)}</div></div>
+                            <div class="ov2-short-badge {gap_status_class}">{gap_status_label}</div>
+                        </div>
+                        <div class="ov2-short-kpi">
+                            <div><div class="ov2-short-label">Cobertura de caja inmediata</div><div class="ov2-short-value">{cobertura_dias_ov2:.0f} días</div></div>
+                            <div class="ov2-short-badge {coverage_status_class}">{coverage_status_label}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="ov2-health-metrics">
-                    <div class="ov2-health-metric"><div class="ov2-health-label">Riesgo</div><div class="ov2-health-value">{health_state_ov2}</div></div>
-                    <div class="ov2-health-metric"><div class="ov2-health-label">Caja</div><div class="ov2-health-value">{liquidity_state}</div></div>
-                    <div class="ov2-health-metric"><div class="ov2-health-label">CAPEX</div><div class="ov2-health-value">{cobertura_capex:.0%}</div></div>
-                </div>
-                <div class="ov2-insight-copy" style="margin-top:12px;">Prioridad: {'reforzar caja y cobranza' if cobertura_egresos < 1 or posicion_neta < 0 else 'mantener disciplina operativa'}.</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    st.markdown('</div>', unsafe_allow_html=True)
+                """,
+                unsafe_allow_html=True,
+            )
 
-    alert_items = [
-        f"{pressure_name} lidera egresos",
-        f"Caja cubre {cobertura_egresos:.1f} meses",
-        f"Neto operativo {net_state}",
-    ]
-    alert_html = "".join(f"<li>{item}</li>" for item in alert_items)
+    st.markdown(
+        f"""
+        <div class="ov2-priority">
+            <div>
+                <div class="ov2-priority-label">Prioridad de gestión</div>
+                <div class="ov2-priority-action">{priority_label_ov2}</div>
+            </div>
+            <div class="ov2-insight-copy" style="margin-top:0;">{priority_copy_ov2}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    honorario_rows_html = "".join(
+        f"<div>{plazo}M</div><div><strong>{fmt_clp_largo(reducir)}</strong></div><div><strong>{fmt_clp_largo(sueldo)}</strong></div>"
+        for plazo, reducir, sueldo in honorario_scenarios_ov2
+    )
     st.markdown(
         f"""
         <div class="ov2-intelligence-grid">
@@ -4961,7 +5206,16 @@ if active_section == "🏠 Overview Ejecutivo 2":
             </div>
             <div class="ov2-insight" style="--accent:#F87171;">
                 <div class="ov2-insight-head"><div class="ov2-icon" style="--accent:#F87171;--halo:#FEE2E2;">{ov2_icon("alert")}</div>Alertas automáticas</div>
-                <div class="ov2-insight-copy"><ul style="margin:0;padding-left:16px;">{alert_html}</ul></div>
+                <div class="ov2-insight-copy">
+                    <div class="ov2-honorario-scenario" style="margin-top:0;padding-top:0;border-top:0;">
+                        <div class="ov2-honorario-title">Escenario honorarios · base {fmt_clp_largo(honorario_base_cu)} c/u</div>
+                        <div class="ov2-honorario-grid">
+                            <strong>Plazo</strong><strong>Reducir c/u</strong><strong>Sueldo c/u</strong>
+                            {honorario_rows_html}
+                        </div>
+                        <div class="ov2-honorario-note">Para cubrir {fmt_clp_largo(neto_a_cubrir_ov2)}. Actual {fmt_clp_largo(honorario_actual_cu)} c/u: ahorro {fmt_clp_largo(ahorro_actual_mes_ov2)}/mes, cubre en {meses_cubre_actual_ov2:.1f} meses.</div>
+                    </div>
+                </div>
             </div>
         </div>
         """,

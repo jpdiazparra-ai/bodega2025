@@ -3717,12 +3717,12 @@ if active_section == "🏠 Overview Ejecutivo Legacy":
                     let y = margin;
                     let remaining = imgH;
 
-                    pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                    pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, null, "FAST");
                     remaining -= pageH - margin * 2;
                     while (remaining > 0) {
                         pdf.addPage();
                         y = margin - (imgH - remaining);
-                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, null, "FAST");
                         remaining -= pageH - margin * 2;
                     }
                     pdf.save("overview_ejecutivo_bodegas_balmaceda.pdf");
@@ -5083,7 +5083,7 @@ if active_section == "🏠 Overview Ejecutivo":
         ))
     fig_ov2.add_hline(y=0, line_width=1, line_color="#CBD5E1")
     fig_ov2.update_layout(
-        title=dict(text="Flujo operacional consolidado", x=0.02, y=0.98, xanchor="left", font=dict(size=17, color="#081735")),
+        title=dict(text=""),
         template="plotly_white",
         height=400,
         margin=dict(l=0, r=2, t=38, b=6),
@@ -7603,27 +7603,27 @@ if active_section == "📈 Flujo Operacional":
                 display:flex;
                 justify-content:space-between;
                 align-items:flex-start;
-                margin:-61px 0 20px 0;
+                margin:-61px 0 12px 0;
             }
             .ie-title {
                 color:#081735;
-                font-size:32px;
+                font-size:29px;
                 font-weight:950;
                 letter-spacing:-0.02em;
                 line-height:1;
             }
             .ie-subtitle {
-                margin-top:9px;
+                margin-top:6px;
                 color:#516179;
-                font-size:13px;
+                font-size:12px;
                 font-weight:750;
             }
             .ie-actions {
                 display:flex;
-                gap:10px;
+                gap:8px;
             }
             .ie-action {
-                height:46px;
+                height:40px;
                 display:flex;
                 align-items:center;
                 justify-content:center;
@@ -7631,8 +7631,8 @@ if active_section == "📈 Flujo Operacional":
                 border:1px solid #dbe3ee;
                 background:#ffffff;
                 color:#0f1f3d;
-                padding:0 16px;
-                font-size:12px;
+                padding:0 14px;
+                font-size:11.5px;
                 font-weight:900;
                 box-shadow:0 8px 18px rgba(15,23,42,0.04);
             }
@@ -7645,8 +7645,8 @@ if active_section == "📈 Flujo Operacional":
                 border:1px solid #dbe3ee;
                 border-radius:10px;
                 background:#ffffff;
-                padding:12px 16px 13px 16px;
-                margin: 0 0 12px 0;
+                padding:9px 14px 10px 14px;
+                margin: 0 0 8px 0;
                 box-shadow:0 12px 28px rgba(15,23,42,0.045);
             }
             .ie-filter-card [data-testid="column"] {
@@ -7661,32 +7661,37 @@ if active_section == "📈 Flujo Operacional":
                 gap:0 !important;
             }
             .ie-kpi-card {
-                min-height:116px;
+                min-height:102px;
                 border-radius:14px;
                 border:1px solid rgba(219,227,238,0.72);
                 background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-                padding:12px 14px 11px 14px;
+                padding:10px 12px 9px 12px;
                 box-shadow:0 4px 18px rgba(15,23,42,0.045);
                 display:flex;
                 flex-direction:column;
                 justify-content:space-between;
             }
+            .ie-kpi-card-critical {
+                border:1.5px solid var(--accent);
+                box-shadow:0 8px 24px rgba(15,23,42,0.07), inset 0 0 0 1px rgba(255,255,255,0.62);
+                background:linear-gradient(135deg, #ffffff 0%, var(--soft) 82%);
+            }
             .ie-kpi-head {
                 display:flex;
                 align-items:center;
-                gap:9px;
-                margin-bottom:7px;
+                gap:8px;
+                margin-bottom:5px;
             }
             .ie-kpi-icon {
-                width:30px;
-                height:30px;
+                width:27px;
+                height:27px;
                 border-radius:999px;
                 display:flex;
                 align-items:center;
                 justify-content:center;
                 background:var(--halo);
                 color:var(--accent);
-                font-size:15px;
+                font-size:13.5px;
                 font-weight:950;
                 flex:0 0 auto;
             }
@@ -7700,23 +7705,31 @@ if active_section == "📈 Flujo Operacional":
             }
             .ie-kpi-value {
                 color:var(--accent);
-                font-size:22px;
+                font-size:20px;
                 line-height:1.02;
                 font-weight:950;
                 letter-spacing:0;
                 white-space:nowrap;
+            }
+            .ie-kpi-card-critical .ie-kpi-value {
+                font-size:23px;
+                letter-spacing:-0.01em;
+            }
+            .ie-kpi-card-critical .ie-kpi-title {
+                color:#081735;
+                font-size:10.5px;
             }
             .ie-kpi-sub {
                 color:#516179;
                 font-size:9.5px;
                 line-height:1.2;
                 font-weight:700;
-                margin-top:4px;
+                margin-top:3px;
             }
             .ie-kpi-spark {
                 width:100%;
-                height:24px;
-                margin-top:7px;
+                height:18px;
+                margin-top:5px;
                 display:block;
             }
             .ie-kpi-spark path,
@@ -7728,8 +7741,8 @@ if active_section == "📈 Flujo Operacional":
                 align-items:center;
                 width:max-content;
                 max-width:100%;
-                margin-top:6px;
-                padding:4px 7px;
+                margin-top:4px;
+                padding:3px 7px;
                 border-radius:5px;
                 background:var(--badge-bg);
                 color:var(--badge-fg);
@@ -7737,12 +7750,18 @@ if active_section == "📈 Flujo Operacional":
                 font-weight:900;
                 white-space:nowrap;
             }
+            .ie-kpi-card-critical .ie-kpi-badge {
+                padding:4px 8px;
+                border-radius:999px;
+                font-size:10px;
+                box-shadow:0 4px 12px rgba(15,23,42,0.06);
+            }
             .ie-analysis-card {
                 border:1px solid rgba(219,227,238,0.72);
                 border-radius:14px;
                 background:#ffffff;
-                padding:14px;
-                height:520px;
+                padding:9px;
+                height:455px;
                 box-sizing:border-box;
                 box-shadow:0 4px 18px rgba(15,23,42,0.045);
                 display:flex;
@@ -7750,25 +7769,30 @@ if active_section == "📈 Flujo Operacional":
             }
             .ie-analysis-title {
                 color:#081735;
-                font-size:16px;
+                font-size:15px;
                 font-weight:950;
-                margin-bottom:12px;
+                margin-bottom:6px;
                 flex:0 0 auto;
             }
             .ie-health-card {
                 border:1px solid #e5ebf3;
-                border-radius:12px;
+                border-radius:10px;
                 background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
-                padding:12px;
-                margin-bottom:10px;
+                padding:7px 8px;
+                margin-bottom:6px;
                 display:grid;
-                grid-template-columns:108px 1fr;
-                gap:12px;
+                grid-template-columns:72px 1fr;
+                gap:8px;
                 align-items:center;
+            }
+            .ie-health-card svg {
+                width:72px;
+                height:44px;
+                display:block;
             }
             .ie-health-label {
                 color:#64748b;
-                font-size:10px;
+                font-size:8.5px;
                 font-weight:900;
                 text-transform:uppercase;
                 letter-spacing:.02em;
@@ -7778,60 +7802,70 @@ if active_section == "📈 Flujo Operacional":
                 font-size:24px;
                 font-weight:950;
                 line-height:1;
-                margin-top:4px;
+                margin-top:2px;
             }
             .ie-health-note {
-                color:#516179;
-                font-size:10.5px;
-                font-weight:700;
-                line-height:1.25;
+                display:inline-flex;
+                width:max-content;
+                max-width:100%;
+                border-radius:999px;
+                background:rgba(245,158,11,0.14);
+                color:#D97706;
+                font-size:8.6px;
+                font-weight:900;
+                line-height:1;
                 margin-top:5px;
+                padding:4px 7px;
             }
             .ie-analysis-list {
                 display:flex;
                 flex-direction:column;
-                gap:9px;
+                gap:6px;
                 flex:1 1 auto;
                 min-height:0;
             }
             .ie-analysis-row {
                 display:grid;
-                grid-template-columns:38px 1fr auto;
-                gap:10px;
+                grid-template-columns:31px minmax(0, 1fr);
+                gap:8px;
                 align-items:center;
                 border:1px solid rgba(229,235,243,0.82);
                 border-radius:10px;
-                padding:9px 11px;
+                padding:7px 8px;
                 background:#fbfdff;
                 flex:1 1 0;
                 min-height:0;
             }
             .ie-analysis-icon {
-                width:30px;
-                height:30px;
+                width:25px;
+                height:25px;
                 border-radius:999px;
                 display:flex;
                 align-items:center;
                 justify-content:center;
                 background:var(--soft);
                 color:var(--accent);
-                font-size:14px;
+                font-size:12px;
                 font-weight:900;
             }
             .ie-analysis-label {
                 color:#0f1f3d;
-                font-size:12px;
+                font-size:11px;
+                line-height:1.12;
                 font-weight:900;
             }
             .ie-analysis-sub {
-                margin-top:3px;
+                margin-top:2px;
                 color:#64748b;
-                font-size:10.5px;
+                font-size:9.4px;
+                line-height:1.16;
                 font-weight:650;
             }
             .ie-analysis-value {
+                margin-top:5px;
                 color:#0f1f3d;
-                font-size:12px;
+                font-size:12.5px;
+                line-height:1;
                 font-weight:900;
                 white-space:nowrap;
             }
@@ -7943,45 +7977,159 @@ if active_section == "📈 Flujo Operacional":
                 font-weight:850;
                 margin-top:2px;
             }
+            .ie-risk-grid {
+                display:grid;
+                grid-template-columns:repeat(5, minmax(0, 1fr));
+                gap:8px;
+                margin:8px 0 6px 0;
+            }
+            .ie-risk-card {
+                --risk:#F97316;
+                --risk-soft:rgba(249,115,22,0.12);
+                border:1px solid rgba(219,227,238,0.72);
+                border-left:4px solid var(--risk);
+                border-radius:14px;
+                background:linear-gradient(135deg,#ffffff 0%,var(--risk-soft) 135%);
+                padding:10px 11px;
+                min-height:102px;
+                box-shadow:0 4px 18px rgba(15,23,42,0.045);
+                display:flex;
+                flex-direction:column;
+                justify-content:space-between;
+            }
+            .ie-risk-card.healthy {
+                --risk:#16A34A;
+                --risk-soft:rgba(34,197,94,0.10);
+            }
+            .ie-risk-card.attention {
+                --risk:#EAB308;
+                --risk-soft:rgba(234,179,8,0.13);
+            }
+            .ie-risk-card.pressure {
+                --risk:#F97316;
+                --risk-soft:rgba(249,115,22,0.13);
+            }
+            .ie-risk-card.critical {
+                --risk:#DC2626;
+                --risk-soft:rgba(220,38,38,0.12);
+            }
+            .ie-risk-card-head {
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:8px;
+            }
+            .ie-risk-label {
+                color:#081735;
+                font-size:10px;
+                line-height:1.18;
+                font-weight:950;
+                text-transform:uppercase;
+                display:flex;
+                align-items:center;
+                gap:6px;
+            }
+            .ie-risk-label::before {
+                content:"";
+                width:7px;
+                height:7px;
+                flex:0 0 7px;
+                border-radius:999px;
+                background:var(--risk);
+                box-shadow:0 0 0 4px var(--risk-soft);
+            }
+            .ie-risk-value {
+                margin-top:8px;
+                color:var(--risk);
+                font-size:16px;
+                line-height:1;
+                font-weight:950;
+                white-space:nowrap;
+            }
+            .ie-risk-sub {
+                margin-top:5px;
+                color:#64748b;
+                font-size:9.5px;
+                line-height:1.25;
+                font-weight:700;
+            }
+            .ie-risk-section-title {
+                color:#081735;
+                font-size:15px;
+                line-height:1.1;
+                font-weight:950;
+                margin:10px 0 2px 0;
+            }
+            .ie-risk-section-sub {
+                color:#64748b;
+                font-size:11px;
+                font-weight:700;
+                margin-bottom:6px;
+            }
+            .ie-status-badge {
+                display:inline-flex;
+                border-radius:999px;
+                padding:4px 8px;
+                font-size:8.5px;
+                line-height:1;
+                font-weight:950;
+                white-space:nowrap;
+            }
+            .ie-status-badge.healthy {
+                background:rgba(34,197,94,0.13);
+                color:#16A34A;
+            }
+            .ie-status-badge.attention {
+                background:rgba(234,179,8,0.16);
+                color:#A16207;
+            }
+            .ie-status-badge.pressure {
+                background:rgba(249,115,22,0.15);
+                color:#C2410C;
+            }
+            .ie-status-badge.critical {
+                background:rgba(220,38,38,0.14);
+                color:#DC2626;
+            }
             .neto-chart-card {
                 border:1px solid #dbe3ee;
                 border-radius:10px;
                 background:#ffffff;
-                padding:18px 22px 16px 22px;
+                padding:14px 18px 12px 18px;
                 box-shadow:0 12px 28px rgba(15,23,42,0.05);
-                margin-top:14px;
+                margin-top:10px;
             }
             .neto-card-head {
                 display:flex;
                 justify-content:space-between;
                 align-items:flex-start;
-                gap:18px;
-                margin-bottom:10px;
+                gap:14px;
+                margin-bottom:7px;
             }
             .neto-card-title {
                 color:#081735;
-                font-size:18px;
+                font-size:16px;
                 line-height:1.15;
                 font-weight:950;
                 letter-spacing:-0.018em;
             }
             .neto-card-sub {
                 color:#64748b;
-                font-size:13px;
+                font-size:11.5px;
                 font-weight:650;
-                margin-top:8px;
+                margin-top:5px;
             }
             .neto-kpi-grid {
                 display:grid;
-                grid-template-columns:repeat(4, minmax(0, 1fr));
+                grid-template-columns:repeat(3, minmax(0, 1fr));
                 border:1px solid #e5ebf3;
                 border-radius:9px;
                 overflow:hidden;
-                margin:8px 0 8px auto;
-                max-width:760px;
+                margin:5px 0 5px auto;
+                max-width:660px;
             }
             .neto-kpi-box {
-                padding:12px 14px;
+                padding:9px 11px;
                 background:#fbfdff;
                 border-left:1px solid #e5ebf3;
             }
@@ -7993,7 +8141,7 @@ if active_section == "📈 Flujo Operacional":
                 font-weight:850;
             }
             .neto-kpi-value {
-                margin-top:8px;
+                margin-top:5px;
                 color:var(--metric);
                 font-size:16px;
                 line-height:1;
@@ -8001,7 +8149,7 @@ if active_section == "📈 Flujo Operacional":
                 letter-spacing:-0.02em;
             }
             .neto-kpi-note {
-                margin-top:6px;
+                margin-top:4px;
                 color:#64748b;
                 font-size:10px;
                 font-weight:700;
@@ -8014,21 +8162,75 @@ if active_section == "📈 Flujo Operacional":
                 font-size:12px;
                 line-height:1.45;
                 font-weight:650;
-                margin-top:8px;
+                margin-top:5px;
+            }
+            .neto-filter-anchor {
+                height:0;
+                min-height:0;
+                margin:0;
+                padding:0;
+                overflow:hidden;
+            }
+            div[data-testid="stVerticalBlock"]:has(.neto-filter-anchor) > div[data-testid="stHorizontalBlock"] {
+                border:1px solid rgba(219,227,238,0.86);
+                border-radius:10px;
+                background:#fbfdff;
+                box-shadow:inset 0 1px 0 rgba(255,255,255,0.72);
+                padding:7px 8px 5px 8px;
+                margin:2px 0 5px 0;
+                gap:0.45rem;
+                align-items:flex-end;
+            }
+            div[data-testid="stVerticalBlock"]:has(.neto-filter-anchor) [data-testid="stSelectbox"] {
+                margin:0 !important;
+            }
+            div[data-testid="stVerticalBlock"]:has(.neto-filter-anchor) [data-testid="stSelectbox"] > label {
+                color:#64748b !important;
+                font-size:9.4px !important;
+                line-height:1 !important;
+                font-weight:950 !important;
+                text-transform:uppercase !important;
+                letter-spacing:.018em !important;
+                padding-bottom:3px !important;
+            }
+            div[data-testid="stVerticalBlock"]:has(.neto-filter-anchor) [data-baseweb="select"] > div {
+                min-height:30px !important;
+                height:30px !important;
+                border-radius:8px !important;
+                background:#ffffff !important;
+                border-color:#dbe3ee !important;
+                box-shadow:none !important;
+            }
+            div[data-testid="stVerticalBlock"]:has(.neto-filter-anchor) [data-baseweb="select"] div {
+                font-size:11px !important;
+                font-weight:800 !important;
+            }
+            .neto-filter-action {
+                height:30px;
+                border:1px solid #dbe3ee;
+                border-radius:8px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                color:#081735;
+                font-weight:950;
+                background:#ffffff;
+                margin-top:14px;
+                box-sizing:border-box;
             }
             main [data-testid="stSelectbox"] > label,
             main [data-testid="stRadio"] > label {
                 color:#0f1f3d !important;
-                font-size:12px !important;
+                font-size:11.5px !important;
                 line-height:1.1 !important;
                 font-weight:900 !important;
-                padding-bottom:6px !important;
+                padding-bottom:4px !important;
             }
             main div[role="radiogroup"] {
                 display:grid !important;
                 grid-template-columns:repeat(2, minmax(0, 1fr));
                 gap:0 !important;
-                min-height:38px !important;
+                min-height:34px !important;
                 border-radius:7px !important;
                 overflow:hidden !important;
                 background:#f8fafc !important;
@@ -8036,7 +8238,7 @@ if active_section == "📈 Flujo Operacional":
                 box-shadow:inset 0 1px 0 rgba(255,255,255,0.65) !important;
             }
             main div[role="radiogroup"] > label {
-                min-height:38px !important;
+                min-height:34px !important;
                 margin:0 !important;
                 padding:0 12px !important;
                 border:0 !important;
@@ -8045,7 +8247,7 @@ if active_section == "📈 Flujo Operacional":
                 align-items:center !important;
                 justify-content:center !important;
                 color:#0f1f3d !important;
-                font-size:12px !important;
+                font-size:11.5px !important;
                 font-weight:850 !important;
                 transition:all .16s ease !important;
             }
@@ -8178,12 +8380,12 @@ if active_section == "📈 Flujo Operacional":
                         let y = margin;
                         let remaining = imgH;
 
-                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                        pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, null, "FAST");
                         remaining -= pageH - margin * 2;
                         while (remaining > 0) {
                             pdf.addPage();
                             y = margin - (imgH - remaining);
-                            pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, undefined, "FAST");
+                            pdf.addImage(imgData, "PNG", margin, y, usableW, imgH, null, "FAST");
                             remaining -= pageH - margin * 2;
                         }
                         pdf.save("flujo_operacional_bodegas_balmaceda.pdf");
@@ -8396,11 +8598,12 @@ if active_section == "📈 Flujo Operacional":
                     f'</svg>'
                 )
 
-            def ie_metric_card(title, value, subtitle, icon, accent, soft, halo, border, badge_text, sparkline, badge_positive=True):
+            def ie_metric_card(title, value, subtitle, icon, accent, soft, halo, border, badge_text, sparkline, badge_positive=True, critical=False):
                 badge_bg = "#dcfce7" if badge_positive else "#fee2e2"
                 badge_fg = "#047857" if badge_positive else "#b91c1c"
+                critical_class = " ie-kpi-card-critical" if critical else ""
                 return f"""
-                <div class="ie-kpi-card" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};--badge-bg:{badge_bg};--badge-fg:{badge_fg};">
+                <div class="ie-kpi-card{critical_class}" style="--accent:{accent};--soft:{soft};--halo:{halo};--border:{border};--badge-bg:{badge_bg};--badge-fg:{badge_fg};">
                     <div>
                         <div class="ie-kpi-head">
                             <div class="ie-kpi-icon">{icon}</div>
@@ -8464,6 +8667,7 @@ if active_section == "📈 Flujo Operacional":
                         "Operativo",
                         ie_sparkline(base["Neto"], "#2563EB" if total_neto >= 0 else "#F87171"),
                         total_neto >= 0,
+                        True,
                     ),
                     unsafe_allow_html=True,
                 )
@@ -8482,6 +8686,7 @@ if active_section == "📈 Flujo Operacional":
                         "A la fecha",
                         ie_sparkline(base["Neto_acumulado"], "#2563EB" if total_neto_acumulado >= 0 else "#F87171"),
                         total_neto_acumulado >= 0,
+                        True,
                     ),
                     unsafe_allow_html=True,
                 )
@@ -8514,7 +8719,7 @@ if active_section == "📈 Flujo Operacional":
                 + "<br>Margen: " + base["Margen"].map(lambda v: f"{v:.1%}")
             )
 
-            fig_ie = make_subplots(specs=[[{"secondary_y": True}]])
+            fig_ie = make_subplots(specs=[[{"secondary_y": False}]])
 
             fig_ie.add_trace(
                 go.Scatter(
@@ -8586,18 +8791,6 @@ if active_section == "📈 Flujo Operacional":
                 ),
                 secondary_y=False,
             )
-            fig_ie.add_trace(
-                go.Scatter(
-                    x=base["Periodo"],
-                    y=base["Margen"],
-                    mode="lines",
-                    name="Margen neto",
-                    line=dict(color="#94A3B8", width=1.8, dash="dot"),
-                    hoverinfo="skip",
-                ),
-                secondary_y=True,
-            )
-
             fig_ie.add_hline(y=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75, secondary_y=False)
 
             fig_ie.update_layout(
@@ -8614,8 +8807,8 @@ if active_section == "📈 Flujo Operacional":
                     color="#334155",
                 ),
                 template="plotly_white",
-                height=500,
-                margin=dict(l=18, r=24, t=64, b=34),
+                height=455,
+                margin=dict(l=18, r=22, t=52, b=26),
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
@@ -8665,23 +8858,12 @@ if active_section == "📈 Flujo Operacional":
                 tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
                 secondary_y=False,
             )
-            fig_ie.update_yaxes(
-                title_text="Margen",
-                tickformat=".0%",
-                showgrid=False,
-                zeroline=False,
-                range=[-1, 1],
-                title_font=dict(size=12, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-                tickfont=dict(size=11, color="#475569", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-                secondary_y=True,
-            )
-
             legend_script = """
             const chart = document.getElementById('{plot_id}');
             const legendIndexes = () => chart.data
                 .map((trace, index) => trace.showlegend === false ? null : index)
                 .filter(index => index !== null);
-            const isVisible = value => value === undefined || value === true;
+            const isVisible = value => value !== false;
             const setVisibility = visible => Plotly.restyle(chart, {visible: visible});
 
             chart.on('plotly_legendclick', eventData => {
@@ -8746,7 +8928,7 @@ if active_section == "📈 Flujo Operacional":
             health_color = "#22C55E" if health_score >= 70 else ("#F59E0B" if health_score >= 45 else "#F87171")
             health_note = "Operación estable" if health_score >= 70 else ("Atención operativa" if health_score >= 45 else "Presión financiera")
 
-            chart_col, analysis_col = st.columns([2.35, 1])
+            chart_col, analysis_col = st.columns([2.75, 0.82])
             with chart_col:
                 components.html(
                     f"""
@@ -8766,9 +8948,8 @@ if active_section == "📈 Flujo Operacional":
                         <div class="ie-analysis-title">Análisis rápido del período</div>
                         <div class="ie-health-card">
                             <svg viewBox="0 0 120 72" aria-hidden="true">
-                                <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="#E5EAF2" stroke-width="13" stroke-linecap="round" pathLength="100"/>
-                                <path d="M15 60 A45 45 0 0 1 105 60" fill="none" stroke="{health_color}" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="{health_score} 100"/>
-                                <circle cx="60" cy="60" r="4" fill="#081735"/>
+                                <path d="M18 58 A42 42 0 0 1 102 58" fill="none" stroke="#E5EAF2" stroke-width="7.5" stroke-linecap="round" pathLength="100"/>
+                                <path d="M18 58 A42 42 0 0 1 102 58" fill="none" stroke="{health_color}" stroke-width="7.5" stroke-linecap="round" pathLength="100" stroke-dasharray="{health_score} 100"/>
                             </svg>
                             <div>
                                 <div class="ie-health-label">Operational Health Score</div>
@@ -8782,32 +8963,32 @@ if active_section == "📈 Flujo Operacional":
                                 <div>
                                     <div class="ie-analysis-label">Mayores ingresos</div>
                                     <div class="ie-analysis-sub">{top_ingreso_label}</div>
+                                    <div class="ie-analysis-value">{fmt_clp_largo(top_ingreso_val)}</div>
                                 </div>
-                                <div class="ie-analysis-value">{fmt_clp_largo(top_ingreso_val)}</div>
                             </div>
                             <div class="ie-analysis-row" style="--accent:#DC2626;--soft:#FEE2E2;">
                                 <div class="ie-analysis-icon">{ie_icon_svg("down")}</div>
                                 <div>
                                     <div class="ie-analysis-label">Mayores egresos</div>
                                     <div class="ie-analysis-sub">{top_egreso_label}</div>
+                                    <div class="ie-analysis-value">-{fmt_clp_largo(top_egreso_val)}</div>
                                 </div>
-                                <div class="ie-analysis-value">-{fmt_clp_largo(top_egreso_val)}</div>
                             </div>
                             <div class="ie-analysis-row" style="--accent:#2563EB;--soft:#DBEAFE;">
                                 <div class="ie-analysis-icon">{ie_icon_svg("equal")}</div>
                                 <div>
-                                    <div class="ie-analysis-label">Resultado neto del período</div>
+                                    <div class="ie-analysis-label">Resultado operacional</div>
                                     <div class="ie-analysis-sub">{'Superávit' if total_neto >= 0 else 'Déficit'} operacional</div>
+                                    <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
                                 </div>
-                                <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
                             </div>
                             <div class="ie-analysis-row" style="--accent:#B7791F;--soft:#FEF3C7;">
                                 <div class="ie-analysis-icon">{ie_icon_svg("percent")}</div>
                                 <div>
                                     <div class="ie-analysis-label">Tendencia</div>
                                     <div class="ie-analysis-sub">{tendencia_txt}</div>
+                                    <div style="margin-top:5px;"><span class="ie-risk-pill" style="background:{tendencia_bg};color:{tendencia_fg};">{tendencia_estado}</span></div>
                                 </div>
-                                <div class="ie-risk-pill" style="background:{tendencia_bg};color:{tendencia_fg};">{tendencia_estado}</div>
                             </div>
                         </div>
                     </div>
@@ -8818,115 +8999,115 @@ if active_section == "📈 Flujo Operacional":
                 """
                 <div class="ie-guide-note">
                     <span>ⓘ</span>
-                    <div>Colores guía: Ingresos (verde) · Egresos (coral) · Neto (azul) · Neto acumulado (naranja) · Margen neto (gris punteado).</div>
+                    <div>Colores guía: Ingresos (verde) · Egresos (coral) · Neto (azul) · Neto acumulado (naranja). El margen queda disponible en tooltip y KPIs.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-            resumen_periodo_rows = [
-                ("↑", "#059669", "#DCFCE7", "Total ingresos", "Suma de ingresos del período", fmt_clp_largo(total_ing), "100.0%"),
-                ("↓", "#DC2626", "#FEE2E2", "Total egresos", "Suma de egresos del período", fmt_clp_largo(total_egr), f"{(total_egr / total_ing if total_ing else 0):.1%}"),
-                ("=", "#2563EB" if total_neto >= 0 else "#DC2626", "#DBEAFE" if total_neto >= 0 else "#FEE2E2", "Total neto", "Ingresos menos egresos", fmt_clp_largo(total_neto), f"{total_margen:.1%}"),
-                ("Σ", "#1D4ED8" if total_neto_acumulado >= 0 else "#DC2626", "#DBEAFE" if total_neto_acumulado >= 0 else "#FEE2E2", "Neto acumulado", "Suma de Ingresos + Egresos sin incluir Abono", fmt_clp_largo(total_neto_acumulado), "-"),
-                ("%", "#B7791F" if total_margen >= 0 else "#DC2626", "#FEF3C7" if total_margen >= 0 else "#FEE2E2", "Margen neto", "Neto dividido por ingresos", f"{total_margen:.1%}", "-"),
-            ]
-            resumen_periodo_html = "".join(
-                (
-                    f'<div class="ie-summary-row" style="--accent:{accent};--soft:{soft};">'
-                    f'<div class="ie-summary-icon">{icon}</div>'
-                    f'<div><div class="ie-summary-label">{label}</div><div class="ie-summary-desc">{desc}</div></div>'
-                    f'<div class="ie-summary-value">{value}<div class="ie-summary-pct">{pct}</div></div>'
-                    f'</div>'
-                )
-                for icon, accent, soft, label, desc, value, pct in resumen_periodo_rows
+            today_ie = pd.Timestamp.today().normalize()
+            fecha_oper_ie = pd.to_datetime(_df.get("Fecha_dt", _df.get("Fecha")), errors="coerce").dt.normalize()
+            short_window_ie = fecha_oper_ie.between(today_ie - pd.Timedelta(days=30), today_ie + pd.Timedelta(days=30), inclusive="both")
+            pending_ie = _df["Sit_norm"].eq("NO PAGADO") & short_window_ie
+            cxc_30_ie = float(_df.loc[pending_ie & _df["CC_norm"].eq("INGRESO"), "Monto"].abs().sum())
+            cxp_30_ie = float(_df.loc[pending_ie & _df["CC_norm"].eq("EGRESO"), "Monto"].abs().sum())
+            mora_df_ie = df_ie_base_periodo[df_ie_base_periodo["CC_norm"].eq("INGRESO")].copy()
+            mora_np_ie = float(mora_df_ie.loc[mora_df_ie["Sit_norm"].eq("NO PAGADO"), "Monto"].abs().sum())
+            mora_abono_ie = float(mora_df_ie.loc[mora_df_ie["Sit_norm"].str.startswith("ABONO"), "Monto"].abs().sum())
+            mora_acum_ie = max(0.0, mora_np_ie - mora_abono_ie)
+            ingresos_resp_ie = (
+                _df[_df["CC_norm"].eq("INGRESO")]
+                .assign(Resp_clean=lambda d: d["Responsable_clean"].astype(str).str.strip().replace("", "Sin responsable"))
+                .groupby("Resp_clean")["Monto"]
+                .sum()
+                .abs()
+                .sort_values(ascending=False)
             )
+            ingreso_total_resp_ie = float(ingresos_resp_ie.sum()) if not ingresos_resp_ie.empty else 0.0
+            concentracion_ing_ie = float(ingresos_resp_ie.head(3).sum() / ingreso_total_resp_ie) if ingreso_total_resp_ie else 0.0
+            top_resp_ie = str(ingresos_resp_ie.index[0]) if not ingresos_resp_ie.empty else "Sin responsable"
+            egresos_pressure_ie = (
+                _df[_df["CC_norm"].eq("EGRESO")]
+                .assign(CC1_clean=lambda d: d["CC1_text"].astype(str).str.strip().replace("", "Sin clasificar"))
+                .groupby("CC1_clean")["Monto"]
+                .sum()
+                .abs()
+                .sort_values(ascending=False)
+            )
+            principal_egreso_ie = str(egresos_pressure_ie.index[0]) if not egresos_pressure_ie.empty else "Sin egresos"
+            principal_egreso_val_ie = float(egresos_pressure_ie.iloc[0]) if not egresos_pressure_ie.empty else 0.0
 
-            bottom_1, bottom_2, bottom_3 = st.columns([1.15, 1.1, 1.15])
-            with bottom_1:
-                st.markdown(
-                    f"""
-                    <div class="ie-bottom-card">
-                        <div class="ie-bottom-title">Resumen del período</div>
-                        <div class="ie-summary-list">{resumen_periodo_html}</div>
+            def ie_status_badge(value: float, kind: str) -> tuple[str, str]:
+                if kind == "cxc":
+                    if value <= 0:
+                        return "critical", "Crítico"
+                    if value >= cxp_30_ie:
+                        return "healthy", "Saludable"
+                    if value >= cxp_30_ie * 0.5:
+                        return "attention", "Atención"
+                    return "pressure", "Presión"
+                if kind == "cxp":
+                    if value <= 0:
+                        return "healthy", "Saludable"
+                    if value <= cxc_30_ie:
+                        return "attention", "Atención"
+                    if value <= max(cxc_30_ie, 1) * 1.5:
+                        return "pressure", "Presión"
+                    return "critical", "Crítico"
+                if kind == "mora":
+                    if value <= 0:
+                        return "healthy", "Saludable"
+                    if value <= max(cxc_30_ie, 1):
+                        return "attention", "Atención"
+                    if value <= max(cxc_30_ie, 1) * 2:
+                        return "pressure", "Presión"
+                    return "critical", "Crítico"
+                if kind == "concentracion":
+                    if value < 0.45:
+                        return "healthy", "Saludable"
+                    if value < 0.65:
+                        return "attention", "Atención"
+                    if value < 0.80:
+                        return "pressure", "Presión"
+                    return "critical", "Crítico"
+                if value <= 0:
+                    return "healthy", "Saludable"
+                if value <= max(cxp_30_ie, 1) * 0.6:
+                    return "attention", "Atención"
+                if value <= max(cxp_30_ie, 1):
+                    return "pressure", "Presión"
+                return "critical", "Crítico"
+
+            risk_cards_ie = [
+                ("CxC <30 días", fmt_clp_largo(cxc_30_ie), "Entrada operativa esperada", *ie_status_badge(cxc_30_ie, "cxc")),
+                ("CxP <30 días", fmt_clp_largo(cxp_30_ie), "Salida exigible inmediata", *ie_status_badge(cxp_30_ie, "cxp")),
+                ("Mora acumulada", fmt_clp_largo(mora_acum_ie), "No pagado neto de abonos", *ie_status_badge(mora_acum_ie, "mora")),
+                ("Concentración ingresos", f"{concentracion_ing_ie:.0%}", f"Top 3 · principal: {top_resp_ie}", *ie_status_badge(concentracion_ing_ie, "concentracion")),
+                ("Presión de egreso", fmt_clp_largo(principal_egreso_val_ie), principal_egreso_ie, *ie_status_badge(principal_egreso_val_ie, "egreso")),
+            ]
+            risk_cards_html = "".join(
+                f"""
+                <div class="ie-risk-card {badge_class}">
+                    <div class="ie-risk-card-head">
+                        <div class="ie-risk-label">{label}</div>
+                        <div class="ie-status-badge {badge_class}">{badge_label}</div>
                     </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            with bottom_2:
-                fig_acum_small = go.Figure()
-                fig_acum_small.add_trace(
-                    go.Scatter(
-                        x=base["Periodo"],
-                        y=base["Neto_acumulado"],
-                        mode="lines+markers",
-                        name="Neto acumulado",
-                        line=dict(color="#EF4444" if total_neto_acumulado < 0 else "#059669", width=2.4),
-                        marker=dict(size=5, color="#EF4444" if total_neto_acumulado < 0 else "#059669"),
-                        fill="tozeroy",
-                        fillcolor="rgba(239,68,68,0.10)" if total_neto_acumulado < 0 else "rgba(5,150,105,0.10)",
-                        hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado: $%{y:,.0f}<extra></extra>",
-                    )
-                )
-                fig_acum_small.update_layout(
-                    title=dict(text="Evolución del neto acumulado", x=0.02, font=dict(size=15, color="#081735")),
-                    template="plotly_white",
-                    height=310,
-                    margin=dict(l=12, r=12, t=42, b=22),
-                    paper_bgcolor="#FFFFFF",
-                    plot_bgcolor="#FFFFFF",
-                    showlegend=False,
-                )
-                fig_acum_small.update_xaxes(showgrid=False, tickformat=("%b %Y" if periodo == "Mensual" else "%Y"))
-                fig_acum_small.update_yaxes(tickprefix="$", separatethousands=True, gridcolor="#E5EAF2")
-                st.plotly_chart(
-                    fig_acum_small,
-                    use_container_width=True,
-                    config={"displaylogo": False, "displayModeBar": False},
-                    key="ing_eg_neto_acumulado_bottom",
-                )
-            with bottom_3:
-                egresos_comp = (
-                    _df[_df["CC_norm"] == "EGRESO"]
-                    .assign(CC1_clean=lambda d: d["CC1_text"].astype(str).str.strip().replace("", "Sin clasificar"))
-                    .groupby("CC1_clean", as_index=False)["Monto"]
-                    .sum()
-                )
-                egresos_comp["Monto_abs"] = egresos_comp["Monto"].abs()
-                egresos_comp = egresos_comp.sort_values("Monto_abs", ascending=False).head(5)
-                if egresos_comp.empty:
-                    st.info("No hay egresos para componer en el período.")
-                else:
-                    fig_donut = go.Figure(
-                        go.Pie(
-                            labels=egresos_comp["CC1_clean"],
-                            values=egresos_comp["Monto_abs"],
-                            hole=0.58,
-                            marker=dict(colors=["#3B82F6", "#EF4444", "#F59E0B", "#64748B", "#A78BFA"]),
-                            textinfo="none",
-                            hovertemplate="<b>%{label}</b><br>$%{value:,.0f}<br>%{percent}<extra></extra>",
-                        )
-                    )
-                    fig_donut.add_annotation(
-                        text=f"{fmt_short(total_egr)}<br><span style='font-size:11px'>Total egresos</span>",
-                        x=0.5,
-                        y=0.5,
-                        showarrow=False,
-                        font=dict(size=18, color="#081735"),
-                    )
-                    fig_donut.update_layout(
-                        title=dict(text="Composición de egresos del período", x=0.02, font=dict(size=15, color="#081735")),
-                        height=310,
-                        margin=dict(l=4, r=4, t=42, b=8),
-                        paper_bgcolor="#FFFFFF",
-                        legend=dict(orientation="v", x=0.74, y=0.5, font=dict(size=10)),
-                    )
-                    st.plotly_chart(
-                        fig_donut,
-                        use_container_width=True,
-                        config={"displaylogo": False, "displayModeBar": False},
-                        key="ing_eg_donut_egresos_bottom",
-                    )
+                    <div>
+                        <div class="ie-risk-value">{value}</div>
+                        <div class="ie-risk-sub">{sub}</div>
+                    </div>
+                </div>
+                """
+                for label, value, sub, badge_class, badge_label in risk_cards_ie
+            )
+            st.markdown(
+                f"""
+                <div class="ie-risk-section-title">Riesgos y presión operativa</div>
+                <div class="ie-risk-section-sub">Lectura táctica de caja, mora y concentración bajo el filtro actual.</div>
+                <div class="ie-risk-grid">{risk_cards_html}</div>
+                """,
+                unsafe_allow_html=True,
+            )
 
             def build_neto_comparativo(df_src: pd.DataFrame, modo: str) -> pd.DataFrame:
                 if modo == "Contable":
@@ -9000,33 +9181,35 @@ if active_section == "📈 Flujo Operacional":
                     unsafe_allow_html=True,
                 )
 
-                ctrl_1, ctrl_2, ctrl_3, ctrl_4 = st.columns([1.35, 1.35, 1.6, 0.3])
-                with ctrl_1:
-                    vista_neto_cmp = st.selectbox(
-                        "Visualizar",
-                        ["Neto", "Neto acumulado", "Ambos"],
-                        index=0,
-                        key="vista_neto_fin_cont",
-                    )
-                with ctrl_2:
-                    tipo_grafico_neto = st.selectbox(
-                        "Tipo de gráfico",
-                        ["Línea", "Área"],
-                        index=0,
-                        key="tipo_grafico_neto_fin_cont",
-                    )
-                with ctrl_3:
-                    rango_neto_cmp = st.selectbox(
-                        "Rango",
-                        ["Todos los períodos", "Últimos 12 meses", "Últimos 24 meses"],
-                        index=0,
-                        key="rango_neto_fin_cont",
-                    )
-                with ctrl_4:
-                    st.markdown(
-                        "<div style='height:38px;border:1px solid #dbe3ee;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#081735;font-weight:900;background:#fff;margin-top:25px;'>⋮</div>",
-                        unsafe_allow_html=True,
-                    )
+                with st.container():
+                    st.markdown('<div class="neto-filter-anchor"></div>', unsafe_allow_html=True)
+                    ctrl_1, ctrl_2, ctrl_3, ctrl_4 = st.columns([1.15, 1.15, 1.4, 0.18], gap="small")
+                    with ctrl_1:
+                        vista_neto_cmp = st.selectbox(
+                            "Visualizar",
+                            ["Neto", "Neto acumulado", "Ambos"],
+                            index=0,
+                            key="vista_neto_fin_cont",
+                        )
+                    with ctrl_2:
+                        tipo_grafico_neto = st.selectbox(
+                            "Tipo",
+                            ["Línea", "Área"],
+                            index=0,
+                            key="tipo_grafico_neto_fin_cont",
+                        )
+                    with ctrl_3:
+                        rango_neto_cmp = st.selectbox(
+                            "Rango",
+                            ["Todos los períodos", "Últimos 12 meses", "Últimos 24 meses"],
+                            index=0,
+                            key="rango_neto_fin_cont",
+                        )
+                    with ctrl_4:
+                        st.markdown(
+                            "<div class='neto-filter-action'>⋮</div>",
+                            unsafe_allow_html=True,
+                        )
 
                 neto_plot = neto_cmp.copy()
                 if rango_neto_cmp != "Todos los períodos" and not neto_plot.empty:
@@ -9036,52 +9219,133 @@ if active_section == "📈 Flujo Operacional":
                     inicio_rango_cmp = max(max_periodo_cmp - pd.DateOffset(months=meses_rango), min_periodo_cmp)
                     neto_plot = neto_plot[neto_plot["Periodo"].between(inicio_rango_cmp, max_periodo_cmp)]
 
-                metric_source = neto_plot if not neto_plot.empty else neto_cmp
-                fin_avg = float(metric_source["Financiero"].mean()) if "Financiero" in metric_source else 0.0
-                con_avg = float(metric_source["Contable"].mean()) if "Contable" in metric_source else 0.0
-                if not metric_source.empty and "Financiero" in metric_source:
-                    best_row = metric_source.loc[metric_source["Financiero"].idxmax()]
-                    worst_row = metric_source.loc[metric_source["Financiero"].idxmin()]
-                    best_val = float(best_row["Financiero"])
-                    worst_val = float(worst_row["Financiero"])
-                    best_lbl = pd.to_datetime(best_row["Periodo"]).strftime("%b %Y")
-                    worst_lbl = pd.to_datetime(worst_row["Periodo"]).strftime("%b %Y")
+                metric_source = (neto_plot if not neto_plot.empty else neto_cmp).copy()
+                metric_source["Desviacion"] = metric_source["Financiero"] - metric_source["Contable"]
+                metric_source["Desviacion_abs"] = metric_source["Desviacion"].abs()
+                last_cmp = metric_source.iloc[-1] if not metric_source.empty else None
+                desviacion_actual = float(last_cmp["Desviacion"]) if last_cmp is not None else 0.0
+                desviacion_acumulada = (
+                    float(last_cmp["Financiero acumulado"] - last_cmp["Contable acumulado"])
+                    if last_cmp is not None and "Financiero acumulado" in metric_source and "Contable acumulado" in metric_source
+                    else 0.0
+                )
+                base_consistencia = metric_source[["Financiero", "Contable", "Desviacion_abs"]].replace([np.inf, -np.inf], np.nan).dropna()
+                if base_consistencia.empty:
+                    consistencia_ratio = 0.0
                 else:
-                    best_val = worst_val = 0.0
-                    best_lbl = worst_lbl = "-"
+                    tolerancia = max(float(base_consistencia[["Financiero", "Contable"]].abs().max().max()) * 0.08, 1.0)
+                    mismo_signo = np.sign(base_consistencia["Financiero"]) == np.sign(base_consistencia["Contable"])
+                    baja_desviacion = base_consistencia["Desviacion_abs"] <= tolerancia
+                    consistencia_ratio = float((mismo_signo | baja_desviacion).mean())
+                consistencia_label = "Alta" if consistencia_ratio >= 0.75 else ("Media" if consistencia_ratio >= 0.5 else "Baja")
+                consistencia_color = "#059669" if consistencia_ratio >= 0.75 else ("#D97706" if consistencia_ratio >= 0.5 else "#DC2626")
 
                 st.markdown(
                     f"""
                     <div class="neto-kpi-grid">
-                        <div class="neto-kpi-box" style="--metric:{'#059669' if fin_avg >= 0 else '#EF4444'};">
-                            <div class="neto-kpi-label">Promedio neto financiero</div>
-                            <div class="neto-kpi-value">{fmt_clp_largo(fin_avg)}</div>
+                        <div class="neto-kpi-box" style="--metric:{'#059669' if desviacion_actual >= 0 else '#EF4444'};">
+                            <div class="neto-kpi-label">Desviación último período</div>
+                            <div class="neto-kpi-value">{fmt_clp_largo(desviacion_actual)}</div>
+                            <div class="neto-kpi-note">Financiero - contable</div>
                         </div>
-                        <div class="neto-kpi-box" style="--metric:{'#059669' if con_avg >= 0 else '#EF4444'};">
-                            <div class="neto-kpi-label">Promedio neto contable</div>
-                            <div class="neto-kpi-value">{fmt_clp_largo(con_avg)}</div>
+                        <div class="neto-kpi-box" style="--metric:{'#059669' if desviacion_acumulada >= 0 else '#EF4444'};">
+                            <div class="neto-kpi-label">Desviación acumulada</div>
+                            <div class="neto-kpi-value">{fmt_clp_largo(desviacion_acumulada)}</div>
+                            <div class="neto-kpi-note">Brecha acumulada</div>
                         </div>
-                        <div class="neto-kpi-box" style="--metric:#059669;">
-                            <div class="neto-kpi-label">Mejor mes (financiero)</div>
-                            <div class="neto-kpi-value">{fmt_clp_largo(best_val)}</div>
-                            <div class="neto-kpi-note">{best_lbl}</div>
-                        </div>
-                        <div class="neto-kpi-box" style="--metric:#EF4444;">
-                            <div class="neto-kpi-label">Peor mes (financiero)</div>
-                            <div class="neto-kpi-value">{fmt_clp_largo(worst_val)}</div>
-                            <div class="neto-kpi-note">{worst_lbl}</div>
+                        <div class="neto-kpi-box" style="--metric:{consistencia_color};">
+                            <div class="neto-kpi-label">Consistencia financiero/contable</div>
+                            <div class="neto-kpi-value">{consistencia_ratio:.0%}</div>
+                            <div class="neto-kpi-note">{consistencia_label}</div>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
 
-                fig_neto_cmp = go.Figure()
-                fill_fin = "tozeroy" if tipo_grafico_neto == "Área" else None
-                fill_con = "tozeroy" if tipo_grafico_neto == "Área" else None
+                from plotly.subplots import make_subplots
 
-                if vista_neto_cmp in ["Neto", "Ambos"]:
-                    fig_neto_cmp.add_trace(
+                if vista_neto_cmp == "Ambos":
+                    fig_neto_cmp = make_subplots(
+                        rows=2,
+                        cols=1,
+                        shared_xaxes=True,
+                        vertical_spacing=0.09,
+                        row_heights=[0.52, 0.48],
+                        subplot_titles=("Neto del período", "Neto acumulado"),
+                    )
+                    chart_height_cmp = 430
+                    range_slider_cmp = False
+                else:
+                    fig_neto_cmp = go.Figure()
+                    chart_height_cmp = 340
+                    range_slider_cmp = True
+
+                def add_cmp_trace(trace, row=None):
+                    if row is None:
+                        fig_neto_cmp.add_trace(trace)
+                    else:
+                        fig_neto_cmp.add_trace(trace, row=row, col=1)
+
+                def add_deviation_bands(row=None):
+                    diff_base_cmp = neto_plot[["Periodo", "Financiero", "Contable"]].replace([np.inf, -np.inf], np.nan).dropna()
+                    if not diff_base_cmp.empty:
+                        diff_abs_cmp = (diff_base_cmp["Financiero"] - diff_base_cmp["Contable"]).abs()
+                        scale_cmp = max(
+                            float(diff_base_cmp[["Financiero", "Contable"]].abs().max().max()),
+                            1.0,
+                        )
+                        significant_cmp = diff_abs_cmp >= max(scale_cmp * 0.025, 1.0)
+                        deviation_ratio_cmp = diff_abs_cmp / scale_cmp
+                        deviation_bands_cmp = [
+                            ("baja", "rgba(37,99,235,0.10)", significant_cmp & (deviation_ratio_cmp < 0.08)),
+                            ("media", "rgba(245,158,11,0.14)", significant_cmp & (deviation_ratio_cmp >= 0.08) & (deviation_ratio_cmp < 0.18)),
+                            ("alta", "rgba(220,38,38,0.13)", significant_cmp & (deviation_ratio_cmp >= 0.18)),
+                        ]
+                        y_low_cmp = diff_base_cmp[["Financiero", "Contable"]].min(axis=1)
+                        y_high_cmp = diff_base_cmp[["Financiero", "Contable"]].max(axis=1)
+                        for band_label, band_color, band_mask in deviation_bands_cmp:
+                            if not bool(band_mask.any()):
+                                continue
+                            lower_values = y_low_cmp.where(band_mask, np.nan)
+                            upper_values = y_high_cmp.where(band_mask, np.nan)
+                            add_cmp_trace(
+                                go.Scatter(
+                                    x=diff_base_cmp["Periodo"],
+                                    y=lower_values,
+                                    mode="lines",
+                                    name=f"Desviación {band_label}",
+                                    line=dict(width=0, color="rgba(0,0,0,0)", shape="spline"),
+                                    hoverinfo="skip",
+                                    showlegend=False,
+                                ),
+                                row=row,
+                            )
+                            add_cmp_trace(
+                                go.Scatter(
+                                    x=diff_base_cmp["Periodo"],
+                                    y=upper_values,
+                                    mode="lines",
+                                    name=f"Área desviación {band_label}",
+                                    line=dict(width=0, color="rgba(0,0,0,0)", shape="spline"),
+                                    fill="tonexty",
+                                    fillcolor=band_color,
+                                    hoverinfo="skip",
+                                    showlegend=False,
+                                ),
+                                row=row,
+                            )
+
+                show_neto_cmp = vista_neto_cmp in ["Neto", "Ambos"]
+                show_acum_cmp = vista_neto_cmp in ["Neto acumulado", "Ambos"]
+                neto_row_cmp = 1 if vista_neto_cmp == "Ambos" else None
+                acum_row_cmp = 2 if vista_neto_cmp == "Ambos" else None
+                fill_fin = "tozeroy" if tipo_grafico_neto == "Área" and vista_neto_cmp != "Ambos" else None
+                fill_con = "tozeroy" if tipo_grafico_neto == "Área" and vista_neto_cmp != "Ambos" else None
+
+                if show_neto_cmp:
+                    add_deviation_bands(row=neto_row_cmp)
+                    add_cmp_trace(
                         go.Scatter(
                             x=neto_plot["Periodo"],
                             y=neto_plot["Financiero"],
@@ -9092,9 +9356,10 @@ if active_section == "📈 Flujo Operacional":
                             fill=fill_fin,
                             fillcolor="rgba(18,87,255,0.08)",
                             hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto financiero: $%{y:,.0f}<extra></extra>",
-                        )
+                        ),
+                        row=neto_row_cmp,
                     )
-                    fig_neto_cmp.add_trace(
+                    add_cmp_trace(
                         go.Scatter(
                             x=neto_plot["Periodo"],
                             y=neto_plot["Contable"],
@@ -9105,11 +9370,14 @@ if active_section == "📈 Flujo Operacional":
                             fill=fill_con,
                             fillcolor="rgba(255,122,26,0.07)",
                             hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto contable: $%{y:,.0f}<extra></extra>",
-                        )
+                        ),
+                        row=neto_row_cmp,
                     )
 
-                if vista_neto_cmp in ["Neto acumulado", "Ambos"]:
-                    fig_neto_cmp.add_trace(
+                if show_acum_cmp:
+                    fill_acum_fin = "tozeroy"
+                    fill_acum_con = "tozeroy" if vista_neto_cmp == "Neto acumulado" else None
+                    add_cmp_trace(
                         go.Scatter(
                             x=neto_plot["Periodo"],
                             y=neto_plot["Financiero acumulado"],
@@ -9117,10 +9385,13 @@ if active_section == "📈 Flujo Operacional":
                             name="Neto acumulado financiero",
                             line=dict(color="#0F766E", width=3.0, dash="dash", shape="spline"),
                             marker=dict(size=7, color="#0F766E", line=dict(color="#FFFFFF", width=1.4)),
+                            fill=fill_acum_fin,
+                            fillcolor="rgba(15,118,110,0.10)",
                             hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado financiero: $%{y:,.0f}<extra></extra>",
-                        )
+                        ),
+                        row=acum_row_cmp,
                     )
-                    fig_neto_cmp.add_trace(
+                    add_cmp_trace(
                         go.Scatter(
                             x=neto_plot["Periodo"],
                             y=neto_plot["Contable acumulado"],
@@ -9128,11 +9399,20 @@ if active_section == "📈 Flujo Operacional":
                             name="Neto acumulado contable",
                             line=dict(color="#B91C1C", width=3.0, dash="dashdot", shape="spline"),
                             marker=dict(size=7, color="#B91C1C", line=dict(color="#FFFFFF", width=1.4)),
+                            fill=fill_acum_con,
+                            fillcolor="rgba(185,28,28,0.07)",
                             hovertemplate="<b>%{x|" + x_hover + "}</b><br>Neto acumulado contable: $%{y:,.0f}<extra></extra>",
-                        )
+                        ),
+                        row=acum_row_cmp,
                     )
-                fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75)
-                if not neto_plot.empty and vista_neto_cmp in ["Neto", "Ambos"]:
+
+                if vista_neto_cmp == "Ambos":
+                    fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75, row=1, col=1)
+                    fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75, row=2, col=1)
+                else:
+                    fig_neto_cmp.add_hline(y=0, line_width=1.1, line_color=CHART_GRAY, opacity=0.75)
+
+                if not neto_plot.empty and vista_neto_cmp == "Neto":
                     last_row_cmp = neto_plot.iloc[-1]
                     fig_neto_cmp.add_annotation(
                         x=last_row_cmp["Periodo"],
@@ -9160,12 +9440,12 @@ if active_section == "📈 Flujo Operacional":
                     title=None,
                     font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
                     template="plotly_white",
-                    height=500,
-                    margin=dict(l=30, r=58, t=44, b=42),
+                    height=chart_height_cmp,
+                    margin=dict(l=28, r=52, t=28, b=26),
                     legend=dict(
                         orientation="h",
                         yanchor="bottom",
-                        y=1.05,
+                    y=1.04,
                         xanchor="left",
                         x=0.01,
                         bgcolor="rgba(255,255,255,0)",
@@ -9176,6 +9456,8 @@ if active_section == "📈 Flujo Operacional":
                     paper_bgcolor="#FFFFFF",
                     plot_bgcolor="#FFFFFF",
                 )
+                if vista_neto_cmp == "Ambos":
+                    fig_neto_cmp.update_annotations(font=dict(size=12, color="#081735"))
                 fig_neto_cmp.update_xaxes(
                     title_text=label_x,
                     showgrid=False,
@@ -9183,7 +9465,7 @@ if active_section == "📈 Flujo Operacional":
                     linecolor="#CBD5E1",
                     title_font=dict(size=12, color="#334155"),
                     tickfont=dict(size=11, color="#475569"),
-                    rangeslider=dict(visible=True, thickness=0.07, bgcolor="#F1F5F9", bordercolor="#E2E8F0", borderwidth=1),
+                    rangeslider=dict(visible=range_slider_cmp, thickness=0.07, bgcolor="#F1F5F9", bordercolor="#E2E8F0", borderwidth=1),
                 )
                 fig_neto_cmp.update_yaxes(
                     title_text="Neto CLP",
@@ -9223,30 +9505,30 @@ if active_section == "📈 Flujo Operacional":
                     display:flex;
                     justify-content:space-between;
                     align-items:flex-start;
-                    gap:16px;
-                    margin:8px 0 8px 0;
+                    gap:12px;
+                    margin:0 0 5px 0;
                 }
                 .risk-pro-title {
                     color:#081735;
-                    font-size:22px;
+                    font-size:19px;
                     line-height:1.05;
                     font-weight:950;
                     letter-spacing:-0.025em;
                 }
                 .risk-pro-subtitle {
-                    margin-top:7px;
+                    margin-top:4px;
                     color:#475569;
-                    font-size:14px;
+                    font-size:11.5px;
                     line-height:1.25;
                     font-weight:650;
                 }
                 .risk-pro-actions {
                     display:flex;
-                    gap:9px;
+                    gap:7px;
                     align-items:center;
                 }
                 .risk-pro-action {
-                    min-height:32px;
+                    min-height:28px;
                     display:flex;
                     align-items:center;
                     justify-content:center;
@@ -9254,8 +9536,8 @@ if active_section == "📈 Flujo Operacional":
                     border:1px solid #dbe3ee;
                     background:#ffffff;
                     color:#0f1f3d;
-                    padding:0 11px;
-                    font-size:11px;
+                    padding:0 10px;
+                    font-size:10.5px;
                     font-weight:850;
                     box-shadow:0 8px 16px rgba(15,23,42,0.035);
                 }
@@ -9268,69 +9550,122 @@ if active_section == "📈 Flujo Operacional":
                     border:1px solid #dbe3ee;
                     border-radius:10px;
                     background:#ffffff;
-                    padding:10px 14px 8px 14px;
-                    margin:0 0 10px 0;
+                    padding:7px 10px 5px 10px;
+                    margin:0 0 6px 0;
                     box-shadow:0 8px 18px rgba(15,23,42,0.035);
                 }
                 .risk-filter-title {
                     color:#081735;
-                    font-size:14px;
+                    font-size:10px;
                     font-weight:950;
-                    margin-bottom:6px;
+                    margin-bottom:4px;
+                    text-transform:uppercase;
+                    letter-spacing:.018em;
+                }
+                .risk-filter-card [data-testid="stHorizontalBlock"] {
+                    gap:0.45rem !important;
+                    align-items:flex-end !important;
+                }
+                .risk-filter-card [data-testid="stSelectbox"],
+                .risk-filter-card [data-testid="stRadio"],
+                .risk-filter-card [data-testid="stSlider"] {
+                    margin:0 !important;
+                }
+                .risk-filter-card [data-testid="stSelectbox"] > label,
+                .risk-filter-card [data-testid="stRadio"] > label,
+                .risk-filter-card [data-testid="stSlider"] > label {
+                    color:#64748b !important;
+                    font-size:9.2px !important;
+                    line-height:1 !important;
+                    font-weight:950 !important;
+                    text-transform:uppercase !important;
+                    letter-spacing:.018em !important;
+                    padding-bottom:3px !important;
+                }
+                .risk-filter-card [data-baseweb="select"] > div {
+                    min-height:30px !important;
+                    height:30px !important;
+                    border-radius:8px !important;
+                    background:#fbfdff !important;
+                    border-color:#dbe3ee !important;
+                }
+                .risk-filter-card [data-baseweb="select"] div {
+                    font-size:11px !important;
+                    font-weight:800 !important;
+                }
+                .risk-filter-card div[role="radiogroup"] {
+                    min-height:30px !important;
+                    border-radius:8px !important;
+                }
+                .risk-filter-card div[role="radiogroup"] > label {
+                    min-height:30px !important;
+                    padding:0 8px !important;
+                    font-size:10.5px !important;
                 }
                 .risk-pro-kpi {
-                    min-height:78px;
+                    min-height:62px;
                     border:1px solid var(--border);
                     border-radius:10px;
                     background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-                    padding:9px 10px;
+                    padding:7px 8px;
                     display:grid;
-                    grid-template-columns:32px 1fr;
-                    gap:8px;
+                    grid-template-columns:26px 1fr;
+                    gap:7px;
                     box-shadow:0 8px 18px rgba(15,23,42,0.035);
                 }
                 .risk-pro-kpi-icon {
-                    width:28px;
-                    height:28px;
+                    width:24px;
+                    height:24px;
                     border-radius:999px;
                     display:flex;
                     align-items:center;
                     justify-content:center;
                     background:var(--halo);
                     color:var(--accent);
-                    font-size:14px;
+                    font-size:12px;
                     font-weight:950;
                 }
                 .risk-pro-kpi-title {
                     color:#0f1f3d;
-                    font-size:9.5px;
+                    font-size:8.4px;
                     line-height:1.15;
                     font-weight:950;
                     text-transform:uppercase;
                     letter-spacing:.012em;
                 }
                 .risk-pro-kpi-value {
-                    margin-top:4px;
+                    margin-top:3px;
                     color:var(--accent);
-                    font-size:17px;
+                    font-size:15px;
                     line-height:1;
                     font-weight:950;
                     letter-spacing:-0.03em;
                     white-space:nowrap;
                 }
                 .risk-pro-kpi-note {
-                    margin-top:4px;
+                    margin-top:3px;
                     color:#64748b;
-                    font-size:9px;
-                    line-height:1.2;
+                    font-size:8.2px;
+                    line-height:1.12;
                     font-weight:750;
+                }
+                .risk-kpi-anchor {
+                    height:0;
+                    min-height:0;
+                    margin:0;
+                    padding:0;
+                    overflow:hidden;
+                }
+                div[data-testid="stVerticalBlock"]:has(.risk-kpi-anchor) > div[data-testid="stHorizontalBlock"] {
+                    gap:0.45rem;
+                    margin-bottom:0;
                 }
                 .risk-chart-card {
                     border:1px solid #dbe3ee;
                     border-radius:10px;
                     background:#ffffff;
-                    padding:10px 12px 10px 12px;
-                    margin-top:8px;
+                    padding:7px 10px 8px 10px;
+                    margin-top:4px;
                     box-shadow:0 8px 18px rgba(15,23,42,0.035);
                 }
                 .risk-note-card {
@@ -9366,7 +9701,7 @@ if active_section == "📈 Flujo Operacional":
             )
             render_flujo_selector_scroll("riesgos-selectores-anchor")
 
-            c_top1, c_top2, c_top3, c_top4 = st.columns([2, 1, 1, 1])
+            c_top1, c_top2, c_top3, c_top4 = st.columns([1.6, 1.15, 1.05, 0.8], gap="small")
             with c_top1:
                 dim = st.selectbox(
                     "Dimensión",
@@ -9481,6 +9816,49 @@ if active_section == "📈 Flujo Operacional":
                     if "base" in locals() and not base.empty and periodo == "Mensual"
                     else periodo_filtro_lbl
                 )
+                top3_exposicion_val = float(base_dim.nlargest(3, "Impacto_abs")["Impacto_abs"].sum()) if not base_dim.empty else 0.0
+                concentracion_top3_risk = (top3_exposicion_val / impacto_total) if impacto_total else 0.0
+                ingreso_source_row = base_dim.loc[base_dim["Ingresos"].idxmax()] if not base_dim.empty and base_dim["Ingresos"].max() > 0 else None
+                egreso_pressure_row = base_dim.loc[base_dim["Egresos_abs"].idxmax()] if not base_dim.empty and base_dim["Egresos_abs"].max() > 0 else None
+                principal_ingreso_label = str(ingreso_source_row[dim]) if ingreso_source_row is not None else "Sin ingresos"
+                principal_egreso_label = str(egreso_pressure_row[dim]) if egreso_pressure_row is not None else "Sin egresos"
+                principal_ingreso_val = float(ingreso_source_row["Ingresos"]) if ingreso_source_row is not None else 0.0
+                principal_egreso_val = float(egreso_pressure_row["Egresos_abs"]) if egreso_pressure_row is not None else 0.0
+                exposicion_negativa = abs(total_neto_neg)
+                exposicion_negativa_ratio = exposicion_negativa / neto_base_pct if neto_base_pct else 0.0
+
+                def risk_short_label(value, max_len=30):
+                    value = str(value).strip() or "Sin clasificar"
+                    return value if len(value) <= max_len else f"{value[:max_len - 1]}…"
+
+                if concentracion_top3_risk >= 0.65 or exposicion_negativa_ratio >= 0.60:
+                    riesgo_operativo_label = "Crítico"
+                    riesgo_operativo_note = "Alta concentración o presión negativa"
+                    riesgo_color = "#DC2626"
+                    riesgo_soft = "#fff7f7"
+                    riesgo_halo = "#fee2e2"
+                    riesgo_border = "#f1caca"
+                elif concentracion_top3_risk >= 0.45 or exposicion_negativa_ratio >= 0.35:
+                    riesgo_operativo_label = "Presión"
+                    riesgo_operativo_note = "Monitorear exposición concentrada"
+                    riesgo_color = "#F97316"
+                    riesgo_soft = "#fff8f1"
+                    riesgo_halo = "#ffedd5"
+                    riesgo_border = "#fed7aa"
+                elif concentracion_top3_risk >= 0.30 or exposicion_negativa_ratio >= 0.20:
+                    riesgo_operativo_label = "Atención"
+                    riesgo_operativo_note = "Riesgo moderado bajo control"
+                    riesgo_color = "#EAB308"
+                    riesgo_soft = "#fffdf0"
+                    riesgo_halo = "#fef9c3"
+                    riesgo_border = "#fde68a"
+                else:
+                    riesgo_operativo_label = "Saludable"
+                    riesgo_operativo_note = "Concentración y presión acotadas"
+                    riesgo_color = "#16A34A"
+                    riesgo_soft = "#f6fffb"
+                    riesgo_halo = "#dcfce7"
+                    riesgo_border = "#bbf7d0"
 
                 def risk_pro_kpi(title, value, note, icon, accent, soft, halo, border):
                     return f"""
@@ -9494,74 +9872,75 @@ if active_section == "📈 Flujo Operacional":
                     </div>
                     """
 
-                rk1, rk2, rk3, rk4, rk5 = st.columns(5)
+                st.markdown('<div class="risk-kpi-anchor"></div>', unsafe_allow_html=True)
+                rk1, rk2, rk3, rk4, rk5 = st.columns(5, gap="small")
                 with rk1:
                     st.markdown(
                         risk_pro_kpi(
-                            "TOTAL INGRESOS (NETO)",
-                            fmt_clp_largo(total_neto_pos),
-                            f"{(total_neto_pos / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
-                            "↑",
-                            "#16A34A",
-                            "#f6fffb",
-                            "#dcfce7",
-                            "#cfe9de",
+                            "CONCENTRACIÓN TOP 3",
+                            f"{concentracion_top3_risk:.1%}",
+                            f"{fmt_clp_largo(top3_exposicion_val)} de exposición",
+                            "◎",
+                            "#2563EB",
+                            "#f6f9ff",
+                            "#dbeafe",
+                            "#d4e1f6",
                         ),
                         unsafe_allow_html=True,
                     )
                 with rk2:
                     st.markdown(
                         risk_pro_kpi(
-                            "TOTAL EGRESOS (NETO)",
-                            fmt_clp_largo(total_neto_neg),
-                            f"{(abs(total_neto_neg) / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
-                            "↓",
-                            "#EF4444",
-                            "#fff7f7",
-                            "#fee2e2",
-                            "#f1caca",
+                            "PRINCIPAL INGRESO",
+                            fmt_clp_largo(principal_ingreso_val),
+                            escape(risk_short_label(principal_ingreso_label)),
+                            "↑",
+                            "#16A34A",
+                            "#f6fffb",
+                            "#dcfce7",
+                            "#bbf7d0",
                         ),
                         unsafe_allow_html=True,
                     )
                 with rk3:
                     st.markdown(
                         risk_pro_kpi(
-                            "NETO TOTAL",
-                            fmt_clp_largo(total_neto_dim),
-                            f"{(total_neto_dim / neto_base_pct if neto_base_pct else 0):.1%} del total neto",
-                            "=",
-                            "#2563EB" if total_neto_dim >= 0 else "#EF4444",
-                            "#f6f9ff" if total_neto_dim >= 0 else "#fff7f7",
-                            "#dbeafe" if total_neto_dim >= 0 else "#fee2e2",
-                            "#d4e1f6" if total_neto_dim >= 0 else "#f1caca",
+                            "PRESIÓN DE EGRESO",
+                            fmt_clp_largo(principal_egreso_val),
+                            escape(risk_short_label(principal_egreso_label)),
+                            "↓",
+                            "#F97316",
+                            "#fff8f1",
+                            "#ffedd5",
+                            "#fed7aa",
                         ),
                         unsafe_allow_html=True,
                     )
                 with rk4:
                     st.markdown(
                         risk_pro_kpi(
-                            "N° TRANSACCIONES",
-                            f"{total_tx_dim:,.0f}",
-                            "Registros en el período",
-                            "▥",
-                            "#0f2d52",
-                            "#ffffff",
-                            "#f1f5f9",
-                            "#e5ebf3",
+                            "EXPOSICIÓN NEGATIVA",
+                            fmt_clp_largo(exposicion_negativa),
+                            f"{exposicion_negativa_ratio:.1%} de la exposición neta",
+                            "!",
+                            "#DC2626",
+                            "#fff7f7",
+                            "#fee2e2",
+                            "#f1caca",
                         ),
                         unsafe_allow_html=True,
                     )
                 with rk5:
                     st.markdown(
                         risk_pro_kpi(
-                            "PERÍODO",
-                            periodo_card,
-                            periodo_filtro_lbl,
-                            "▣",
-                            "#0f2d52",
-                            "#ffffff",
-                            "#f1f5f9",
-                            "#e5ebf3",
+                            "RIESGO OPERATIVO",
+                            riesgo_operativo_label,
+                            riesgo_operativo_note,
+                            "◌",
+                            riesgo_color,
+                            riesgo_soft,
+                            riesgo_halo,
+                            riesgo_border,
                         ),
                         unsafe_allow_html=True,
                     )
@@ -9570,6 +9949,12 @@ if active_section == "📈 Flujo Operacional":
                     base_dim = base_dim.sort_values("Impacto_abs", ascending=True)
                 else:
                     base_dim = base_dim.sort_values("N° Transacciones", ascending=True)
+                top3_exposiciones = set(base_dim.sort_values("Impacto_abs", ascending=False).head(3)[dim].astype(str))
+                base_dim["Es_top3"] = base_dim[dim].astype(str).isin(top3_exposiciones)
+                base_dim["Color_pos"] = np.where(base_dim["Es_top3"], "rgba(22,163,74,0.96)", "rgba(134,190,177,0.64)")
+                base_dim["Color_neg"] = np.where(base_dim["Es_top3"], "rgba(220,38,38,0.96)", "rgba(248,113,113,0.62)")
+                base_dim["Line_pos"] = np.where(base_dim["Es_top3"], "rgba(21,128,61,0.95)", "rgba(134,190,177,0.45)")
+                base_dim["Line_neg"] = np.where(base_dim["Es_top3"], "rgba(185,28,28,0.95)", "rgba(248,113,113,0.45)")
 
                 st.markdown('<div id="riesgos-vista-selector-anchor"></div>', unsafe_allow_html=True)
                 render_flujo_selector_scroll("riesgos-vista-selector-anchor")
@@ -9620,7 +10005,11 @@ if active_section == "📈 Flujo Operacional":
                         y=base_dim[dim],
                         orientation="h",
                         name="Netos positivos (ingresos > egresos)",
-                        marker=dict(color="rgba(126,169,162,0.88)", line=dict(color="rgba(126,169,162,0.88)", width=0)),
+                        width=0.74,
+                        marker=dict(
+                            color=base_dim["Color_pos"],
+                            line=dict(color=base_dim["Line_pos"], width=np.where(base_dim["Es_top3"], 1.2, 0)),
+                        ),
                         hoverinfo="skip",
                     )
                 )
@@ -9630,10 +10019,32 @@ if active_section == "📈 Flujo Operacional":
                         y=base_dim[dim],
                         orientation="h",
                         name="Netos negativos (egresos > ingresos)",
-                        marker=dict(color="rgba(239,82,76,0.90)", line=dict(color="rgba(239,82,76,0.90)", width=0)),
+                        width=0.74,
+                        marker=dict(
+                            color=base_dim["Color_neg"],
+                            line=dict(color=base_dim["Line_neg"], width=np.where(base_dim["Es_top3"], 1.2, 0)),
+                        ),
                         hoverinfo="skip",
                     )
                 )
+                top3_dim = base_dim[base_dim["Es_top3"]]
+                if not top3_dim.empty:
+                    fig_top.add_trace(
+                        go.Scatter(
+                            x=top3_dim["X_neto"],
+                            y=top3_dim[dim],
+                            mode="markers",
+                            name="Top 3 exposición",
+                            marker=dict(
+                                size=24,
+                                color="rgba(15,23,42,0)",
+                                line=dict(color="rgba(15,23,42,0.32)", width=2.2),
+                                symbol="diamond",
+                            ),
+                            hoverinfo="skip",
+                            showlegend=False,
+                        )
+                    )
                 fig_top.add_trace(
                     go.Scatter(
                         x=base_dim["X_neto"],
@@ -9641,9 +10052,9 @@ if active_section == "📈 Flujo Operacional":
                         mode="markers",
                         name="Neto",
                         marker=dict(
-                            size=14,
+                            size=np.where(base_dim["Es_top3"], 16, 13),
                             color=base_dim["Neto_color"],
-                            line=dict(color="#FFFFFF", width=2),
+                            line=dict(color="#FFFFFF", width=np.where(base_dim["Es_top3"], 2.4, 1.8)),
                             symbol="diamond",
                         ),
                         hoverinfo="skip",
@@ -9664,8 +10075,11 @@ if active_section == "📈 Flujo Operacional":
                         y=row_risk[dim],
                         text=(f"{row_risk['X_neto']:.1%}" if view_metric_risk == "% del neto" else fmt_clp_largo(row_risk["Neto"])),
                         showarrow=False,
-                        xshift=26 if row_risk["X_neto"] >= 0 else -26,
-                        font=dict(size=10, color="#334155"),
+                        xshift=31 if row_risk["X_neto"] >= 0 else -31,
+                        bgcolor="rgba(255,255,255,0.82)" if row_risk["Es_top3"] else "rgba(255,255,255,0)",
+                        bordercolor="rgba(15,23,42,0.12)" if row_risk["Es_top3"] else "rgba(255,255,255,0)",
+                        borderwidth=1 if row_risk["Es_top3"] else 0,
+                        font=dict(size=12 if row_risk["Es_top3"] else 10, color="#081735" if row_risk["Es_top3"] else "#334155"),
                     )
 
                 fig_top.update_layout(
@@ -9673,11 +10087,11 @@ if active_section == "📈 Flujo Operacional":
                         text=f"Exposición y concentración Top {top_n} por {dim} · {periodo_filtro_lbl} &nbsp; ⓘ",
                         x=0.02,
                         xanchor="left",
-                        font=dict(size=17, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
+                        font=dict(size=15, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
                     ),
                     template="plotly_white",
-                    height=max(360, 26 * len(base_dim) + 130),
-                    margin=dict(l=24, r=40, t=62, b=32),
+                    height=max(450, 34 * len(base_dim) + 118),
+                    margin=dict(l=22, r=42, t=48, b=28),
                     legend=dict(
                         orientation="h",
                         yanchor="bottom",
@@ -9692,12 +10106,13 @@ if active_section == "📈 Flujo Operacional":
                     paper_bgcolor="#FFFFFF",
                     plot_bgcolor="#FFFFFF",
                     barmode="relative",
+                    bargap=0.14,
                 )
                 fig_top.add_vline(x=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75)
                 fig_top.update_xaxes(
                     title_text=x_title_risk,
                     showgrid=True,
-                    gridcolor="#E8EEF6",
+                    gridcolor="rgba(180,190,210,0.14)",
                     zeroline=False,
                     tickprefix=x_tickprefix_risk,
                     tickformat=x_tickformat_risk,

@@ -1582,7 +1582,7 @@ def build_detalle_movimientos_pdf(
     story.append(Spacer(1, 10))
 
     if df_export.empty:
-        story.append(Paragraph("No hay movimientos para los filtros seleccionados.", meta_style))
+        story.append(Paragraph("No se registran movimientos relevantes para el universo filtrado.", meta_style))
         doc.build(story)
         output.seek(0)
         return output.getvalue()
@@ -2053,9 +2053,9 @@ def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
         )
     )
     series_obs = [
-        ("Pagado", CHART_TEAL),
-        ("No pagado", CHART_RED),
-        ("Abono", CHART_GOLD),
+        ("Pagado", "rgba(94,151,145,0.42)"),
+        ("No pagado", "rgba(248,113,113,0.48)"),
+        ("Abono", "rgba(148,163,184,0.26)"),
     ]
     for col_name, color in series_obs:
         fig_obs_periodo.add_trace(
@@ -2063,7 +2063,8 @@ def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
                 x=chart_periodo["Periodo_chart"],
                 y=chart_periodo[col_name],
                 name=col_name,
-                marker_color=color,
+                marker=dict(color=color, line=dict(color="rgba(255,255,255,0)", width=0)),
+                opacity=0.76,
                 hoverinfo="skip",
             )
         )
@@ -2072,13 +2073,44 @@ def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
         go.Scatter(
             x=chart_periodo["Periodo_chart"],
             y=chart_periodo["Deuda a la fecha"],
+            name="Tendencia deuda",
+            mode="lines",
+            line=dict(color="rgba(15,45,82,0.18)", width=10, shape="spline"),
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+    fig_obs_periodo.add_trace(
+        go.Scatter(
+            x=chart_periodo["Periodo_chart"],
+            y=chart_periodo["Deuda a la fecha"],
             name="Deuda a la fecha",
             mode="lines+markers",
-            line=dict(color=CHART_DARK, width=3, shape="spline"),
-            marker=dict(size=8, color=CHART_DARK, line=dict(width=2, color="white")),
+            line=dict(color="#0F2D52", width=5.2, shape="spline"),
+            marker=dict(size=10, color="#0F2D52", line=dict(width=2.4, color="white")),
             hoverinfo="skip",
         )
     )
+    if not chart_periodo.empty:
+        last_obs = chart_periodo.iloc[-1]
+        debt_delta = float(chart_periodo["Deuda a la fecha"].diff().fillna(0).iloc[-1]) if len(chart_periodo) > 1 else 0.0
+        debt_trend_txt = "Presión al alza" if debt_delta > 0 else ("Presión a la baja" if debt_delta < 0 else "Presión estable")
+        debt_badge_bg = "#FEE2E2" if debt_delta > 0 else ("#DCFCE7" if debt_delta < 0 else "#E2E8F0")
+        debt_badge_fg = "#B42318" if debt_delta > 0 else ("#047857" if debt_delta < 0 else "#334155")
+        fig_obs_periodo.add_annotation(
+            x=last_obs["Periodo_chart"],
+            y=last_obs["Deuda a la fecha"],
+            text=f"<b>{debt_trend_txt}</b><br>{float(last_obs['Deuda a la fecha']):,.0f}",
+            showarrow=True,
+            arrowhead=2,
+            ax=44,
+            ay=-34,
+            bgcolor=debt_badge_bg,
+            bordercolor="rgba(15,23,42,0.10)",
+            borderwidth=1,
+            borderpad=5,
+            font=dict(size=11, color=debt_badge_fg),
+        )
 
     fig_obs_periodo.add_hline(y=0, line_width=1, line_color=CHART_GRAY)
     fig_obs_periodo.update_layout(
@@ -2103,7 +2135,7 @@ def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
             title="Monto (CLP)",
             tickprefix="$",
             separatethousands=True,
-            gridcolor="#E2E8F0",
+            gridcolor="rgba(180,190,210,0.14)",
             zeroline=False,
         ),
         hovermode="x unified",
@@ -2162,14 +2194,16 @@ def kpi_resumen_panel(titulo, subtitulo, items):
 def kpi_resumen_obs_panel(titulo, subtitulo, items):
     rows = []
     for item in items:
+        resultado_class = item.get("resultado_class", "neutral")
+        row_extra_class = item.get("row_class", "")
         rows.append(
             (
-                f'<div class="kpi-summary-row kpi-summary-row-obs">'
+                f'<div class="kpi-summary-row kpi-summary-row-obs {row_extra_class}">'
                 f'<div class="kpi-summary-label">{item["label"]}</div>'
                 f'<div class="kpi-summary-meta">{item["meta"]}</div>'
                 f'<div class="kpi-summary-value">{item["pagado"]}</div>'
                 f'<div class="kpi-summary-value">{item["no_pagado"]}</div>'
-                f'<div class="kpi-summary-value kpi-summary-resultado">{item["resultado"]}</div>'
+                f'<div class="kpi-summary-value kpi-summary-resultado {resultado_class}">{item["resultado"]}</div>'
                 f'<div class="kpi-summary-value">{item["abono"]}</div>'
                 f'<div class="kpi-summary-value">{item["pendiente_deuda"]}</div>'
                 f'</div>'
@@ -2594,12 +2628,51 @@ st.markdown("""
         text-align: right;
     }
     .kpi-summary-row-obs .kpi-summary-resultado {
-        background: #DBEAFE;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 14px;
+        font-weight: 950;
+        letter-spacing: -0.01em;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.72),
+            inset 0 -1px 0 rgba(15,23,42,0.06),
+            0 4px 12px rgba(15,23,42,0.045);
+        justify-self: end;
+        min-width: 106px;
+        text-align: center !important;
+    }
+    .kpi-summary-row-obs .kpi-summary-resultado.resultado-positive {
+        background: linear-gradient(135deg, #DCFCE7 0%, #F0FDF4 100%);
+        color: #047857;
+        border-color: rgba(34,197,94,0.34);
+    }
+    .kpi-summary-row-obs .kpi-summary-resultado.resultado-negative {
+        background: linear-gradient(135deg, #FEE2E2 0%, #FFF7F7 100%);
+        color: #B42318;
+        border-color: rgba(248,113,113,0.38);
+    }
+    .kpi-summary-row-obs .kpi-summary-resultado.resultado-neutral {
+        background: linear-gradient(135deg, #E2E8F0 0%, #F8FAFC 100%);
+        color: #334155;
+        border-color: rgba(148,163,184,0.34);
+    }
+    .kpi-summary-row-obs.resultado-total-row {
+        background: linear-gradient(90deg, rgba(239,246,255,0.86) 0%, rgba(255,255,255,0) 100%);
+        border-radius: 10px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .kpi-summary-row-obs.resultado-total-row .kpi-summary-label {
         color: #0F2D52;
-        border: 1px solid #93C5FD;
-        border-radius: 8px;
-        padding: 5px 8px;
-        font-weight: 900;
+        font-weight: 950;
+    }
+    .kpi-summary-row-obs.resultado-total-row .kpi-summary-resultado {
+        transform: scale(1.03);
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            inset 0 -1px 0 rgba(15,23,42,0.08),
+            0 7px 18px rgba(15,23,42,0.08);
     }
     .kpi-summary-compact .kpi-summary-row-obs {
         min-width: 900px;
@@ -7760,30 +7833,33 @@ if active_section == "📈 Flujo Operacional":
                 border:1px solid rgba(219,227,238,0.72);
                 border-radius:14px;
                 background:#ffffff;
-                padding:9px;
-                height:455px;
+                padding:8px 9px 10px 9px;
+                height:520px;
                 box-sizing:border-box;
                 box-shadow:0 4px 18px rgba(15,23,42,0.045);
                 display:flex;
                 flex-direction:column;
+                margin-top:0;
             }
             .ie-analysis-title {
                 color:#081735;
-                font-size:15px;
+                font-size:14px;
+                line-height:1.05;
                 font-weight:950;
-                margin-bottom:6px;
+                margin:0 0 4px 0;
                 flex:0 0 auto;
             }
             .ie-health-card {
                 border:1px solid #e5ebf3;
                 border-radius:10px;
                 background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
-                padding:7px 8px;
+                padding:6px 8px;
                 margin-bottom:6px;
                 display:grid;
                 grid-template-columns:72px 1fr;
                 gap:8px;
                 align-items:center;
+                flex:0 0 auto;
             }
             .ie-health-card svg {
                 width:72px;
@@ -7831,7 +7907,7 @@ if active_section == "📈 Flujo Operacional":
                 align-items:center;
                 border:1px solid rgba(229,235,243,0.82);
                 border-radius:10px;
-                padding:7px 8px;
+                padding:8px 8px;
                 background:#fbfdff;
                 flex:1 1 0;
                 min-height:0;
@@ -8999,7 +9075,7 @@ if active_section == "📈 Flujo Operacional":
                 """
                 <div class="ie-guide-note">
                     <span>ⓘ</span>
-                    <div>Colores guía: Ingresos (verde) · Egresos (coral) · Neto (azul) · Neto acumulado (naranja). El margen queda disponible en tooltip y KPIs.</div>
+                    <div>Lectura visual: ingresos, egresos, neto y acumulado se priorizan como señales operacionales; el margen queda disponible en tooltip y KPIs.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -9668,6 +9744,74 @@ if active_section == "📈 Flujo Operacional":
                     margin-top:4px;
                     box-shadow:0 8px 18px rgba(15,23,42,0.035);
                 }
+                .risk-chart-toolbar {
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    gap:10px;
+                    margin:4px 0 3px 0;
+                    padding:0 1px;
+                }
+                .risk-chart-toolbar-title {
+                    color:#081735;
+                    font-size:12px;
+                    line-height:1.1;
+                    font-weight:950;
+                    text-transform:uppercase;
+                    letter-spacing:.016em;
+                }
+                .risk-chart-toolbar-sub {
+                    margin-top:2px;
+                    color:#64748b;
+                    font-size:9.2px;
+                    line-height:1.1;
+                    font-weight:700;
+                }
+                .risk-segment-anchor {
+                    height:0;
+                    min-height:0;
+                    margin:0;
+                    padding:0;
+                    overflow:hidden;
+                }
+                div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) > div[data-testid="stHorizontalBlock"] {
+                    align-items:flex-end;
+                    gap:0.5rem;
+                    margin-bottom:0;
+                }
+                div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) div[role="radiogroup"] {
+                    display:grid !important;
+                    grid-template-columns:repeat(2, minmax(0, 1fr));
+                    gap:3px !important;
+                    min-height:31px !important;
+                    padding:3px !important;
+                    border-radius:999px !important;
+                    background:#EEF4FF !important;
+                    border:1px solid rgba(37,99,235,0.14) !important;
+                    box-shadow:inset 0 1px 0 rgba(255,255,255,0.84), 0 5px 14px rgba(15,23,42,0.035) !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) div[role="radiogroup"] > label {
+                    min-height:25px !important;
+                    margin:0 !important;
+                    padding:0 13px !important;
+                    border-radius:999px !important;
+                    color:#334155 !important;
+                    font-size:10.5px !important;
+                    font-weight:950 !important;
+                    display:flex !important;
+                    align-items:center !important;
+                    justify-content:center !important;
+                    transition:all .18s ease !important;
+                    white-space:nowrap !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) div[role="radiogroup"] > label > div:first-child {
+                    display:none !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) div[role="radiogroup"] > label:has(input:checked) {
+                    background:linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%) !important;
+                    color:#ffffff !important;
+                    box-shadow:0 6px 16px rgba(37,99,235,0.22) !important;
+                }
                 .risk-note-card {
                     display:flex;
                     gap:9px;
@@ -9679,6 +9823,64 @@ if active_section == "📈 Flujo Operacional":
                     padding:10px 12px;
                     font-size:12px;
                     font-weight:650;
+                    margin-top:8px;
+                }
+                .risk-auto-insights {
+                    display:grid;
+                    grid-template-columns:repeat(2, minmax(0, 1fr));
+                    gap:7px;
+                    margin-top:8px;
+                }
+                .risk-auto-insight {
+                    border:1px solid rgba(226,232,240,0.92);
+                    border-radius:10px;
+                    background:#fbfdff;
+                    padding:9px 10px;
+                    display:grid;
+                    grid-template-columns:auto 1fr;
+                    gap:8px;
+                    align-items:flex-start;
+                }
+                .risk-auto-badge {
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    min-width:52px;
+                    height:22px;
+                    padding:0 8px;
+                    border-radius:999px;
+                    font-size:8.4px;
+                    line-height:1;
+                    font-weight:950;
+                    text-transform:uppercase;
+                }
+                .risk-auto-badge.healthy {
+                    background:rgba(34,197,94,0.13);
+                    color:#15803D;
+                }
+                .risk-auto-badge.attention {
+                    background:rgba(234,179,8,0.16);
+                    color:#A16207;
+                }
+                .risk-auto-badge.pressure {
+                    background:rgba(249,115,22,0.15);
+                    color:#C2410C;
+                }
+                .risk-auto-badge.critical {
+                    background:rgba(220,38,38,0.14);
+                    color:#DC2626;
+                }
+                .risk-auto-copy {
+                    color:#334155;
+                    font-size:10.7px;
+                    line-height:1.25;
+                    font-weight:720;
+                }
+                .risk-auto-title {
+                    color:#081735;
+                    font-size:11px;
+                    line-height:1.1;
+                    font-weight:950;
                     margin-top:8px;
                 }
                 </style>
@@ -9958,16 +10160,31 @@ if active_section == "📈 Flujo Operacional":
 
                 st.markdown('<div id="riesgos-vista-selector-anchor"></div>', unsafe_allow_html=True)
                 render_flujo_selector_scroll("riesgos-vista-selector-anchor")
-                view_metric_risk = st.radio(
-                    "Vista",
-                    ["Monto (CLP)", "% del neto"],
-                    horizontal=True,
-                    index=0,
-                    key="risk_view_metric_pro",
-                    label_visibility="collapsed",
-                    on_change=queue_flujo_selector_scroll,
-                    args=("riesgos-vista-selector-anchor",),
-                )
+                toolbar_title_col, toolbar_control_col = st.columns([2.35, 1], gap="small")
+                with toolbar_title_col:
+                    st.markdown(
+                        f"""
+                        <div class="risk-chart-toolbar">
+                            <div>
+                                <div class="risk-chart-toolbar-title">Exposición y concentración</div>
+                                <div class="risk-chart-toolbar-sub">Top {top_n} por {dim} · {periodo_filtro_lbl}</div>
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                with toolbar_control_col:
+                    st.markdown('<div class="risk-segment-anchor"></div>', unsafe_allow_html=True)
+                    view_metric_risk = st.radio(
+                        "Vista",
+                        ["Monto (CLP)", "% del neto"],
+                        horizontal=True,
+                        index=0,
+                        key="risk_view_metric_pro",
+                        label_visibility="collapsed",
+                        on_change=queue_flujo_selector_scroll,
+                        args=("riesgos-vista-selector-anchor",),
+                    )
                 if view_metric_risk == "% del neto":
                     denom_risk = neto_base_pct if neto_base_pct else 1.0
                     base_dim["X_pos"] = base_dim["Neto_pos"] / denom_risk
@@ -10083,15 +10300,10 @@ if active_section == "📈 Flujo Operacional":
                     )
 
                 fig_top.update_layout(
-                    title=dict(
-                        text=f"Exposición y concentración Top {top_n} por {dim} · {periodo_filtro_lbl} &nbsp; ⓘ",
-                        x=0.02,
-                        xanchor="left",
-                        font=dict(size=15, color="#081735", family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"),
-                    ),
+                    title=dict(text=""),
                     template="plotly_white",
-                    height=max(450, 34 * len(base_dim) + 118),
-                    margin=dict(l=22, r=42, t=48, b=28),
+                    height=max(450, 34 * len(base_dim) + 98),
+                    margin=dict(l=22, r=42, t=28, b=28),
                     legend=dict(
                         orientation="h",
                         yanchor="bottom",
@@ -10131,6 +10343,66 @@ if active_section == "📈 Flujo Operacional":
                     automargin=True,
                 )
 
+                ingresos_total_dim = float(base_dim["Ingresos"].sum()) if not base_dim.empty else 0.0
+                principal_ingreso_share = principal_ingreso_val / ingresos_total_dim if ingresos_total_dim else 0.0
+                categorias_criticas = (
+                    base_dim[base_dim["Neto"] < 0]
+                    .sort_values("Impacto_abs", ascending=False)[dim]
+                    .astype(str)
+                    .head(2)
+                    .tolist()
+                )
+
+                def risk_auto_badge_class(label: str) -> str:
+                    return {
+                        "Saludable": "healthy",
+                        "Atención": "attention",
+                        "Presión": "pressure",
+                        "Crítico": "critical",
+                    }.get(label, "attention")
+
+                insights_risk = []
+                conc_badge = "Crítico" if concentracion_top3_risk >= 0.65 else ("Presión" if concentracion_top3_risk >= 0.45 else "Atención")
+                insights_risk.append(
+                    (
+                        conc_badge,
+                        f"Top 3 concentra {concentracion_top3_risk:.1%} de la exposición; conviene monitorear dependencia por {dim}.",
+                    )
+                )
+                pressure_badge = "Crítico" if principal_egreso_val >= max(principal_ingreso_val, 1) else "Presión"
+                insights_risk.append(
+                    (
+                        pressure_badge,
+                        f"La principal presión de egreso es {escape(risk_short_label(principal_egreso_label, 36))}, con {fmt_clp_largo(principal_egreso_val)} expuestos.",
+                    )
+                )
+                dep_badge = "Presión" if principal_ingreso_share >= 0.45 else ("Atención" if principal_ingreso_share >= 0.25 else "Saludable")
+                insights_risk.append(
+                    (
+                        dep_badge,
+                        f"{escape(risk_short_label(principal_ingreso_label, 36))} aporta {principal_ingreso_share:.1%} de los ingresos filtrados; revisar dependencia operacional.",
+                    )
+                )
+                if exposicion_negativa > 0:
+                    neg_badge = "Crítico" if exposicion_negativa_ratio >= 0.60 else ("Presión" if exposicion_negativa_ratio >= 0.35 else "Atención")
+                    cat_txt = ", ".join(escape(risk_short_label(cat, 24)) for cat in categorias_criticas) if categorias_criticas else "sin categoría crítica dominante"
+                    insights_risk.append(
+                        (
+                            neg_badge,
+                            f"Exposición negativa de {fmt_clp_largo(exposicion_negativa)} ({exposicion_negativa_ratio:.1%}); categorías críticas: {cat_txt}.",
+                        )
+                    )
+
+                insights_risk_html = "".join(
+                    f"""
+                    <div class="risk-auto-insight">
+                        <div class="risk-auto-badge {risk_auto_badge_class(badge)}">{badge}</div>
+                        <div class="risk-auto-copy">{copy}</div>
+                    </div>
+                    """
+                    for badge, copy in insights_risk[:4]
+                )
+
                 st.markdown('<div class="risk-chart-card">', unsafe_allow_html=True)
                 st.plotly_chart(
                     fig_top,
@@ -10143,10 +10415,17 @@ if active_section == "📈 Flujo Operacional":
                     key="riesgos_concentracion_pro",
                 )
                 st.markdown(
+                    f"""
+                    <div class="risk-auto-title">Insights automáticos</div>
+                    <div class="risk-auto-insights">{insights_risk_html}</div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
                     """
                     <div class="risk-note-card">
                         <span>ⓘ</span>
-                        <div>Los montos netos se calculan como ingresos menos egresos. Haga clic en las barras para ver el detalle de movimientos por concepto.</div>
+                        <div>La exposición neta integra ingresos y egresos para priorizar conceptos con mayor impacto operacional.</div>
                     </div>
                     </div>
                     """,
@@ -10203,7 +10482,7 @@ if active_section == "📈 Flujo Operacional":
                     },
                 )
 
-            st.caption(f"Nota: este gráfico usa análisis {tipo_analisis.lower()} y el período seleccionado arriba: {periodo_filtro_lbl}.")
+            st.caption(f"Lectura consolidada bajo criterio {tipo_analisis.lower()} · horizonte ejecutivo: {periodo_filtro_lbl}.")
 
 
         render_riesgos_cobro_concentracion()
@@ -10218,21 +10497,228 @@ if active_section == "📈 Flujo Operacional":
             st.markdown(
                 """
                 <div style="
-                    background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-                    border-radius: 10px;
-                    padding: 10px 14px;
-                    margin: 8px 0 10px 0;
-                    color: #FFFFFF;
-                    font-size: 13px;
-                    font-weight: 600;">
-                    Monitoreo detallado por filtros · CC1, OBS y Responsable
+                    background: linear-gradient(135deg, #EEF4FA 0%, #E7EEF7 100%);
+                    border: 1px solid rgba(148,163,184,0.24);
+                    border-left: 4px solid rgba(37,99,235,0.38);
+                    border-radius: 9px;
+                    padding: 7px 12px;
+                    margin: 5px 0 7px 0;
+                    color: #24415F;
+                    font-size: 12px;
+                    line-height: 1.15;
+                    font-weight: 800;
+                    letter-spacing: .01em;
+                    box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 4px 14px rgba(15,23,42,0.035);">
+                    Trazabilidad operacional consolidada · análisis por centro de costo, concepto y responsable
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            st.caption("Filtra por CC1, OBS y Responsable para revisar el detalle al final de esta pestaña.")
+            st.caption("Exploración ejecutiva del universo transaccional con filtros encadenados y lectura financiera directa.")
             st.markdown('<div id="detalle-selectores-anchor"></div>', unsafe_allow_html=True)
             render_flujo_selector_scroll("detalle-selectores-anchor")
+            st.markdown(
+                """
+                <style>
+                .detalle-toolbar-anchor {
+                    height:0;
+                    min-height:0;
+                    margin:0;
+                    padding:0;
+                    overflow:hidden;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) > div[data-testid="stHorizontalBlock"] {
+                    border:1px solid rgba(219,227,238,0.86);
+                    border-radius:12px;
+                    background:#fbfdff;
+                    box-shadow:inset 0 1px 0 rgba(255,255,255,0.78), 0 4px 14px rgba(15,23,42,0.035);
+                    padding:7px 9px 5px 9px;
+                    margin:1px 0 6px 0;
+                    gap:0.75rem;
+                    align-items:flex-end;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-testid="stTextInput"],
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-testid="stSelectbox"] {
+                    margin:0 !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-testid="stTextInput"] > label,
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-testid="stSelectbox"] > label {
+                    color:#64748b !important;
+                    font-size:9.2px !important;
+                    line-height:1 !important;
+                    font-weight:950 !important;
+                    text-transform:uppercase !important;
+                    letter-spacing:.018em !important;
+                    padding-bottom:3px !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-baseweb="input"] {
+                    min-height:30px !important;
+                    height:30px !important;
+                    border-radius:8px !important;
+                    background:#ffffff !important;
+                    border-color:#dbe3ee !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-baseweb="select"] > div {
+                    min-height:30px !important;
+                    height:30px !important;
+                    border-radius:8px !important;
+                    background:#ffffff !important;
+                    border-color:#dbe3ee !important;
+                    box-shadow:none !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-baseweb="input"] input,
+                div[data-testid="stVerticalBlock"]:has(.detalle-toolbar-anchor) [data-baseweb="select"] div {
+                    font-size:11px !important;
+                    font-weight:780 !important;
+                }
+                .detalle-toolbar-label {
+                    color:#081735;
+                    font-size:10px;
+                    line-height:1.1;
+                    font-weight:950;
+                    text-transform:uppercase;
+                    letter-spacing:.018em;
+                    margin-bottom:4px;
+                }
+                .detalle-toolbar-copy {
+                    color:#64748b;
+                    font-size:9px;
+                    line-height:1.15;
+                    font-weight:700;
+                }
+                .detalle-alerts-card {
+                    border:1px solid rgba(219,227,238,0.84);
+                    border-radius:14px;
+                    background:linear-gradient(135deg,#ffffff 0%,#fbfdff 100%);
+                    box-shadow:0 8px 20px rgba(15,23,42,0.045);
+                    padding:10px 12px;
+                    margin:-4px 0 10px 0;
+                }
+                .detalle-alerts-head {
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    gap:10px;
+                    margin-bottom:8px;
+                }
+                .detalle-alerts-title {
+                    color:#081735;
+                    font-size:12px;
+                    line-height:1.1;
+                    font-weight:950;
+                    text-transform:uppercase;
+                    letter-spacing:.018em;
+                }
+                .detalle-alerts-sub {
+                    color:#64748b;
+                    font-size:9.5px;
+                    line-height:1.15;
+                    font-weight:700;
+                    margin-top:2px;
+                }
+                .detalle-alerts-grid {
+                    display:grid;
+                    grid-template-columns:repeat(2, minmax(0, 1fr));
+                    gap:7px;
+                }
+                .detalle-alert {
+                    border:1px solid rgba(226,232,240,0.88);
+                    border-radius:10px;
+                    background:#ffffff;
+                    padding:8px 9px;
+                    display:grid;
+                    grid-template-columns:auto 1fr;
+                    gap:8px;
+                    align-items:flex-start;
+                }
+                .detalle-alert-badge {
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    min-width:50px;
+                    height:21px;
+                    padding:0 8px;
+                    border-radius:999px;
+                    font-size:8px;
+                    line-height:1;
+                    font-weight:950;
+                    text-transform:uppercase;
+                }
+                .detalle-alert-badge.healthy {
+                    background:rgba(34,197,94,0.13);
+                    color:#15803D;
+                }
+                .detalle-alert-badge.attention {
+                    background:rgba(234,179,8,0.16);
+                    color:#A16207;
+                }
+                .detalle-alert-badge.pressure {
+                    background:rgba(249,115,22,0.15);
+                    color:#C2410C;
+                }
+                .detalle-alert-badge.critical {
+                    background:rgba(220,38,38,0.14);
+                    color:#DC2626;
+                }
+                .detalle-alert-copy {
+                    color:#334155;
+                    font-size:10.4px;
+                    line-height:1.25;
+                    font-weight:720;
+                }
+                .detalle-export-toolbar-anchor {
+                    height:0;
+                    min-height:0;
+                    margin:0;
+                    padding:0;
+                    overflow:hidden;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-export-toolbar-anchor) > div[data-testid="stHorizontalBlock"] {
+                    border:1px solid rgba(219,227,238,0.86);
+                    border-radius:12px;
+                    background:linear-gradient(135deg,#ffffff 0%,#fbfdff 100%);
+                    box-shadow:0 5px 16px rgba(15,23,42,0.035);
+                    padding:7px 9px;
+                    margin:4px 0 6px 0;
+                    gap:0.5rem;
+                    align-items:center;
+                }
+                .detalle-export-title {
+                    color:#081735;
+                    font-size:11px;
+                    line-height:1.1;
+                    font-weight:950;
+                    text-transform:uppercase;
+                    letter-spacing:.018em;
+                }
+                .detalle-export-sub {
+                    color:#64748b;
+                    font-size:9.2px;
+                    line-height:1.15;
+                    font-weight:700;
+                    margin-top:2px;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-export-toolbar-anchor) [data-testid="stDownloadButton"] button {
+                    min-height:30px !important;
+                    height:30px !important;
+                    border-radius:8px !important;
+                    border:1px solid rgba(219,227,238,0.95) !important;
+                    background:#ffffff !important;
+                    color:#0F2D52 !important;
+                    font-size:10.4px !important;
+                    font-weight:900 !important;
+                    padding:0 10px !important;
+                    box-shadow:inset 0 1px 0 rgba(255,255,255,0.76) !important;
+                }
+                div[data-testid="stVerticalBlock"]:has(.detalle-export-toolbar-anchor) [data-testid="stDownloadButton"] button:hover {
+                    border-color:rgba(37,99,235,0.38) !important;
+                    background:#F8FBFF !important;
+                    box-shadow:0 5px 14px rgba(37,99,235,0.08) !important;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
 
             df_det = df_ie.copy().dropna(subset=["Monto"]).copy()
             for c in ["CC1", "Obs", "Responsable"]:
@@ -10242,14 +10728,23 @@ if active_section == "📈 Flujo Operacional":
                 c for c in ["Responsable", "CC1", "Obs", "Sit", "CC", "Esp", "Fecha", "Año", "Mes", "Monto"]
                 if c in df_det.columns
             ]
-            busqueda_det = st.text_input(
-                "Buscador inteligente",
-                value="",
-                placeholder="Buscar por responsable, OBS, CC1, situación, monto, fecha...",
-                key="det_buscador_inteligente",
-                on_change=queue_flujo_selector_scroll,
-                args=("detalle-selectores-anchor",),
-            ).strip()
+            with st.container():
+                st.markdown('<div class="detalle-toolbar-anchor"></div>', unsafe_allow_html=True)
+                tb_label_col, tb_search_col = st.columns([0.82, 3.2], gap="large")
+                with tb_label_col:
+                    st.markdown(
+                        '<div class="detalle-toolbar-label">Explorador operativo</div><div class="detalle-toolbar-copy">Búsqueda contextual y filtros activos</div>',
+                        unsafe_allow_html=True,
+                    )
+                with tb_search_col:
+                    busqueda_det = st.text_input(
+                        "Búsqueda ejecutiva",
+                        value="",
+                        placeholder="Responsable, concepto, centro de costo, estado, monto o fecha...",
+                        key="det_buscador_inteligente",
+                        on_change=queue_flujo_selector_scroll,
+                        args=("detalle-selectores-anchor",),
+                    ).strip()
 
             df_det_search = df_det.copy()
             search_blob = pd.Series("", index=df_det_search.index, dtype="object")
@@ -10285,19 +10780,21 @@ if active_section == "📈 Flujo Operacional":
                     if vals:
                         resumen_busqueda_items.append(f"{c}: {', '.join(vals[:6])}")
                 resumen_busqueda = " · ".join(resumen_busqueda_items) if resumen_busqueda_items else "Sin coincidencias nominales."
-                st.caption(f"Coincidencias para '{busqueda_det}': {len(df_det_search):,} registros · {resumen_busqueda}".replace(",", "."))
+                st.caption(f"Universo filtrado por '{busqueda_det}': {len(df_det_search):,} movimientos relevantes · {resumen_busqueda}".replace(",", "."))
 
-            d1, d2, d3, d4, d5 = st.columns([1, 1, 1, 1, 1])
-            with d1:
-                cc1_opts = ["Todos"] + sorted([v for v in df_det_search["CC1"].dropna().unique().tolist() if v != ""])
-                sel_cc1_det = st.selectbox(
-                    "CC1",
-                    cc1_opts,
-                    index=0,
-                    key="det_cc1",
-                    on_change=queue_flujo_selector_scroll,
-                    args=("detalle-selectores-anchor",),
-                )
+            with st.container():
+                st.markdown('<div class="detalle-toolbar-anchor"></div>', unsafe_allow_html=True)
+                d1, d2, d3, d4, d5 = st.columns([1.12, 1.2, 1.45, 0.78, 0.78], gap="large")
+                with d1:
+                    cc1_opts = ["Todos"] + sorted([v for v in df_det_search["CC1"].dropna().unique().tolist() if v != ""])
+                    sel_cc1_det = st.selectbox(
+                        "CC1",
+                        cc1_opts,
+                        index=0,
+                        key="det_cc1",
+                        on_change=queue_flujo_selector_scroll,
+                        args=("detalle-selectores-anchor",),
+                    )
 
             df_det_f = df_det_search.copy()
             if sel_cc1_det != "Todos":
@@ -10440,13 +10937,28 @@ if active_section == "📈 Flujo Operacional":
                     resumen_obs_export = resumen_obs_tbl.copy()
                     resumen_obs_items = []
                     for _, row in resumen_obs_tbl.iterrows():
+                        resultado_val = float(row["RESULTADO"])
+                        resultado_class = (
+                            "resultado-positive"
+                            if resultado_val > 0
+                            else "resultado-negative"
+                            if resultado_val < 0
+                            else "resultado-neutral"
+                        )
+                        is_total_row = str(row["OBS"]).strip().upper() == "TOTAL TABLA (FILTRO)"
                         resumen_obs_items.append(
                             {
                                 "label": escape(str(row["OBS"])),
-                                "meta": f'{int(row["Registros"]):,} registros'.replace(",", "."),
+                                "meta": (
+                                    "Neto operacional real del filtro"
+                                    if is_total_row
+                                    else f'{int(row["Registros"]):,} registros'.replace(",", ".")
+                                ),
                                 "pagado": fmt_clp_largo(float(row["Pagado"])),
                                 "no_pagado": fmt_clp_largo(float(row["No pagado"])),
-                                "resultado": fmt_clp_largo(float(row["RESULTADO"])),
+                                "resultado": fmt_clp_largo(resultado_val),
+                                "resultado_class": resultado_class,
+                                "row_class": "resultado-total-row" if is_total_row else "",
                                 "abono": fmt_clp_largo(float(row["Abono"])),
                                 "pendiente_deuda": fmt_clp_largo(float(row["Deuda a la fecha"])),
                             }
@@ -10459,6 +10971,103 @@ if active_section == "📈 Flujo Operacional":
                             resumen_obs_items,
                         )
                         + "</div>",
+                        unsafe_allow_html=True,
+                    )
+                    obs_alert_base = resumen_obs_tbl[
+                        resumen_obs_tbl["OBS"].astype(str).str.strip().str.upper() != "TOTAL TABLA (FILTRO)"
+                    ].copy()
+
+                    def detalle_alert_badge_class(label: str) -> str:
+                        return {
+                            "Saludable": "healthy",
+                            "Atención": "attention",
+                            "Presión": "pressure",
+                            "Crítico": "critical",
+                        }.get(label, "attention")
+
+                    def detalle_short(value, max_len=34):
+                        value = str(value).strip() or "Sin OBS"
+                        return value if len(value) <= max_len else f"{value[:max_len - 1]}…"
+
+                    detalle_alertas = []
+                    total_egresos_obs = float(obs_alert_base.loc[obs_alert_base["Pagado"] < 0, "Pagado"].abs().sum()) if not obs_alert_base.empty else 0.0
+                    if total_egresos_obs > 0:
+                        egreso_rows = obs_alert_base.assign(Egreso_abs=obs_alert_base["Pagado"].clip(upper=0).abs())
+                        egreso_top = egreso_rows.sort_values("Egreso_abs", ascending=False).iloc[0]
+                        egreso_share = float(egreso_top["Egreso_abs"] / total_egresos_obs) if total_egresos_obs else 0.0
+                        egreso_badge = "Crítico" if egreso_share >= 0.55 else ("Presión" if egreso_share >= 0.35 else "Atención")
+                        detalle_alertas.append(
+                            (
+                                egreso_badge,
+                                f"{escape(detalle_short(egreso_top['OBS']))} concentra {egreso_share:.1%} de los egresos del filtro ({fmt_clp_largo(float(egreso_top['Egreso_abs']))}).",
+                            )
+                        )
+
+                    deuda_rows = obs_alert_base[obs_alert_base["Deuda a la fecha"].abs() > 0].copy()
+                    if not deuda_rows.empty:
+                        deuda_rows["Deuda_abs"] = deuda_rows["Deuda a la fecha"].abs()
+                        deuda_top = deuda_rows.sort_values("Deuda_abs", ascending=False).iloc[0]
+                        deuda_total = float(deuda_rows["Deuda_abs"].sum())
+                        deuda_share = float(deuda_top["Deuda_abs"] / deuda_total) if deuda_total else 0.0
+                        deuda_badge = "Crítico" if deuda_share >= 0.55 else ("Presión" if deuda_share >= 0.35 else "Atención")
+                        detalle_alertas.append(
+                            (
+                                deuda_badge,
+                                f"OBS con mayor deuda: {escape(detalle_short(deuda_top['OBS']))}, por {fmt_clp_largo(float(deuda_top['Deuda_abs']))}.",
+                            )
+                        )
+
+                    mora_rows = obs_alert_base[obs_alert_base["No pagado"].abs() > 0].copy()
+                    if not mora_rows.empty:
+                        mora_rows["Mora_abs"] = mora_rows["No pagado"].abs()
+                        mora_total = float(mora_rows["Mora_abs"].sum())
+                        mora_count = int(len(mora_rows))
+                        mora_badge = "Crítico" if mora_count >= 5 else ("Presión" if mora_count >= 3 else "Atención")
+                        detalle_alertas.append(
+                            (
+                                mora_badge,
+                                f"Mora activa en {mora_count} OBS por {fmt_clp_largo(mora_total)}; priorizar recuperación por antigüedad y monto.",
+                            )
+                        )
+
+                    critical_rows = obs_alert_base.assign(
+                        Criticidad=obs_alert_base["Pagado"].clip(upper=0).abs() + obs_alert_base["No pagado"].abs() + obs_alert_base["Deuda a la fecha"].abs()
+                    )
+                    critical_rows = critical_rows[critical_rows["Criticidad"] > 0].sort_values("Criticidad", ascending=False)
+                    if not critical_rows.empty:
+                        top_criticas = [escape(detalle_short(v, 24)) for v in critical_rows["OBS"].head(3).tolist()]
+                        crit_badge = "Crítico" if len(top_criticas) >= 3 else "Presión"
+                        detalle_alertas.append(
+                            (
+                                crit_badge,
+                                f"Categorías críticas principales: {', '.join(top_criticas)}.",
+                            )
+                        )
+
+                    if not detalle_alertas:
+                        detalle_alertas.append(("Saludable", "No se detectan alertas operacionales relevantes bajo los filtros actuales."))
+
+                    detalle_alertas_html = "".join(
+                        f"""
+                        <div class="detalle-alert">
+                            <div class="detalle-alert-badge {detalle_alert_badge_class(badge)}">{badge}</div>
+                            <div class="detalle-alert-copy">{copy}</div>
+                        </div>
+                        """
+                        for badge, copy in detalle_alertas[:4]
+                    )
+                    st.markdown(
+                        f"""
+                        <div class="detalle-alerts-card">
+                            <div class="detalle-alerts-head">
+                                <div>
+                                    <div class="detalle-alerts-title">Alertas operacionales</div>
+                                    <div class="detalle-alerts-sub">Insights automáticos según resumen OBS y filtros activos</div>
+                                </div>
+                            </div>
+                            <div class="detalle-alerts-grid">{detalle_alertas_html}</div>
+                        </div>
+                        """,
                         unsafe_allow_html=True,
                     )
 
@@ -10520,6 +11129,108 @@ if active_section == "📈 Flujo Operacional":
                         grafico_obs_export = chart_periodo.copy()
                         fig_obs_periodo = build_obs_periodo_figure(chart_periodo)
                         st.plotly_chart(fig_obs_periodo, use_container_width=True)
+
+                        temporal_insights = []
+                        temporal_base = chart_periodo.copy().sort_values("Periodo_chart")
+                        temporal_base["Deuda_abs"] = temporal_base["Deuda a la fecha"].abs()
+                        temporal_base["Mora_abs"] = temporal_base["No pagado"].abs()
+
+                        if not temporal_base.empty and temporal_base["Deuda_abs"].max() > 0:
+                            peak_row = temporal_base.loc[temporal_base["Deuda_abs"].idxmax()]
+                            temporal_insights.append(
+                                (
+                                    "Crítico" if float(peak_row["Deuda_abs"]) >= float(temporal_base["Deuda_abs"].quantile(0.75)) else "Presión",
+                                    f"Peak histórico de deuda en {pd.to_datetime(peak_row['Periodo_chart']).strftime('%b %Y')}: {fmt_clp_largo(float(peak_row['Deuda_abs']))}.",
+                                )
+                            )
+
+                        if len(temporal_base) >= 2:
+                            last_row_tmp = temporal_base.iloc[-1]
+                            prev_row_tmp = temporal_base.iloc[-2]
+                            mora_delta = float(last_row_tmp["Mora_abs"] - prev_row_tmp["Mora_abs"])
+                            deuda_delta = float(last_row_tmp["Deuda_abs"] - prev_row_tmp["Deuda_abs"])
+                            if mora_delta > 0:
+                                temporal_insights.append(
+                                    (
+                                        "Presión" if mora_delta < max(float(prev_row_tmp["Mora_abs"]) * 0.35, 1) else "Crítico",
+                                        f"Mora activa aumenta {fmt_clp_largo(mora_delta)} vs período anterior; revisar recuperación inmediata.",
+                                    )
+                                )
+                            elif mora_delta < 0:
+                                temporal_insights.append(
+                                    (
+                                        "Saludable",
+                                        f"Mejora operacional: la mora baja {fmt_clp_largo(abs(mora_delta))} frente al período anterior.",
+                                    )
+                                )
+
+                            if deuda_delta < 0:
+                                temporal_insights.append(
+                                    (
+                                        "Saludable",
+                                        f"La deuda a la fecha disminuye {fmt_clp_largo(abs(deuda_delta))}; tendencia reciente favorable.",
+                                    )
+                                )
+
+                        if len(temporal_base) >= 3:
+                            recent_debt = temporal_base["Deuda_abs"].tail(3)
+                            avg_recent_debt = float(recent_debt.mean())
+                            max_recent_debt = float(recent_debt.max())
+                            min_recent_debt = float(recent_debt.min())
+                            if avg_recent_debt > 0 and (max_recent_debt - min_recent_debt) <= max(avg_recent_debt * 0.10, 1):
+                                temporal_insights.append(
+                                    (
+                                        "Atención",
+                                        f"Estabilización detectada: deuda se mantiene en torno a {fmt_clp_largo(avg_recent_debt)} durante los últimos 3 períodos.",
+                                    )
+                                )
+                            if (temporal_base["Deuda_abs"].tail(3) > 0).all():
+                                temporal_insights.append(
+                                    (
+                                        "Presión",
+                                        "Presión persistente: la deuda permanece activa en los últimos 3 períodos observados.",
+                                    )
+                                )
+
+                        if not temporal_insights:
+                            temporal_insights.append(
+                                (
+                                    "Saludable",
+                                    "No se detectan presiones temporales relevantes en la evolución del período filtrado.",
+                                )
+                            )
+
+                        temporal_seen = set()
+                        temporal_unique = []
+                        for badge, copy in temporal_insights:
+                            if copy in temporal_seen:
+                                continue
+                            temporal_seen.add(copy)
+                            temporal_unique.append((badge, copy))
+
+                        temporal_insights_html = "".join(
+                            f"""
+                            <div class="detalle-alert">
+                                <div class="detalle-alert-badge {detalle_alert_badge_class(badge)}">{badge}</div>
+                                <div class="detalle-alert-copy">{copy}</div>
+                            </div>
+                            """
+                            for badge, copy in temporal_unique[:4]
+                        )
+                        st.markdown(
+                            f"""
+                            <div class="detalle-alerts-card">
+                                <div class="detalle-alerts-head">
+                                    <div>
+                                        <div class="detalle-alerts-title">Insights operacionales detectados</div>
+                                        <div class="detalle-alerts-sub">Lectura temporal automática sobre deuda, mora y presión operacional</div>
+                                    </div>
+                                </div>
+                                <div class="detalle-alerts-grid">{temporal_insights_html}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
             if "Fecha" in df_det_f.columns:
                 df_det_f["Fecha"] = pd.to_datetime(df_det_f["Fecha"], errors="coerce")
                 df_det_f = df_det_f.sort_values(["Fecha", "Año", "Mes"], ascending=[False, False, False], na_position="last")
@@ -10527,11 +11238,11 @@ if active_section == "📈 Flujo Operacional":
                 df_det_f = df_det_f.sort_values(["Año", "Mes"], ascending=[False, False], na_position="last")
 
             cols_det = [c for c in ["Fecha", "Año", "Mes", "Esp", "Responsable", "CC", "CC1", "Obs", "Sit", "Monto"] if c in df_det_f.columns]
-            df_det_view = df_det_f[cols_det].copy()
+            df_det_view = df_det_f[cols_det].copy().reset_index(drop=True)
 
-            st.caption(f"Registros encontrados: {len(df_det_view):,}".replace(",", "."))
+            st.caption(f"Universo operacional bajo análisis: {len(df_det_view):,} movimientos.".replace(",", "."))
             if df_det_view.empty:
-                st.info("No hay movimientos para los filtros seleccionados.")
+                st.info("No se registran movimientos relevantes para el universo filtrado.")
             else:
                 df_det_show = df_det_view.copy()
                 if "Fecha" in df_det_show.columns:
@@ -10571,45 +11282,76 @@ if active_section == "📈 Flujo Operacional":
                     grafico_obs_export,
                 )
 
-                dl_pdf_det, dl_excel_det, _ = st.columns([1.1, 1.15, 5])
-                with dl_pdf_det:
-                    st.download_button(
-                        "📄 Descargar PDF",
-                        data=pdf_detalle,
-                        file_name="detalle_movimientos_filtrado.pdf",
-                        mime="application/pdf",
-                        key="download_detalle_movimientos_pdf",
-                    )
-                with dl_excel_det:
-                    st.download_button(
-                        "📊 Descargar Excel",
-                        data=excel_detalle,
-                        file_name="detalle_movimientos_filtrado.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        key="download_detalle_movimientos_excel",
-                    )
+                with st.container():
+                    st.markdown('<div class="detalle-export-toolbar-anchor"></div>', unsafe_allow_html=True)
+                    exp_title, exp_pdf, exp_excel = st.columns([4.6, 0.92, 1.02], gap="small")
+                    with exp_title:
+                        st.markdown(
+                            f"""
+                            <div>
+                                <div class="detalle-export-title">Tabla operacional</div>
+                                <div class="detalle-export-sub">{len(df_det_view):,} movimientos bajo análisis · visualización operativa con navegación interna</div>
+                            </div>
+                            """.replace(",", "."),
+                            unsafe_allow_html=True,
+                        )
+                    with exp_pdf:
+                        st.download_button(
+                            "PDF",
+                            data=pdf_detalle,
+                            file_name="detalle_movimientos_filtrado.pdf",
+                            mime="application/pdf",
+                            key="download_detalle_movimientos_pdf",
+                            use_container_width=True,
+                        )
+                    with exp_excel:
+                        st.download_button(
+                            "Excel",
+                            data=excel_detalle,
+                            file_name="detalle_movimientos_filtrado.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key="download_detalle_movimientos_excel",
+                            use_container_width=True,
+                        )
 
-                st.caption("Vista acotada a 20 filas visibles. Usa el scroll interno de la tabla para recorrer todo.")
-                visible_rows = 20
-                row_height_px = 35
-                header_px = 38
+                visible_rows = 12
+                row_height_px = 28
+                header_px = 32
                 table_height = header_px + (visible_rows * row_height_px)
                 left_cols_det = [c for c in ["Responsable", "CC1", "Obs"] if c in df_det_show.columns]
+                responsable_cols_det = [c for c in ["Responsable"] if c in df_det_show.columns]
                 sit_cols_det = [c for c in ["Sit"] if c in df_det_show.columns]
                 cc_cols_det = [c for c in ["CC"] if c in df_det_show.columns]
                 monto_cols_det = [c for c in ["Monto"] if c in df_det_show.columns]
+                critical_cols_det = [c for c in ["Responsable", "Sit", "Monto"] if c in df_det_show.columns]
+                secondary_cols_det = [c for c in df_det_show.columns if c not in set(critical_cols_det)]
 
-                def _highlight_first_row(row):
+                if "Fecha" in df_det_show.columns:
+                    group_keys_det = df_det_show["Fecha"].astype(str).str.slice(0, 7)
+                elif {"Año", "Mes"}.issubset(df_det_show.columns):
+                    group_keys_det = (
+                        df_det_show["Año"].astype(str).str.strip()
+                        + "-"
+                        + df_det_show["Mes"].astype(str).str.strip().str.zfill(2)
+                    )
+                else:
+                    group_keys_det = pd.Series("", index=df_det_show.index)
+                group_break_rows_det = set(group_keys_det[group_keys_det.ne(group_keys_det.shift())].index.tolist())
+
+                def _enterprise_row_style(row):
+                    styles = [""] * len(row)
                     if row.name == 0:
-                        return ["background-color:#E8F1FF; font-weight:700;"] * len(row)
-                    return [""] * len(row)
+                        styles = ["background-color:#F8FBFF; font-weight:720;"] * len(row)
+                    elif row.name in group_break_rows_det:
+                        styles = ["border-top:1px solid rgba(148,163,184,0.20);"] * len(row)
+                    return styles
 
                 def _style_sit(v):
                     s = str(v).strip().upper()
                     if s == "NO PAGADO":
-                        return "background-color:#FEE4E2; color:#B42318; font-weight:700;"
+                        return "background-color:#FFF1F1; color:#B42318; font-weight:900; border-radius:6px;"
                     if s == "PAGADO":
-                        return "background-color:#ECFDF3; color:#027A48; font-weight:700;"
+                        return "background-color:#F0FDF4; color:#027A48; font-weight:900; border-radius:6px;"
                     return ""
 
                 def _style_cc(v):
@@ -10624,10 +11366,10 @@ if active_section == "📈 Flujo Operacional":
                     try:
                         n = float(v)
                         if n < 0:
-                            return "background-color:#FEE4E2; color:#B42318; font-weight:800;"
+                            return "background-color:#FFF1F1; color:#B42318; font-weight:950; font-variant-numeric:tabular-nums; letter-spacing:-0.01em;"
                         if n > 0:
-                            return "background-color:#ECFDF3; color:#027A48; font-weight:800;"
-                        return "background-color:#F2F4F7; color:#344054; font-weight:700;"
+                            return "background-color:#F0FDF4; color:#027A48; font-weight:950; font-variant-numeric:tabular-nums; letter-spacing:-0.01em;"
+                        return "background-color:#F8FAFC; color:#344054; font-weight:850; font-variant-numeric:tabular-nums;"
                     except Exception:
                         pass
                     return ""
@@ -10639,43 +11381,73 @@ if active_section == "📈 Flujo Operacional":
                         {
                             "selector": "thead th",
                             "props": [
-                                ("background-color", "#163A5F"),
-                                ("color", "white"),
-                                ("font-weight", "700"),
-                                ("font-size", "13px"),
-                                ("border-bottom", "1px solid #0F2740"),
+                                ("position", "sticky"),
+                                ("top", "0"),
+                                ("z-index", "2"),
+                                ("background", "linear-gradient(180deg,#F8FAFC 0%,#EEF3F8 100%)"),
+                                ("color", "#475569"),
+                                ("font-weight", "780"),
+                                ("font-size", "10.8px"),
+                                ("border-bottom", "1px solid rgba(148,163,184,0.24)"),
                                 ("text-align", "center"),
-                                ("padding", "8px"),
+                                ("padding", "5px 7px"),
+                                ("letter-spacing", ".02em"),
                             ],
                         },
                         {
                             "selector": "tbody td",
                             "props": [
-                                ("font-size", "12px"),
-                                ("padding", "7px 8px"),
-                                ("border-bottom", "1px solid #E5E7EB"),
+                                ("font-size", "11px"),
+                                ("padding", "4px 7px"),
+                                ("border-bottom", "1px solid rgba(226,232,240,0.36)"),
+                                ("vertical-align", "middle"),
                             ],
                         },
                         {
                             "selector": "tbody tr:nth-child(even)",
-                            "props": [("background-color", "#F8FAFC")],
+                            "props": [("background-color", "#FCFDFF")],
+                        },
+                        {
+                            "selector": "tbody tr:nth-child(odd)",
+                            "props": [("background-color", "#FFFFFF")],
                         },
                         {
                             "selector": "tbody tr:hover",
-                            "props": [("background-color", "#EEF2F7")],
+                            "props": [
+                                ("background-color", "#F5F9FF"),
+                                ("box-shadow", "inset 2px 0 0 rgba(37,99,235,0.55)"),
+                            ],
                         },
                     ])
                     .set_properties(subset=left_cols_det, **{"text-align": "left"})
-                    .set_properties(subset=monto_cols_det, **{"font-weight": "800"})
-                    .apply(_highlight_first_row, axis=1)
+                    .set_properties(
+                        subset=monto_cols_det,
+                        **{
+                            "font-weight": "950",
+                            "text-align": "right",
+                            "font-variant-numeric": "tabular-nums",
+                            "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                        },
+                    )
+                    .apply(_enterprise_row_style, axis=1)
                 )
+                if secondary_cols_det:
+                    styler_det = styler_det.set_properties(
+                        subset=secondary_cols_det,
+                        **{"color": "#64748B", "font-weight": "560"},
+                    )
+                if responsable_cols_det:
+                    styler_det = styler_det.set_properties(
+                        subset=responsable_cols_det,
+                        **{"color": "#0F172A", "font-weight": "850"},
+                    )
                 if sit_cols_det:
                     styler_det = styler_det.map(_style_sit, subset=sit_cols_det)
                 if cc_cols_det:
                     styler_det = styler_det.map(_style_cc, subset=cc_cols_det)
                 if monto_cols_det:
                     styler_det = styler_det.map(_style_monto, subset=monto_cols_det)
-                st.caption("Colores guía: fila principal azul suave · PAGADO verde · NO PAGADO rojo · EGRESO rojo / INGRESO verde.")
+                st.caption("Detalle transaccional secundario: foco visual en responsable, estado operativo y monto.")
                 st.dataframe(
                     styler_det,
                     use_container_width=True,

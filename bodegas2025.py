@@ -6176,8 +6176,6 @@ if active_section == "⚠️ Riesgo & Cobranza":
         """,
         unsafe_allow_html=True,
     )
-    st.caption("Barras apiladas por concepto + deuda, con línea de total a cancelar.")
-
     import plotly.graph_objects as go
 
     chart_cols = conceptos_visibles + ["Deuda"]
@@ -6194,6 +6192,11 @@ if active_section == "⚠️ Riesgo & Cobranza":
             )
             or responsable_un_espacio
         )
+    )
+    st.caption(
+        "Distribución táctica del total a cancelar para la selección activa."
+        if single_month_one_space
+        else "Barras apiladas por concepto + deuda, con línea de total a cancelar."
     )
 
     fig_cancel = go.Figure()
@@ -6297,7 +6300,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     textposition="inside",
                     textfont=dict(size=14, color="#FFFFFF", family="Inter, Arial, sans-serif"),
                     hovertemplate="<b>%{label}</b><br>Monto: $%{value:,.0f}<br>Participación: %{percent}<extra></extra>",
-                    domain=dict(x=[0.00, 1.00], y=[0.05, 0.98]),
+                    domain=dict(x=[0.12, 0.88], y=[0.12, 0.88]),
                 )
             )
         else:
@@ -6392,12 +6395,13 @@ if active_section == "⚠️ Riesgo & Cobranza":
     fig_cancel.update_layout(
         barmode="stack",
         template="plotly_white",
-        height=430 if single_month_one_space else (280 if single_space_view else 380),
-        margin=dict(l=2 if single_month_one_space else 20, r=2 if single_month_one_space else 20, t=4 if single_month_one_space else 92, b=48 if single_month_one_space else 18),
+        autosize=False if single_month_one_space else True,
+        height=444 if single_month_one_space else (280 if single_space_view else 380),
+        margin=dict(l=10 if single_month_one_space else 20, r=10 if single_month_one_space else 20, t=20 if single_month_one_space else 92, b=36 if single_month_one_space else 18),
         legend=dict(
             orientation="h",
             yanchor="top" if single_month_one_space else "bottom",
-            y=-0.015 if single_month_one_space else 1.10,
+            y=0.02 if single_month_one_space else 1.10,
             x=0.5 if single_month_one_space else 0.01,
             xanchor="center" if single_month_one_space else "left",
             bgcolor="rgba(255,255,255,0.85)",
@@ -6443,6 +6447,8 @@ if active_section == "⚠️ Riesgo & Cobranza":
         plot_html = fig_cancel.to_html(
             full_html=False,
             include_plotlyjs=True,
+            default_width="100%",
+            default_height="404px",
             config={
                 "displaylogo": False,
                 "displayModeBar": True,
@@ -6452,12 +6458,18 @@ if active_section == "⚠️ Riesgo & Cobranza":
         principal_label = escape(metric["principal_component"])
         responsable_label = escape(metric["responsable"])
         exposure_pct = min(max(float(metric["deuda_share"]), 0.0), 1.0) * 100
+        executive_read = (
+            f"{principal_label} concentra {metric['principal_share']:.0%} del total a cancelar. "
+            f"La exposición es {metric['risk_badge'].replace('Exposición ', '').lower()} "
+            f"porque la deuda operativa representa {metric['deuda_share']:.0%}."
+        )
         components.html(
             f"""
             <div class="cobro-exec-card">
                 <div class="cobro-donut-side">
                     <div class="cobro-card-eyebrow">Vista financiera filtrada</div>
                     <div class="cobro-card-title">Composición de cobro · {escape(metric["espacio"])}</div>
+                    <div class="cobro-card-read">{executive_read}</div>
                     <div class="plot-wrap">{plot_html}</div>
                 </div>
                 <div class="cobro-kpi-side">
@@ -6508,9 +6520,9 @@ if active_section == "⚠️ Riesgo & Cobranza":
                 .cobro-exec-card {{
                     min-height:520px;
                     display:grid;
-                    grid-template-columns:minmax(0, 1.62fr) minmax(300px, .78fr);
+                    grid-template-columns:minmax(0, 1.9fr) minmax(300px, 1fr);
                     gap:20px;
-                    padding:22px;
+                    padding:22px 24px;
                     border-radius:18px;
                     background:#FFFFFF;
                     border:1px solid rgba(37,99,235,0.14);
@@ -6521,9 +6533,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     border-radius:16px;
                     background:#FFFFFF;
                     border:1px solid rgba(226,232,240,0.78);
-                    padding:14px 16px 8px 16px;
+                    padding:20px 22px 14px 22px;
                     box-shadow:0 8px 22px rgba(15,23,42,0.025);
                     box-sizing:border-box;
+                    min-height:476px;
                 }}
                 .cobro-card-eyebrow {{
                     color:#64748B;
@@ -6538,11 +6551,26 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     font-size:20px;
                     font-weight:900;
                     letter-spacing:-.01em;
-                    margin:0 0 3px 2px;
+                    margin:0 0 5px 2px;
+                }}
+                .cobro-card-read {{
+                    max-width:720px;
+                    color:#64748B;
+                    font-size:12px;
+                    line-height:1.35;
+                    font-weight:700;
+                    margin:0 0 2px 2px;
                 }}
                 .plot-wrap {{
-                    height:448px;
+                    height:404px;
                     overflow:hidden;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                }}
+                .plot-wrap > div {{
+                    width:100% !important;
+                    height:100% !important;
                 }}
                 .cobro-kpi-side {{
                     border-radius:15px;
@@ -6554,6 +6582,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     justify-content:flex-start;
                     gap:10px;
                     box-sizing:border-box;
+                    min-height:476px;
                 }}
                 .risk-badge {{
                     align-self:flex-start;

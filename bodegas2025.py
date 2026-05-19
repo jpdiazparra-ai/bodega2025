@@ -6208,6 +6208,18 @@ if active_section == "⚠️ Riesgo & Cobranza":
     }
     donut_panel_metrics = None
 
+    def _fmt_money_exec(value: float) -> str:
+        amount = abs(float(value or 0))
+        if amount >= 1_000_000:
+            return f"${amount / 1_000_000:.1f}MM"
+        if amount >= 1_000:
+            return f"${amount / 1_000:.0f}K"
+        return f"${amount:,.0f}"
+
+    def _short_exec_name(value: str, max_len: int = 18) -> str:
+        txt = str(value or "").replace(" SPA", "").replace(" SpA", "").replace(" S.P.A.", "").strip()
+        return txt if len(txt) <= max_len else txt[: max_len - 1].rstrip() + "…"
+
     if single_month_one_space:
         row = chart_df.iloc[0]
         raw_vals = pd.Series({c: float(pd.to_numeric(row[c], errors="coerce") or 0) for c in chart_cols})
@@ -6219,25 +6231,34 @@ if active_section == "⚠️ Riesgo & Cobranza":
         deuda_share = abs(deuda_single) / total_components_abs if total_components_abs else 0.0
         principal_component = str(pos_vals.index[0]) if not pos_vals.empty else "Sin componente dominante"
         principal_component_value = float(pos_vals.iloc[0]) if not pos_vals.empty else 0.0
-        principal_component_share = principal_component_value / float(pos_vals.sum()) if float(pos_vals.sum()) else 0.0
+        pos_total = float(pos_vals.sum()) if not pos_vals.empty else 0.0
+        principal_component_share = principal_component_value / pos_total if pos_total else 0.0
+        canon_share = float(raw_vals.get("Canon mensual", 0)) / pos_total if pos_total else 0.0
+        services_value = sum(float(raw_vals.get(c, 0)) for c in ["Gastos comunes", "CGE", "Verisure", "Administrativo"] if c in raw_vals.index)
+        services_share = services_value / pos_total if pos_total else 0.0
+        garantia_share = float(raw_vals.get("Garantia", 0)) / pos_total if pos_total else 0.0
         responsable_single = str(row.get("Responsable", resp_lbl_chart))
         if deuda_share >= 0.40:
             risk_badge = "Exposición crítica"
+            risk_short = "Riesgo crítico"
             risk_color = "#B42318"
             risk_bg = "rgba(254,226,226,0.86)"
             risk_state = "Presión de cobranza crítica"
         elif deuda_share >= 0.22:
             risk_badge = "Exposición alta"
+            risk_short = "Riesgo alto"
             risk_color = "#C2410C"
             risk_bg = "rgba(255,237,213,0.92)"
             risk_state = "Presión de cobranza alta"
         elif deuda_share >= 0.08:
             risk_badge = "Exposición media"
+            risk_short = "Riesgo medio"
             risk_color = "#D97706"
             risk_bg = "rgba(245,158,11,0.14)"
             risk_state = "Seguimiento preventivo"
         else:
             risk_badge = "Exposición baja"
+            risk_short = "Riesgo bajo"
             risk_color = "#047857"
             risk_bg = "rgba(220,252,231,0.84)"
             risk_state = "Sin deuda operativa relevante"
@@ -6248,9 +6269,13 @@ if active_section == "⚠️ Riesgo & Cobranza":
             "principal_component": principal_component,
             "principal_value": principal_component_value,
             "principal_share": principal_component_share,
+            "canon_share": canon_share,
+            "services_share": services_share,
+            "garantia_share": garantia_share,
             "deuda": deuda_single,
             "deuda_share": deuda_share,
             "risk_badge": risk_badge,
+            "risk_short": risk_short,
             "risk_color": risk_color,
             "risk_bg": risk_bg,
             "risk_state": risk_state,
@@ -6261,16 +6286,18 @@ if active_section == "⚠️ Riesgo & Cobranza":
                 go.Pie(
                     labels=pos_vals.index.tolist(),
                     values=pos_vals.values.tolist(),
-                    hole=0.62,
+                    hole=0.58,
                     sort=False,
                     marker=dict(
                         colors=[color_map.get(c, "#64748B") for c in pos_vals.index.tolist()],
-                        line=dict(color="white", width=1),
+                        line=dict(color="rgba(255,255,255,0.92)", width=0.8),
                     ),
-                    textinfo="percent",
-                    textfont=dict(size=13, color="#FFFFFF"),
+                    textinfo="none",
+                    texttemplate="%{percent:.0%}",
+                    textposition="inside",
+                    textfont=dict(size=14, color="#FFFFFF", family="Inter, Arial, sans-serif"),
                     hovertemplate="<b>%{label}</b><br>Monto: $%{value:,.0f}<br>Participación: %{percent}<extra></extra>",
-                    domain=dict(x=[0.05, 0.95], y=[0.13, 0.90]),
+                    domain=dict(x=[0.00, 1.00], y=[0.05, 0.98]),
                 )
             )
         else:
@@ -6287,11 +6314,11 @@ if active_section == "⚠️ Riesgo & Cobranza":
             )
 
         center_text = (
-            f"<span style='font-size:20px'><b>{chart_df['Espacio'].iloc[0]}</b></span><br>"
-            f"<span style='font-size:12px'>{responsable_single}</span><br>"
-            f"<span style='font-size:11px;color:#64748B'>Total</span><br>"
-            f"<span style='font-size:17px'><b>${total_single:,.0f}</b></span><br>"
-            f"<span style='font-size:10px;color:{risk_color}'>{risk_badge}</span>"
+            f"<span style='font-size:24px;letter-spacing:.06em'><b>{str(chart_df['Espacio'].iloc[0]).upper()}</b></span><br>"
+            f"<span style='font-size:13px;color:#334155'>{escape(_short_exec_name(responsable_single, 20))}</span><br>"
+            f"<span style='font-size:11px;color:#64748B'>Total exposición</span><br>"
+            f"<span style='font-size:21px'><b>{_fmt_money_exec(total_single)}</b></span><br>"
+            f"<span style='font-size:11px;color:{risk_color};font-weight:800'>{risk_short}</span>"
         )
         fig_cancel.add_annotation(
             x=0.5,
@@ -6365,18 +6392,18 @@ if active_section == "⚠️ Riesgo & Cobranza":
     fig_cancel.update_layout(
         barmode="stack",
         template="plotly_white",
-        height=390 if single_month_one_space else (280 if single_space_view else 380),
-        margin=dict(l=8 if single_month_one_space else 20, r=8 if single_month_one_space else 20, t=12 if single_month_one_space else 92, b=58 if single_month_one_space else 18),
+        height=430 if single_month_one_space else (280 if single_space_view else 380),
+        margin=dict(l=2 if single_month_one_space else 20, r=2 if single_month_one_space else 20, t=4 if single_month_one_space else 92, b=48 if single_month_one_space else 18),
         legend=dict(
             orientation="h",
             yanchor="top" if single_month_one_space else "bottom",
-            y=-0.03 if single_month_one_space else 1.10,
+            y=-0.015 if single_month_one_space else 1.10,
             x=0.5 if single_month_one_space else 0.01,
             xanchor="center" if single_month_one_space else "left",
             bgcolor="rgba(255,255,255,0.85)",
             bordercolor="rgba(15,45,82,0.15)",
             borderwidth=1,
-            font=dict(size=10 if single_month_one_space else 12),
+            font=dict(size=9.5 if single_month_one_space else 12),
         ),
         title=dict(
             text="" if single_month_one_space else "📊 Composición de Cobro por Espacio",
@@ -6424,38 +6451,51 @@ if active_section == "⚠️ Riesgo & Cobranza":
         )
         principal_label = escape(metric["principal_component"])
         responsable_label = escape(metric["responsable"])
+        exposure_pct = min(max(float(metric["deuda_share"]), 0.0), 1.0) * 100
         components.html(
             f"""
             <div class="cobro-exec-card">
                 <div class="cobro-donut-side">
-                    <div class="cobro-card-eyebrow">Lectura financiera filtrada</div>
+                    <div class="cobro-card-eyebrow">Vista financiera filtrada</div>
                     <div class="cobro-card-title">Composición de cobro · {escape(metric["espacio"])}</div>
                     <div class="plot-wrap">{plot_html}</div>
                 </div>
                 <div class="cobro-kpi-side">
                     <div class="risk-badge" style="--risk-bg:{metric["risk_bg"]};--risk-color:{metric["risk_color"]};">{metric["risk_badge"]}</div>
                     <div class="kpi-block primary">
-                        <div class="kpi-label">Total a cancelar</div>
+                        <div class="kpi-head"><span class="line-icon">$</span><div class="kpi-label">Total a cancelar</div></div>
                         <div class="kpi-value">${metric["total"]:,.0f}</div>
                         <div class="kpi-note">{responsable_label}</div>
                     </div>
                     <div class="kpi-block">
-                        <div class="kpi-label">Principal componente</div>
+                        <div class="kpi-head"><span class="line-icon pie-icon"></span><div class="kpi-label">Principal componente</div></div>
                         <div class="kpi-value small">{principal_label}</div>
-                        <div class="kpi-note">${metric["principal_value"]:,.0f} · {metric["principal_share"]:.1%}</div>
+                        <div class="kpi-note">${metric["principal_value"]:,.0f} · {metric["principal_share"]:.0%}</div>
                     </div>
                     <div class="kpi-grid">
                         <div class="mini-kpi">
-                            <span>% deuda operativa</span>
+                            <div class="mini-head"><span class="line-icon alert-icon">!</span><span>% deuda operativa</span></div>
                             <strong>{metric["deuda_share"]:.1%}</strong>
                         </div>
                         <div class="mini-kpi">
-                            <span>Riesgo cobranza</span>
+                            <div class="mini-head"><span class="line-icon shield-icon">✓</span><span>Riesgo cobranza</span></div>
                             <strong style="color:{metric["risk_color"]};">{metric["risk_state"]}</strong>
                         </div>
                     </div>
-                    <div class="risk-meter">
-                        <div style="width:{min(metric["deuda_share"], 1.0) * 100:.1f}%;background:{metric["risk_color"]};"></div>
+                    <div class="risk-panel">
+                        <div class="risk-panel-top">
+                            <span>Nivel de exposición</span>
+                            <strong style="color:{metric["risk_color"]};">{metric["risk_badge"]}</strong>
+                        </div>
+                        <div class="risk-scale">
+                            <div class="risk-marker" style="left:{exposure_pct:.1f}%;border-color:{metric["risk_color"]};"></div>
+                        </div>
+                    </div>
+                    <div class="tactical-insights">
+                        <div class="insight-row"><span>Canon mensual</span><strong>{metric["canon_share"]:.0%}</strong></div>
+                        <div class="insight-row"><span>Servicios operativos</span><strong>{metric["services_share"]:.0%}</strong></div>
+                        <div class="insight-row"><span>Garantía</span><strong>{metric["garantia_share"]:.0%}</strong></div>
+                        <div class="insight-row"><span>Dependencia operacional</span><strong>{metric["principal_share"]:.0%}</strong></div>
                     </div>
                 </div>
             </div>
@@ -6466,15 +6506,23 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
                 }}
                 .cobro-exec-card {{
-                    min-height:455px;
+                    min-height:520px;
                     display:grid;
-                    grid-template-columns:minmax(0, 1.58fr) minmax(270px, .72fr);
-                    gap:18px;
-                    padding:18px;
+                    grid-template-columns:minmax(0, 1.62fr) minmax(300px, .78fr);
+                    gap:20px;
+                    padding:22px;
                     border-radius:18px;
                     background:#FFFFFF;
-                    border:1px solid rgba(148,163,184,0.18);
-                    box-shadow:0 16px 36px rgba(15,23,42,0.055);
+                    border:1px solid rgba(37,99,235,0.14);
+                    box-shadow:0 18px 42px rgba(15,23,42,0.06);
+                    box-sizing:border-box;
+                }}
+                .cobro-donut-side {{
+                    border-radius:16px;
+                    background:#FFFFFF;
+                    border:1px solid rgba(226,232,240,0.78);
+                    padding:14px 16px 8px 16px;
+                    box-shadow:0 8px 22px rgba(15,23,42,0.025);
                     box-sizing:border-box;
                 }}
                 .cobro-card-eyebrow {{
@@ -6487,24 +6535,24 @@ if active_section == "⚠️ Riesgo & Cobranza":
                 }}
                 .cobro-card-title {{
                     color:#0F172A;
-                    font-size:19px;
+                    font-size:20px;
                     font-weight:900;
                     letter-spacing:-.01em;
                     margin:0 0 3px 2px;
                 }}
                 .plot-wrap {{
-                    height:398px;
+                    height:448px;
                     overflow:hidden;
                 }}
                 .cobro-kpi-side {{
                     border-radius:15px;
                     background:linear-gradient(180deg,#F8FAFC 0%,#FFFFFF 100%);
                     border:1px solid rgba(148,163,184,0.16);
-                    padding:16px;
+                    padding:16px 16px 14px 16px;
                     display:flex;
                     flex-direction:column;
-                    justify-content:center;
-                    gap:12px;
+                    justify-content:flex-start;
+                    gap:10px;
                     box-sizing:border-box;
                 }}
                 .risk-badge {{
@@ -6518,14 +6566,51 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     font-weight:900;
                 }}
                 .kpi-block {{
-                    padding:12px;
+                    padding:12px 12px 11px 12px;
                     border-radius:13px;
                     background:#FFFFFF;
                     border:1px solid rgba(226,232,240,0.82);
+                    box-shadow:0 8px 16px rgba(15,23,42,0.022);
                 }}
                 .kpi-block.primary {{
                     border-color:rgba(37,99,235,0.18);
                     box-shadow:inset 3px 0 0 rgba(37,99,235,0.75);
+                }}
+                .kpi-head,
+                .mini-head {{
+                    display:flex;
+                    align-items:center;
+                    gap:7px;
+                }}
+                .line-icon {{
+                    width:20px;
+                    height:20px;
+                    border-radius:999px;
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    border:1px solid rgba(37,99,235,0.20);
+                    color:#2563EB;
+                    background:rgba(37,99,235,0.07);
+                    font-size:11px;
+                    line-height:1;
+                    font-weight:900;
+                    flex:0 0 auto;
+                    box-sizing:border-box;
+                }}
+                .pie-icon {{
+                    background:conic-gradient(#2563EB 0 62%, rgba(37,99,235,0.14) 62% 100%);
+                    border-color:rgba(37,99,235,0.20);
+                }}
+                .alert-icon {{
+                    color:#D97706;
+                    background:rgba(245,158,11,0.12);
+                    border-color:rgba(245,158,11,0.24);
+                }}
+                .shield-icon {{
+                    color:#047857;
+                    background:rgba(220,252,231,0.84);
+                    border-color:rgba(4,120,87,0.18);
                 }}
                 .kpi-label {{
                     color:#64748B;
@@ -6561,7 +6646,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     background:#FFFFFF;
                     border:1px solid rgba(226,232,240,0.82);
                     border-radius:12px;
-                    padding:10px;
+                    padding:9px;
                 }}
                 .mini-kpi span {{
                     display:block;
@@ -6580,20 +6665,71 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     line-height:1.15;
                     font-weight:900;
                 }}
-                .risk-meter {{
-                    height:8px;
-                    border-radius:999px;
-                    background:#E2E8F0;
-                    overflow:hidden;
+                .risk-panel {{
+                    margin-top:2px;
+                    padding-top:11px;
+                    border-top:1px solid rgba(148,163,184,0.18);
                 }}
-                .risk-meter div {{
-                    height:100%;
-                    min-width:6px;
+                .risk-panel-top {{
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    gap:10px;
+                    margin-bottom:8px;
+                }}
+                .risk-panel-top span {{
+                    color:#64748B;
+                    font-size:10px;
+                    font-weight:900;
+                    text-transform:uppercase;
+                    letter-spacing:.06em;
+                }}
+                .risk-panel-top strong {{
+                    font-size:11px;
+                    font-weight:900;
+                }}
+                .risk-scale {{
+                    height:9px;
+                    position:relative;
                     border-radius:999px;
+                    background:linear-gradient(90deg,#16A34A 0%,#FBBF24 48%,#EF4444 100%);
+                    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.55);
+                }}
+                .risk-marker {{
+                    position:absolute;
+                    top:50%;
+                    width:16px;
+                    height:16px;
+                    border-radius:999px;
+                    background:#FFFFFF;
+                    border:3px solid #64748B;
+                    transform:translate(-50%, -50%);
+                    box-shadow:0 4px 10px rgba(15,23,42,0.18);
+                }}
+                .tactical-insights {{
+                    margin-top:1px;
+                    border-top:1px solid rgba(148,163,184,0.14);
+                    padding-top:9px;
+                    display:grid;
+                    gap:6px;
+                }}
+                .insight-row {{
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    gap:12px;
+                    color:#64748B;
+                    font-size:11px;
+                    font-weight:700;
+                }}
+                .insight-row strong {{
+                    color:#0F172A;
+                    font-size:12px;
+                    font-weight:900;
                 }}
             </style>
             """,
-            height=492,
+            height=558,
         )
     else:
         st.plotly_chart(

@@ -5561,17 +5561,172 @@ if active_section == "⚠️ Riesgo & Cobranza":
             unsafe_allow_html=True,
         )
 
+    def _fmt_clp_compact(value: float) -> str:
+        amount = abs(float(value or 0))
+        if amount >= 1_000_000:
+            formatted = f"${amount / 1_000_000:.1f}M"
+            return formatted.replace(".0M", "M")
+        if amount >= 1_000:
+            return f"${amount / 1_000:.0f}k"
+        return f"${amount:,.0f}"
+
+    if not tabla.empty:
+        exposure_base = tabla.copy()
+        exposure_base["Deuda_vigente_abs"] = exposure_base["Deuda"].abs()
+        top_exposure_row = exposure_base.sort_values("Deuda_vigente_abs", ascending=False).iloc[0]
+        top_exposure_name = escape(str(top_exposure_row["Responsable"]))
+        top_exposure_value = _fmt_clp_compact(float(top_exposure_row["Deuda_vigente_abs"]))
+    else:
+        top_exposure_name = "Sin responsable dominante"
+        top_exposure_value = "$0"
+
+    mora_base = df_np.copy()
+    if not mora_base.empty and "Responsable" in mora_base.columns:
+        mora_counts = mora_base.groupby("Responsable").size().sort_values(ascending=False)
+        top_mora_name = escape(str(mora_counts.index[0]))
+        top_mora_count = int(mora_counts.iloc[0])
+    else:
+        top_mora_name = "Sin mora activa"
+        top_mora_count = 0
+
+    risk_group_col = next((c for c in ["Esp", "CC1", "Obs", "CC"] if c in mora_base.columns), None)
+    if risk_group_col and not mora_base.empty:
+        concentration_base = mora_base.copy()
+        concentration_base["Monto_abs"] = pd.to_numeric(concentration_base["Monto"], errors="coerce").fillna(0).abs()
+        risk_groups = concentration_base.groupby(risk_group_col)["Monto_abs"].sum().sort_values(ascending=False)
+        risk_groups = risk_groups[risk_groups > 0]
+        if not risk_groups.empty:
+            top_risk_name = escape(str(risk_groups.index[0]))
+            risk_total = float(risk_groups.sum())
+            top_risk_pct = float(risk_groups.iloc[0] / risk_total) if risk_total else 0.0
+        else:
+            top_risk_name = "Sin concentración dominante"
+            top_risk_pct = 0.0
+    else:
+        top_risk_name = "Sin concentración dominante"
+        top_risk_pct = 0.0
+
     st.markdown(
         """
         <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 8px 12px;
-            margin: 5px 0 8px 0;
-            color: #FFFFFF;
-            font-size: 12px;
-            font-weight: 600;">
-            Estado de cuentas por cobrar/pagar · Resumen por responsable
+            background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+            border: 1px solid rgba(148,163,184,0.22);
+            border-left: 4px solid #2563EB;
+            border-radius: 9px;
+            padding: 7px 11px 7px 12px;
+            margin: 7px 0 12px 0;
+            box-shadow: 0 6px 16px rgba(15,23,42,0.025);">
+            <div style="
+                color: #64748B;
+                font-size: 9.5px;
+                line-height: 1;
+                font-weight: 900;
+                letter-spacing: .08em;
+                text-transform: uppercase;">
+                Cartera operativa
+            </div>
+            <div style="
+                color: #0F172A;
+                font-size: 12px;
+                line-height: 1.25;
+                font-weight: 800;
+                margin-top: 3px;">
+                Estado de cobranza y exposición por responsable
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        <style>
+        .top-risk-grid {{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:10px;
+            margin:0 0 14px 0;
+        }}
+        .top-risk-card {{
+            background:#FFFFFF;
+            border:1px solid var(--risk-border);
+            border-left:3px solid var(--risk-accent);
+            border-radius:11px;
+            padding:9px 11px;
+            box-shadow:0 8px 18px rgba(15,23,42,0.035);
+            display:grid;
+            grid-template-columns:28px 1fr;
+            gap:8px;
+            align-items:center;
+            min-height:66px;
+        }}
+        .top-risk-icon {{
+            width:25px;
+            height:25px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:var(--risk-halo);
+            color:var(--risk-accent);
+            font-size:13px;
+            font-weight:950;
+        }}
+        .top-risk-label {{
+            color:#64748B;
+            font-size:9px;
+            line-height:1;
+            font-weight:900;
+            letter-spacing:.07em;
+            text-transform:uppercase;
+            margin-bottom:5px;
+        }}
+        .top-risk-main {{
+            color:#0F172A;
+            font-size:13px;
+            line-height:1.2;
+            font-weight:900;
+        }}
+        .top-risk-main span {{
+            color:var(--risk-accent);
+            font-weight:950;
+        }}
+        .top-risk-sub {{
+            color:#64748B;
+            font-size:10px;
+            line-height:1.2;
+            font-weight:650;
+            margin-top:3px;
+        }}
+        @media (max-width: 900px) {{
+            .top-risk-grid {{ grid-template-columns:1fr; }}
+        }}
+        </style>
+        <div class="top-risk-grid">
+            <div class="top-risk-card" style="--risk-accent:#D97706;--risk-border:rgba(217,119,6,0.20);--risk-halo:rgba(245,158,11,0.14);">
+                <div class="top-risk-icon">!</div>
+                <div>
+                    <div class="top-risk-label">Principal exposición</div>
+                    <div class="top-risk-main">{top_exposure_name} → <span>{top_exposure_value}</span></div>
+                    <div class="top-risk-sub">pendiente vigente</div>
+                </div>
+            </div>
+            <div class="top-risk-card" style="--risk-accent:#DC2626;--risk-border:rgba(220,38,38,0.18);--risk-halo:rgba(254,226,226,0.80);">
+                <div class="top-risk-icon">!</div>
+                <div>
+                    <div class="top-risk-label">Mayor mora</div>
+                    <div class="top-risk-main">{top_mora_name} → <span>{top_mora_count}</span></div>
+                    <div class="top-risk-sub">transacciones abiertas</div>
+                </div>
+            </div>
+            <div class="top-risk-card" style="--risk-accent:#EA580C;--risk-border:rgba(234,88,12,0.18);--risk-halo:rgba(255,237,213,0.85);">
+                <div class="top-risk-icon">!</div>
+                <div>
+                    <div class="top-risk-label">Riesgo operativo</div>
+                    <div class="top-risk-main">{top_risk_name} representa <span>{top_risk_pct:.0%}</span></div>
+                    <div class="top-risk-sub">de deuda vigente</div>
+                </div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -5580,8 +5735,31 @@ if active_section == "⚠️ Riesgo & Cobranza":
     # ---- Estilo visual de la tabla ----
     deuda_cmap = LinearSegmentedColormap.from_list(
         "deuda_palette",
-        ["#A8A8A8", "#DCAA67", "#D85E5D", "#4B5563"],
+        ["#FFFBEB", "#FEF3C7", "#FED7AA", "#FCA5A5"],
     )
+
+    def _style_deuda_critica(v):
+        try:
+            n = float(v)
+        except Exception:
+            return ""
+        magnitude = abs(n)
+        if magnitude <= 0:
+            return "color:#64748B; font-weight:650; background-color:#F8FAFC;"
+        if magnitude >= 5_000_000:
+            color = "#991B1B"
+            border = "rgba(185,28,28,0.42)"
+        elif magnitude >= 1_000_000:
+            color = "#B45309"
+            border = "rgba(217,119,6,0.36)"
+        else:
+            color = "#92400E"
+            border = "rgba(245,158,11,0.24)"
+        return (
+            f"color:{color}; font-weight:780; "
+            "font-variant-numeric:tabular-nums; "
+            f"box-shadow:inset 3px 0 0 {border};"
+        )
     styler = (
         tabla.style
         .format({
@@ -5625,10 +5803,19 @@ if active_section == "⚠️ Riesgo & Cobranza":
             },
         ])
         .set_properties(subset=["Responsable"], **{"text-align": "left", "font-weight": "400"})
-        .set_properties(subset=["Deuda"], **{"font-weight": "400", "color": "#B42318"})
+        .set_properties(
+            subset=["Deuda"],
+            **{
+                "font-weight": "780",
+                "font-variant-numeric": "tabular-nums",
+                "border-left": "1px solid rgba(245,158,11,0.22)",
+                "border-right": "1px solid rgba(245,158,11,0.18)",
+            },
+        )
         .set_properties(subset=["Monto NO PAGADO"], **{"font-weight": "400", "color": "#7A271A"})
         .set_properties(subset=["Monto Abonos"], **{"font-weight": "400", "color": "#027A48"})
-        .background_gradient(subset=["Deuda"], cmap=deuda_cmap)
+        .background_gradient(subset=["Deuda"], cmap=deuda_cmap, gmap=tabla["Deuda"].abs())
+        .map(_style_deuda_critica, subset=["Deuda"])
         .bar(subset=["Progreso"], color="#10B981")
     )
 
@@ -5862,14 +6049,30 @@ if active_section == "⚠️ Riesgo & Cobranza":
     st.markdown(
         f"""
         <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 8px 12px;
-            margin: 5px 0 8px 0;
-            color: #FFFFFF;
-            font-size: 12px;
-            font-weight: 600;">
-            Estado de cobro arrendatarios · Periodo: {periodo_lbl}
+            background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+            border: 1px solid rgba(148,163,184,0.22);
+            border-left: 4px solid #2563EB;
+            border-radius: 9px;
+            padding: 7px 11px 7px 12px;
+            margin: 7px 0 12px 0;
+            box-shadow: 0 6px 16px rgba(15,23,42,0.025);">
+            <div style="
+                color:#64748B;
+                font-size:9.5px;
+                line-height:1;
+                font-weight:900;
+                letter-spacing:.08em;
+                text-transform:uppercase;">
+                Cobranza arrendatarios
+            </div>
+            <div style="
+                color:#0F172A;
+                font-size:12px;
+                line-height:1.25;
+                font-weight:800;
+                margin-top:3px;">
+                Estado de cobro consolidado · Periodo: {periodo_lbl}
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -5877,6 +6080,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
 
     tabla_cancel_view = tabla_cancel.rename(columns={"Administrativo": "Interes/ otros"})
     cols_monto_cancel = [c for c in tabla_cancel_view.columns if c != "Responsable"]
+    deuda_cancel_cmap = LinearSegmentedColormap.from_list(
+        "deuda_cancel_palette",
+        ["#FFFBEB", "#FEF3C7", "#FED7AA", "#FCA5A5"],
+    )
     styler_cancel = (
         tabla_cancel_view.style
         .format("${:,.0f}", subset=cols_monto_cancel)
@@ -5884,13 +6091,15 @@ if active_section == "⚠️ Riesgo & Cobranza":
             {
                 "selector": "thead th",
                 "props": [
-                    ("background-color", "#163A5F"),
-                    ("color", "white"),
-                    ("font-weight", "700"),
-                    ("font-size", "13px"),
-                    ("border-bottom", "1px solid #0F2740"),
+                    ("background", "linear-gradient(180deg,#F8FAFC 0%,#EEF3F8 100%)"),
+                    ("color", "#475569"),
+                    ("font-weight", "850"),
+                    ("font-size", "11px"),
+                    ("border-bottom", "1px solid rgba(148,163,184,0.24)"),
                     ("text-align", "center"),
-                    ("padding", "8px"),
+                    ("padding", "6px 8px"),
+                    ("letter-spacing", ".04em"),
+                    ("text-transform", "uppercase"),
                 ],
             },
             {
@@ -5911,8 +6120,22 @@ if active_section == "⚠️ Riesgo & Cobranza":
             },
         ])
         .set_properties(subset=["Responsable"], **{"text-align": "left", "font-weight": "600"})
-        .set_properties(subset=["Deuda"], **{"font-weight": "700", "color": "#B42318"})
+        .set_properties(
+            subset=["Deuda"],
+            **{
+                "font-weight": "780",
+                "font-variant-numeric": "tabular-nums",
+                "border-left": "1px solid rgba(245,158,11,0.22)",
+                "border-right": "1px solid rgba(245,158,11,0.18)",
+            },
+        )
         .set_properties(subset=["Total a cancelar"], **{"font-weight": "800", "color": "#0F2D52"})
+        .background_gradient(
+            subset=["Deuda"],
+            cmap=deuda_cancel_cmap,
+            gmap=tabla_cancel_view["Deuda"].abs(),
+        )
+        .map(_style_deuda_critica, subset=["Deuda"])
         .background_gradient(subset=["Total a cancelar"], cmap="Blues")
     )
     st.dataframe(
@@ -5925,14 +6148,30 @@ if active_section == "⚠️ Riesgo & Cobranza":
     st.markdown(
         f"""
         <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 8px 12px;
-            margin: 8px 0 6px 0;
-            color: #FFFFFF;
-            font-size: 12px;
-            font-weight: 600;">
-            Composición de cobro por espacio · Espacio: {esp_lbl_chart} · Responsable: {resp_lbl_chart}
+            background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+            border: 1px solid rgba(148,163,184,0.22);
+            border-left: 4px solid #2563EB;
+            border-radius: 9px;
+            padding: 7px 11px 7px 12px;
+            margin: 10px 0 8px 0;
+            box-shadow: 0 6px 16px rgba(15,23,42,0.025);">
+            <div style="
+                color:#64748B;
+                font-size:9.5px;
+                line-height:1;
+                font-weight:900;
+                letter-spacing:.08em;
+                text-transform:uppercase;">
+                Composición de cobro
+            </div>
+            <div style="
+                color:#0F172A;
+                font-size:12px;
+                line-height:1.25;
+                font-weight:800;
+                margin-top:3px;">
+                Vista por espacio · Espacio: {esp_lbl_chart} · Responsable: {resp_lbl_chart}
+            </div>
         </div>
         """,
         unsafe_allow_html=True,

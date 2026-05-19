@@ -6201,13 +6201,13 @@ if active_section == "⚠️ Riesgo & Cobranza":
 
     fig_cancel = go.Figure()
     color_map = {
-        "Canon mensual": "#4B5563",
-        "Gastos comunes": "#7FA6A2",
-        "CGE": "#DCAA67",
-        "Verisure": "#A8A8A8",
-        "Administrativo": "#D85E5D",
-        "Garantia": "#1D4ED8",
-        "Deuda": "#D85E5D",
+        "Canon mensual": "#334155",
+        "Gastos comunes": "#5EA8A7",
+        "CGE": "#D99A2B",
+        "Verisure": "#8A94A3",
+        "Administrativo": "#F87171",
+        "Garantia": "#2563EB",
+        "Deuda": "#DC2626",
     }
     donut_panel_metrics = None
 
@@ -6285,22 +6285,37 @@ if active_section == "⚠️ Riesgo & Cobranza":
         }
 
         if not pos_vals.empty:
+            pos_share_vals = pos_vals / float(pos_vals.sum()) if float(pos_vals.sum()) else pos_vals * 0
+            donut_text = [f"{share:.0%}" if share >= 0.035 else "" for share in pos_share_vals]
+            legend_chips = "".join(
+                f"""
+                <div class="donut-chip">
+                    <span class="donut-chip-dot" style="background:{color_map.get(str(label), "#64748B")};"></span>
+                    <span>{escape(str(label))}</span>
+                    <strong>{share:.0%}</strong>
+                </div>
+                """
+                for label, share in pos_share_vals.items()
+            )
+            donut_panel_metrics["legend_chips"] = legend_chips
             fig_cancel.add_trace(
                 go.Pie(
                     labels=pos_vals.index.tolist(),
                     values=pos_vals.values.tolist(),
+                    text=donut_text,
                     hole=0.58,
                     sort=False,
                     marker=dict(
                         colors=[color_map.get(c, "#64748B") for c in pos_vals.index.tolist()],
                         line=dict(color="rgba(255,255,255,0.92)", width=0.8),
                     ),
-                    textinfo="none",
-                    texttemplate="%{percent:.0%}",
+                    textinfo="text",
+                    texttemplate="%{text}",
                     textposition="inside",
                     textfont=dict(size=14, color="#FFFFFF", family="Inter, Arial, sans-serif"),
                     hovertemplate="<b>%{label}</b><br>Monto: $%{value:,.0f}<br>Participación: %{percent}<extra></extra>",
                     domain=dict(x=[0.12, 0.88], y=[0.12, 0.88]),
+                    showlegend=False,
                 )
             )
         else:
@@ -6396,8 +6411,9 @@ if active_section == "⚠️ Riesgo & Cobranza":
         barmode="stack",
         template="plotly_white",
         autosize=False if single_month_one_space else True,
-        height=444 if single_month_one_space else (280 if single_space_view else 380),
-        margin=dict(l=10 if single_month_one_space else 20, r=10 if single_month_one_space else 20, t=20 if single_month_one_space else 92, b=36 if single_month_one_space else 18),
+        height=430 if single_month_one_space else (280 if single_space_view else 380),
+        margin=dict(l=20 if single_month_one_space else 20, r=20 if single_month_one_space else 20, t=40 if single_month_one_space else 92, b=20 if single_month_one_space else 18),
+        showlegend=False if single_month_one_space else True,
         legend=dict(
             orientation="h",
             yanchor="top" if single_month_one_space else "bottom",
@@ -6448,7 +6464,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
             full_html=False,
             include_plotlyjs=True,
             default_width="100%",
-            default_height="404px",
+            default_height="430px",
             config={
                 "displaylogo": False,
                 "displayModeBar": True,
@@ -6457,6 +6473,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
         )
         principal_label = escape(metric["principal_component"])
         responsable_label = escape(metric["responsable"])
+        legend_chips = metric.get("legend_chips", "")
         exposure_pct = min(max(float(metric["deuda_share"]), 0.0), 1.0) * 100
         executive_read = (
             f"{principal_label} concentra {metric['principal_share']:.0%} del total a cancelar. "
@@ -6471,6 +6488,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     <div class="cobro-card-title">Composición de cobro · {escape(metric["espacio"])}</div>
                     <div class="cobro-card-read">{executive_read}</div>
                     <div class="plot-wrap">{plot_html}</div>
+                    <div class="donut-chip-legend">{legend_chips}</div>
                 </div>
                 <div class="cobro-kpi-side">
                     <div class="risk-badge" style="--risk-bg:{metric["risk_bg"]};--risk-color:{metric["risk_color"]};">{metric["risk_badge"]}</div>
@@ -6518,11 +6536,11 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
                 }}
                 .cobro-exec-card {{
-                    min-height:520px;
                     display:grid;
                     grid-template-columns:minmax(0, 1.9fr) minmax(300px, 1fr);
                     gap:20px;
-                    padding:22px 24px;
+                    padding:16px 20px 12px 20px;
+                    margin-top:10px;
                     border-radius:18px;
                     background:#FFFFFF;
                     border:1px solid rgba(37,99,235,0.14);
@@ -6533,10 +6551,9 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     border-radius:16px;
                     background:#FFFFFF;
                     border:1px solid rgba(226,232,240,0.78);
-                    padding:20px 22px 14px 22px;
+                    padding:16px 20px 12px 20px;
                     box-shadow:0 8px 22px rgba(15,23,42,0.025);
                     box-sizing:border-box;
-                    min-height:476px;
                 }}
                 .cobro-card-eyebrow {{
                     color:#64748B;
@@ -6559,10 +6576,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     font-size:12px;
                     line-height:1.35;
                     font-weight:700;
-                    margin:0 0 2px 2px;
+                    margin:0 0 0 2px;
                 }}
                 .plot-wrap {{
-                    height:404px;
+                    height:430px;
                     overflow:hidden;
                     display:flex;
                     align-items:center;
@@ -6571,6 +6588,39 @@ if active_section == "⚠️ Riesgo & Cobranza":
                 .plot-wrap > div {{
                     width:100% !important;
                     height:100% !important;
+                }}
+                .donut-chip-legend {{
+                    display:flex;
+                    flex-wrap:wrap;
+                    justify-content:center;
+                    gap:7px;
+                    margin:2px auto 0 auto;
+                    max-width:760px;
+                }}
+                .donut-chip {{
+                    display:inline-flex;
+                    align-items:center;
+                    gap:6px;
+                    min-height:24px;
+                    padding:4px 8px;
+                    border-radius:999px;
+                    background:#F8FAFC;
+                    border:1px solid rgba(148,163,184,0.22);
+                    color:#475569;
+                    font-size:10.5px;
+                    line-height:1;
+                    font-weight:800;
+                    white-space:nowrap;
+                }}
+                .donut-chip strong {{
+                    color:#0F172A;
+                    font-weight:950;
+                }}
+                .donut-chip-dot {{
+                    width:9px;
+                    height:9px;
+                    border-radius:3px;
+                    box-shadow:inset 0 0 0 1px rgba(15,23,42,0.10);
                 }}
                 .cobro-kpi-side {{
                     border-radius:15px;
@@ -6582,7 +6632,6 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     justify-content:flex-start;
                     gap:10px;
                     box-sizing:border-box;
-                    min-height:476px;
                 }}
                 .risk-badge {{
                     align-self:flex-start;
@@ -6758,7 +6807,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
                 }}
             </style>
             """,
-            height=558,
+            height=592,
         )
     else:
         st.plotly_chart(

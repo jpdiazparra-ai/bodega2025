@@ -4694,6 +4694,7 @@ if active_section == "🏠 Overview Ejecutivo":
     base_ov2["Egresos_abs"] = base_ov2["Egresos"].abs()
     base_ov2["Egresos_plot"] = -base_ov2["Egresos_abs"]
     base_ov2["Neto"] = base_ov2["Ingresos"] - base_ov2["Egresos_abs"]
+    base_ov2["Neto_acumulado"] = base_ov2["Neto"].cumsum()
 
     st.markdown(
         """
@@ -5162,12 +5163,72 @@ if active_section == "🏠 Overview Ejecutivo":
             marker=dict(size=8, color="#2563EB", line=dict(color="#FFFFFF", width=1.7)),
             hovertemplate="<b>%{x|%b %Y}</b><br>Neto: $%{y:,.0f}<extra></extra>",
         ))
+        fig_ov2.add_trace(go.Scatter(
+            x=base_ov2["Periodo"],
+            y=base_ov2["Neto_acumulado"],
+            mode="lines+markers",
+            name="Flujo de caja acumulado",
+            line=dict(color="#EA580C", width=3.2, dash="dash", shape="spline"),
+            marker=dict(size=7, color="#EA580C", line=dict(color="#FFFFFF", width=1.45)),
+            hovertemplate="<b>%{x|%b %Y}</b><br>Flujo acumulado: $%{y:,.0f}<extra></extra>",
+        ))
+        last_ov2 = base_ov2.iloc[-1]
+        fig_ov2.add_annotation(
+            x=last_ov2["Periodo"],
+            y=last_ov2["Ingresos"],
+            text=fmt_clp_largo(float(last_ov2["Ingresos"])),
+            showarrow=False,
+            xshift=58,
+            yshift=10,
+            bgcolor="#F0FDF4",
+            bordercolor="#BBF7D0",
+            borderwidth=1,
+            borderpad=4,
+            font=dict(size=10.5, color="#16A34A"),
+        )
+        fig_ov2.add_annotation(
+            x=last_ov2["Periodo"],
+            y=last_ov2["Egresos_plot"],
+            text=fmt_clp_largo(float(last_ov2["Egresos_abs"])),
+            showarrow=False,
+            xshift=58,
+            yshift=-10,
+            bgcolor="#FEF2F2",
+            bordercolor="#FECACA",
+            borderwidth=1,
+            borderpad=4,
+            font=dict(size=10.5, color="#DC2626"),
+        )
+        fig_ov2.add_annotation(
+            x=last_ov2["Periodo"],
+            y=last_ov2["Neto"],
+            text=fmt_clp_largo(float(last_ov2["Neto"])),
+            showarrow=False,
+            xshift=58,
+            bgcolor="#EFF6FF",
+            bordercolor="#DBEAFE",
+            borderwidth=1,
+            borderpad=4,
+            font=dict(size=10.5, color="#2563EB"),
+        )
+        fig_ov2.add_annotation(
+            x=last_ov2["Periodo"],
+            y=last_ov2["Neto_acumulado"],
+            text=fmt_clp_largo(float(last_ov2["Neto_acumulado"])),
+            showarrow=False,
+            xshift=58,
+            bgcolor="#FFF7ED",
+            bordercolor="#FED7AA",
+            borderwidth=1,
+            borderpad=4,
+            font=dict(size=10.5, color="#EA580C"),
+        )
     fig_ov2.add_hline(y=0, line_width=1, line_color="#CBD5E1")
     fig_ov2.update_layout(
         title=dict(text=""),
         template="plotly_white",
         height=400,
-        margin=dict(l=0, r=2, t=38, b=6),
+        margin=dict(l=0, r=78, t=38, b=6),
         barmode="relative",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#FFFFFF",
@@ -9598,6 +9659,58 @@ if active_section == "📈 Flujo Operacional":
                 ),
                 secondary_y=False,
             )
+            if not base.empty:
+                last_ie = base.iloc[-1]
+                fig_ie.add_annotation(
+                    x=last_ie["Periodo"],
+                    y=last_ie["Ingresos"],
+                    text=fmt_clp_largo(float(last_ie["Ingresos"])),
+                    showarrow=False,
+                    xshift=58,
+                    yshift=10,
+                    bgcolor="#F0FDF4",
+                    bordercolor="#BBF7D0",
+                    borderwidth=1,
+                    borderpad=4,
+                    font=dict(size=10.5, color="#16A34A"),
+                )
+                fig_ie.add_annotation(
+                    x=last_ie["Periodo"],
+                    y=last_ie["Egresos_plot"],
+                    text=fmt_clp_largo(float(last_ie["Egresos_abs"])),
+                    showarrow=False,
+                    xshift=58,
+                    yshift=-10,
+                    bgcolor="#FEF2F2",
+                    bordercolor="#FECACA",
+                    borderwidth=1,
+                    borderpad=4,
+                    font=dict(size=10.5, color="#DC2626"),
+                )
+                fig_ie.add_annotation(
+                    x=last_ie["Periodo"],
+                    y=last_ie["Neto"],
+                    text=fmt_clp_largo(float(last_ie["Neto"])),
+                    showarrow=False,
+                    xshift=58,
+                    bgcolor="#EFF6FF",
+                    bordercolor="#DBEAFE",
+                    borderwidth=1,
+                    borderpad=4,
+                    font=dict(size=10.5, color="#2563EB"),
+                )
+                fig_ie.add_annotation(
+                    x=last_ie["Periodo"],
+                    y=last_ie["Neto_acumulado"],
+                    text=fmt_clp_largo(float(last_ie["Neto_acumulado"])),
+                    showarrow=False,
+                    xshift=58,
+                    bgcolor="#FFF7ED",
+                    bordercolor="#FED7AA",
+                    borderwidth=1,
+                    borderpad=4,
+                    font=dict(size=10.5, color="#EA580C"),
+                )
             fig_ie.add_hline(y=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75, secondary_y=False)
 
             fig_ie.update_layout(
@@ -9615,7 +9728,7 @@ if active_section == "📈 Flujo Operacional":
                 ),
                 template="plotly_white",
                 height=455,
-                margin=dict(l=18, r=22, t=52, b=26),
+                margin=dict(l=18, r=92, t=52, b=26),
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",

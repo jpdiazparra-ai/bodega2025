@@ -5418,57 +5418,251 @@ if active_section == "⚠️ Riesgo & Cobranza":
     )
 
     df_cob = df_f.copy()
+    vista_cartera_actual = st.session_state.get("vista_cartera_cobranza", "Por cobrar")
+    es_cobranza_preview = vista_cartera_actual == "Por cobrar"
+    st.markdown(
+        """
+        <style>
+        .risk-segment-anchor {
+            height:0;
+            min-height:0;
+            margin:0;
+            padding:0;
+            overflow:hidden;
+        }
+        div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) > div[data-testid="stRadio"] {
+            margin:6px 0 0 0 !important;
+        }
+        div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) div[role="radiogroup"] {
+            display:inline-flex;
+            min-height:30px !important;
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:3px;
+            box-shadow:inset 0 1px 0 rgba(255,255,255,0.72);
+        }
+        div[data-testid="stVerticalBlock"]:has(.risk-segment-anchor) div[role="radiogroup"] > label {
+            min-height:24px !important;
+            padding:0 13px !important;
+            border-radius:7px !important;
+            font-size:10.5px !important;
+            font-weight:900 !important;
+            color:#334155 !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    cartera_title_preview = "Cartera por cobrar" if es_cobranza_preview else "Compromisos por pagar"
+    cartera_subtitle_preview = (
+        "Ingresos no pagados, abonos aplicados y saldo pendiente neto."
+        if es_cobranza_preview
+        else "Egresos no pagados, presión de caja y saldo exigible neto."
+    )
+    st.markdown(
+        f"""
+        <div style="
+            background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+            border: 1px solid rgba(148,163,184,0.22);
+            border-left: 4px solid #2563EB;
+            border-radius: 9px;
+            padding: 7px 11px 9px 12px;
+            margin: 7px 0 10px 0;
+            box-shadow: 0 6px 16px rgba(15,23,42,0.025);">
+            <div style="
+                color: #64748B;
+                font-size: 9.5px;
+                line-height: 1;
+                font-weight: 900;
+                letter-spacing: .08em;
+                text-transform: uppercase;">
+                {cartera_title_preview}
+            </div>
+            <div style="
+                color: #0F172A;
+                font-size: 12px;
+                line-height: 1.25;
+                font-weight: 800;
+                margin-top: 3px;">
+                {cartera_subtitle_preview}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="risk-segment-anchor"></div>', unsafe_allow_html=True)
+    vista_cartera = st.radio(
+        "Vista de cartera",
+        ["Por cobrar", "Por pagar"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="vista_cartera_cobranza",
+    )
 
     # --- Cálculos base ---
-    df_np = df_cob[df_cob["Sit"] == "NO PAGADO"]
-    df_abonos = df_cob[df_cob["Obs"].astype(str).str.contains("abono", case=False, na=False)]
+    es_cobranza = vista_cartera == "Por cobrar"
+    cartera_cc = "INGRESO" if es_cobranza else "EGRESO"
+    cartera_label = "cartera por cobrar" if es_cobranza else "compromisos por pagar"
+    cartera_title = "Cartera por cobrar" if es_cobranza else "Compromisos por pagar"
+    cartera_subtitle = (
+        "Ingresos no pagados, abonos aplicados y saldo pendiente neto."
+        if es_cobranza
+        else "Egresos no pagados, presión de caja y saldo exigible neto."
+    )
+    responsable_col = "Responsable_clean" if "Responsable_clean" in df_cob.columns else "Responsable"
+    df_cob[responsable_col] = df_cob[responsable_col].astype(str).str.strip().replace("", "Sin responsable")
+    df_np = df_cob[df_cob["CC_norm"].eq(cartera_cc) & df_cob["Sit_norm"].eq("NO PAGADO")].copy()
+    df_abonos = df_cob[
+        df_cob["CC_norm"].eq("INGRESO")
+        & (
+            df_cob["Sit_norm"].str.startswith("ABONO", na=False)
+            | df_cob["Obs_text"].str.contains("abono", case=False, na=False)
+        )
+    ].copy() if es_cobranza else df_cob.iloc[0:0].copy()
+    df_np["Monto_abs"] = pd.to_numeric(df_np["Monto"], errors="coerce").fillna(0).abs()
+    df_abonos["Monto_abs"] = pd.to_numeric(df_abonos["Monto"], errors="coerce").fillna(0).abs()
 
     no_pagado_grouped = (
-        df_np.groupby("Responsable")["Monto"]
+        df_np.groupby(responsable_col)["Monto_abs"]
         .agg(["sum", "count"])
-        .rename(columns={"sum": "Monto NO PAGADO", "count": "Transacciones NO PAGADO"})
+        .rename(columns={"sum": "Monto bruto", "count": "Docs pendientes"})
     )
     abonos_grouped = (
-        df_abonos.groupby("Responsable")["Monto"]
+        df_abonos.groupby(responsable_col)["Monto_abs"]
         .agg(["sum", "count"])
-        .rename(columns={"sum": "Monto Abonos", "count": "Cantidad Abonos"})
+        .rename(columns={"sum": "Monto aplicado", "count": "Registros aplicados"})
     )
 
     resumen = no_pagado_grouped.join(abonos_grouped, how="outer").fillna(0)
-    resumen["Deuda"] = resumen["Monto NO PAGADO"] - resumen["Monto Abonos"]
-    resumen["% Abonado"] = (
-        resumen["Monto Abonos"] / resumen["Monto NO PAGADO"]
-    ).replace([pd.NA, pd.NaT], 0).fillna(0)
-    resumen["Progreso"] = resumen["% Abonado"].clip(lower=0, upper=1)
+    resumen["Saldo neto"] = (resumen["Monto bruto"] - resumen["Monto aplicado"]).clip(lower=0)
+    resumen["Recuperación"] = np.where(
+        resumen["Monto bruto"] > 0,
+        resumen["Monto aplicado"] / resumen["Monto bruto"],
+        0,
+    )
+    resumen["Recuperación"] = pd.Series(resumen["Recuperación"], index=resumen.index).replace([np.inf, -np.inf], 0).fillna(0)
+    if not es_cobranza:
+        caja_disponible_pos = max(float(balance_kpi), 0.0)
+        resumen["Recuperación"] = np.where(
+            resumen["Saldo neto"] > 0,
+            caja_disponible_pos / resumen["Saldo neto"],
+            1,
+        )
+        resumen["Recuperación"] = pd.Series(resumen["Recuperación"], index=resumen.index).replace([np.inf, -np.inf], 0).fillna(0)
+    resumen["Progreso"] = resumen["Recuperación"].clip(lower=0, upper=1)
 
-    def badge_pct(p):
-        if p >= 1:
-            return "🟢 En curso"
-        if p >= 0.5:
-            return "🟠 En curso"
-        return "🔴 Bajo"
+    saldo_total_tmp = float(resumen["Saldo neto"].sum()) if not resumen.empty else 0.0
+    saldo_alto = max(saldo_total_tmp * 0.25, 1_000_000)
+    saldo_medio = max(saldo_total_tmp * 0.10, 300_000)
 
-    resumen["Estado"] = resumen["% Abonado"].apply(badge_pct)
+    def riesgo_cartera(row):
+        saldo = float(row["Saldo neto"])
+        recuperacion = float(row["Recuperación"])
+        if saldo <= 0:
+            return "Cerrado"
+        if not es_cobranza:
+            if saldo >= saldo_alto:
+                return "Prioritario"
+            if saldo >= saldo_medio:
+                return "Programar"
+            return "Controlado"
+        if saldo >= saldo_alto and recuperacion < 0.5:
+            return "Crítico"
+        if saldo >= saldo_medio:
+            return "Priorizar"
+        if recuperacion >= 0.9:
+            return "Seguimiento"
+        return "Controlado"
+
+    def accion_cartera(row):
+        riesgo = str(row["Riesgo"])
+        saldo = float(row["Saldo neto"])
+        if saldo <= 0:
+            return "Cerrar cartera"
+        if not es_cobranza:
+            if riesgo == "Prioritario":
+                return "Calendarizar pago"
+            if riesgo == "Programar":
+                return "Programar salida"
+            return "Monitorear vencimiento"
+        if riesgo in {"Crítico", "Priorizar"}:
+            return "Cobrar hoy"
+        if riesgo == "Seguimiento":
+            return "Conciliar saldo"
+        return "Monitorear"
+
+    resumen["Riesgo"] = resumen.apply(riesgo_cartera, axis=1)
+    resumen["Acción sugerida"] = resumen.apply(accion_cartera, axis=1)
 
     # Ordenar por deuda y preparar tabla
-    resumen = resumen.sort_values("Deuda", ascending=False)
+    resumen = resumen.sort_values("Saldo neto", ascending=False)
     tabla = resumen.reset_index()
+    tabla = tabla.rename(columns={responsable_col: "Responsable"})
+    if es_cobranza:
+        tabla = tabla.rename(
+            columns={
+                "Monto bruto": "Cartera bruta",
+                "Monto aplicado": "Abonos aplicados",
+                "Saldo neto": "Saldo pendiente neto",
+                "Recuperación": "Recuperación %",
+                "Docs pendientes": "Docs pendientes",
+                "Registros aplicados": "Abonos registrados",
+            }
+        )
+    else:
+        tabla = tabla.rename(
+            columns={
+                "Monto bruto": "Compromisos brutos",
+                "Monto aplicado": "Pagos aplicados",
+                "Saldo neto": "Saldo exigible neto",
+                "Recuperación": "Cobertura %",
+                "Docs pendientes": "Docs pendientes",
+                "Registros aplicados": "Registros aplicados",
+            }
+        )
 
     cols_order = [
         "Responsable",
-        "Monto NO PAGADO",
-        "Monto Abonos",
-        "Deuda",
-        "% Abonado",
-        "Transacciones NO PAGADO",
-        "Cantidad Abonos",
-        "Estado",
+        "Cartera bruta" if es_cobranza else "Compromisos brutos",
+        "Abonos aplicados" if es_cobranza else "Pagos aplicados",
+        "Saldo pendiente neto" if es_cobranza else "Saldo exigible neto",
+        "Recuperación %" if es_cobranza else "Cobertura %",
+        "Docs pendientes",
+        "Abonos registrados" if es_cobranza else "Registros aplicados",
+        "Riesgo",
+        "Acción sugerida",
         "Progreso",  # queda al final para la barra
     ]
     tabla = tabla[cols_order]
 
     # ---------- KPIs en formato “card” ----------
-    total_deuda_neta = tabla["Deuda"].sum() if not tabla.empty else 0
+    saldo_col = "Saldo pendiente neto" if es_cobranza else "Saldo exigible neto"
+    bruto_col = "Cartera bruta" if es_cobranza else "Compromisos brutos"
+    aplicado_col = "Abonos aplicados" if es_cobranza else "Pagos aplicados"
+    recuperacion_col = "Recuperación %" if es_cobranza else "Cobertura %"
+    registros_col = "Abonos registrados" if es_cobranza else "Registros aplicados"
+    total_bruto_cartera = float(tabla[bruto_col].sum()) if not tabla.empty else 0.0
+    total_aplicado_cartera = float(tabla[aplicado_col].sum()) if not tabla.empty else 0.0
+    total_deuda_neta = float(tabla[saldo_col].sum()) if not tabla.empty else 0.0
+    avance_cartera = (
+        total_aplicado_cartera / total_bruto_cartera
+        if es_cobranza and total_bruto_cartera
+        else max(float(balance_kpi), 0.0) / total_deuda_neta
+        if total_deuda_neta
+        else 0.0
+    )
+    exposicion_neta_caja = (
+        float(balance_kpi) + total_deuda_neta
+        if es_cobranza
+        else float(balance_kpi) - total_deuda_neta
+    )
+    exposicion_neta_note = (
+        f"Caja disponible más {cartera_label}"
+        if es_cobranza
+        else f"Caja disponible menos {cartera_label}"
+    )
     st.markdown(
         """
         <style>
@@ -5480,6 +5674,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
             border:1px solid var(--border);
             background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
             padding:9px 10px 8px 10px;
+            margin:0 0 16px 0;
             display:grid;
             grid-template-columns:30px 1fr;
             gap:7px;
@@ -5538,14 +5733,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
     )
     col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
 
-    kpi_titulo_deuda = (
-        "DEUDA AL FIN DEL EJERCICIO"
-        if total_deuda_neta < 0
-        else "MONTO A FAVOR FIN DE EJERCICIO"
-    )
-    deuda_color = "#EF4444" if total_deuda_neta < 0 else "#10B981"
+    kpi_titulo_deuda = "CARTERA PENDIENTE NETA" if es_cobranza else "COMPROMISOS POR PAGAR"
+    deuda_color = "#EF4444" if total_deuda_neta > 0 else "#10B981"
     bci_color = "#10B981" if balance_kpi >= 0 else "#EF4444"
-    pos_neta_color = "#10B981" if posicion_neta >= 0 else "#EF4444"
+    pos_neta_color = "#10B981" if exposicion_neta_caja >= 0 else "#EF4444"
 
     def risk_kpi_card(title, value, note, icon, accent, soft, halo, border, badge, positive=True):
         badge_bg = "#dcfce7" if positive else "#fee2e2"
@@ -5567,14 +5758,14 @@ if active_section == "⚠️ Riesgo & Cobranza":
             risk_kpi_card(
                 kpi_titulo_deuda,
                 f"${total_deuda_neta:,.0f}",
-                "Resultado neto de cobros menos abonos",
-                "↘" if total_deuda_neta < 0 else "↗",
-                "#DC2626" if total_deuda_neta < 0 else "#047857",
-                "#fff7f7" if total_deuda_neta < 0 else "#f6fffb",
-                "#fde2e2" if total_deuda_neta < 0 else "#d8f5e4",
-                "#f1caca" if total_deuda_neta < 0 else "#cfe9de",
-                "Cobranzas",
-                total_deuda_neta >= 0,
+                "Saldo neto luego de registros aplicados",
+                "↘" if total_deuda_neta > 0 else "↗",
+                "#DC2626" if total_deuda_neta > 0 else "#047857",
+                "#fff7f7" if total_deuda_neta > 0 else "#f6fffb",
+                "#fde2e2" if total_deuda_neta > 0 else "#d8f5e4",
+                "#f1caca" if total_deuda_neta > 0 else "#cfe9de",
+                "Cobranza" if es_cobranza else "Pagos",
+                total_deuda_neta <= 0,
             ),
             unsafe_allow_html=True,
         )
@@ -5599,16 +5790,16 @@ if active_section == "⚠️ Riesgo & Cobranza":
     with col_kpi3:
         st.markdown(
             risk_kpi_card(
-                "POSICIÓN NETA (BCI - DEUDA)",
-                f"${posicion_neta:,.0f}",
-                "Caja Banco BCI menos deuda al fin del ejercicio",
+                "EXPOSICIÓN NETA DE CAJA",
+                f"${exposicion_neta_caja:,.0f}",
+                exposicion_neta_note,
                 "Σ",
-                "#047857" if posicion_neta >= 0 else "#DC2626",
-                "#f6fffb" if posicion_neta >= 0 else "#fff7f7",
-                "#d8f5e4" if posicion_neta >= 0 else "#fde2e2",
-                "#cfe9de" if posicion_neta >= 0 else "#f1caca",
+                "#047857" if exposicion_neta_caja >= 0 else "#DC2626",
+                "#f6fffb" if exposicion_neta_caja >= 0 else "#fff7f7",
+                "#d8f5e4" if exposicion_neta_caja >= 0 else "#fde2e2",
+                "#cfe9de" if exposicion_neta_caja >= 0 else "#f1caca",
                 "Resumen",
-                posicion_neta >= 0,
+                exposicion_neta_caja >= 0,
             ),
             unsafe_allow_html=True,
         )
@@ -5616,9 +5807,9 @@ if active_section == "⚠️ Riesgo & Cobranza":
     with col_kpi4:
         st.markdown(
             risk_kpi_card(
-                "AVANCE DE COBRANZA",
-                f"{pct_cobranza:.1%}",
-                "Abonos registrados sobre cartera vencida acumulada",
+                "RECUPERACIÓN DE CARTERA" if es_cobranza else "COBERTURA DE COMPROMISOS",
+                f"{avance_cartera:.1%}",
+                "Abonos sobre cartera bruta" if es_cobranza else "Caja disponible sobre saldo exigible",
                 "%",
                 "#1D4ED8",
                 "#f6f9ff",
@@ -5641,10 +5832,10 @@ if active_section == "⚠️ Riesgo & Cobranza":
 
     if not tabla.empty:
         exposure_base = tabla.copy()
-        exposure_base["Deuda_vigente_abs"] = exposure_base["Deuda"].abs()
-        top_exposure_row = exposure_base.sort_values("Deuda_vigente_abs", ascending=False).iloc[0]
+        exposure_base["Saldo_vigente_abs"] = exposure_base[saldo_col].abs()
+        top_exposure_row = exposure_base.sort_values("Saldo_vigente_abs", ascending=False).iloc[0]
         top_exposure_name = escape(str(top_exposure_row["Responsable"]))
-        top_exposure_value = _fmt_clp_compact(float(top_exposure_row["Deuda_vigente_abs"]))
+        top_exposure_value = _fmt_clp_compact(float(top_exposure_row["Saldo_vigente_abs"]))
     else:
         top_exposure_name = "Sin responsable dominante"
         top_exposure_value = "$0"
@@ -5676,45 +5867,13 @@ if active_section == "⚠️ Riesgo & Cobranza":
         top_risk_pct = 0.0
 
     st.markdown(
-        """
-        <div style="
-            background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
-            border: 1px solid rgba(148,163,184,0.22);
-            border-left: 4px solid #2563EB;
-            border-radius: 9px;
-            padding: 7px 11px 7px 12px;
-            margin: 7px 0 12px 0;
-            box-shadow: 0 6px 16px rgba(15,23,42,0.025);">
-            <div style="
-                color: #64748B;
-                font-size: 9.5px;
-                line-height: 1;
-                font-weight: 900;
-                letter-spacing: .08em;
-                text-transform: uppercase;">
-                Cartera operativa
-            </div>
-            <div style="
-                color: #0F172A;
-                font-size: 12px;
-                line-height: 1.25;
-                font-weight: 800;
-                margin-top: 3px;">
-                Estado de cobranza y exposición por responsable
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
         f"""
         <style>
         .top-risk-grid {{
             display:grid;
             grid-template-columns:repeat(3, minmax(0, 1fr));
             gap:10px;
-            margin:0 0 14px 0;
+            margin:8px 0 20px 0;
         }}
         .top-risk-card {{
             background:#FFFFFF;
@@ -5770,20 +5929,23 @@ if active_section == "⚠️ Riesgo & Cobranza":
         @media (max-width: 900px) {{
             .top-risk-grid {{ grid-template-columns:1fr; }}
         }}
+        div[data-testid="stDataFrame"] {{
+            margin-top:4px;
+        }}
         </style>
         <div class="top-risk-grid">
             <div class="top-risk-card" style="--risk-accent:#D97706;--risk-border:rgba(217,119,6,0.20);--risk-halo:rgba(245,158,11,0.14);">
                 <div class="top-risk-icon">!</div>
                 <div>
-                    <div class="top-risk-label">Principal exposición</div>
+                    <div class="top-risk-label">Mayor saldo neto</div>
                     <div class="top-risk-main">{top_exposure_name} → <span>{top_exposure_value}</span></div>
-                    <div class="top-risk-sub">pendiente vigente</div>
+                    <div class="top-risk-sub">{cartera_label}</div>
                 </div>
             </div>
             <div class="top-risk-card" style="--risk-accent:#DC2626;--risk-border:rgba(220,38,38,0.18);--risk-halo:rgba(254,226,226,0.80);">
                 <div class="top-risk-icon">!</div>
                 <div>
-                    <div class="top-risk-label">Mayor mora</div>
+                    <div class="top-risk-label">Mayor volumen pendiente</div>
                     <div class="top-risk-main">{top_mora_name} → <span>{top_mora_count}</span></div>
                     <div class="top-risk-sub">transacciones abiertas</div>
                 </div>
@@ -5791,9 +5953,9 @@ if active_section == "⚠️ Riesgo & Cobranza":
             <div class="top-risk-card" style="--risk-accent:#EA580C;--risk-border:rgba(234,88,12,0.18);--risk-halo:rgba(255,237,213,0.85);">
                 <div class="top-risk-icon">!</div>
                 <div>
-                    <div class="top-risk-label">Riesgo operativo</div>
+                    <div class="top-risk-label">Concentración operativa</div>
                     <div class="top-risk-main">{top_risk_name} representa <span>{top_risk_pct:.0%}</span></div>
-                    <div class="top-risk-sub">de deuda vigente</div>
+                    <div class="top-risk-sub">del saldo vigente</div>
                 </div>
             </div>
         </div>
@@ -5803,7 +5965,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
 
     # ---- Estilo visual de la tabla ----
     deuda_cmap = LinearSegmentedColormap.from_list(
-        "deuda_palette",
+        "saldo_palette",
         ["#FFFBEB", "#FEF3C7", "#FED7AA", "#FCA5A5"],
     )
 
@@ -5829,15 +5991,33 @@ if active_section == "⚠️ Riesgo & Cobranza":
             "font-variant-numeric:tabular-nums; "
             f"box-shadow:inset 3px 0 0 {border};"
         )
+
+    def _style_riesgo(v):
+        value = str(v)
+        palette = {
+            "Crítico": ("#FEE2E2", "#B91C1C"),
+            "Prioritario": ("#FFEDD5", "#C2410C"),
+            "Priorizar": ("#FFEDD5", "#C2410C"),
+            "Programar": ("#FEF3C7", "#A16207"),
+            "Seguimiento": ("#DBEAFE", "#1D4ED8"),
+            "Controlado": ("#DCFCE7", "#166534"),
+            "Cerrado": ("#DCFCE7", "#166534"),
+        }
+        bg, fg = palette.get(value, ("#F1F5F9", "#475569"))
+        return f"background-color:{bg}; color:{fg}; font-weight:850; text-align:center;"
+
+    def _style_accion(v):
+        return "color:#0F172A; font-weight:760; background-color:#F8FAFC;"
+
     styler = (
         tabla.style
         .format({
-            "Monto NO PAGADO": "${:,.0f}",
-            "Monto Abonos": "${:,.0f}",
-            "Deuda": "${:,.0f}",
-            "% Abonado": "{:.1%}",
-            "Transacciones NO PAGADO": "{:,.0f}",
-            "Cantidad Abonos": "{:,.0f}",
+            bruto_col: "${:,.0f}",
+            aplicado_col: "${:,.0f}",
+            saldo_col: "${:,.0f}",
+            recuperacion_col: "{:.1%}",
+            "Docs pendientes": "{:,.0f}",
+            registros_col: "{:,.0f}",
             "Progreso": "{:.0%}",   # ahora se ve 94% en vez de 0.94
         })
         .hide(axis="index")
@@ -5873,7 +6053,7 @@ if active_section == "⚠️ Riesgo & Cobranza":
         ])
         .set_properties(subset=["Responsable"], **{"text-align": "left", "font-weight": "400"})
         .set_properties(
-            subset=["Deuda"],
+            subset=[saldo_col],
             **{
                 "font-weight": "780",
                 "font-variant-numeric": "tabular-nums",
@@ -5881,10 +6061,12 @@ if active_section == "⚠️ Riesgo & Cobranza":
                 "border-right": "1px solid rgba(245,158,11,0.18)",
             },
         )
-        .set_properties(subset=["Monto NO PAGADO"], **{"font-weight": "400", "color": "#7A271A"})
-        .set_properties(subset=["Monto Abonos"], **{"font-weight": "400", "color": "#027A48"})
-        .background_gradient(subset=["Deuda"], cmap=deuda_cmap, gmap=tabla["Deuda"].abs())
-        .map(_style_deuda_critica, subset=["Deuda"])
+        .set_properties(subset=[bruto_col], **{"font-weight": "400", "color": "#7A271A"})
+        .set_properties(subset=[aplicado_col], **{"font-weight": "400", "color": "#027A48"})
+        .background_gradient(subset=[saldo_col], cmap=deuda_cmap, gmap=tabla[saldo_col].abs())
+        .map(_style_deuda_critica, subset=[saldo_col])
+        .map(_style_riesgo, subset=["Riesgo"])
+        .map(_style_accion, subset=["Acción sugerida"])
         .bar(subset=["Progreso"], color="#10B981")
     )
 
@@ -6270,10 +6452,19 @@ if active_section == "⚠️ Riesgo & Cobranza":
 
     fig_cancel = go.Figure()
     color_map = {
+        "Canon mensual": "rgba(51,65,85,0.46)",
+        "Gastos comunes": "rgba(34,197,94,0.46)",
+        "CGE": "rgba(245,158,11,0.44)",
+        "Verisure": "rgba(14,116,144,0.42)",
+        "Administrativo": "rgba(248,113,113,0.42)",
+        "Garantia": "rgba(37,99,235,0.42)",
+        "Deuda": "rgba(220,38,38,0.46)",
+    }
+    line_color_map = {
         "Canon mensual": "#334155",
-        "Gastos comunes": "#5EA8A7",
-        "CGE": "#D99A2B",
-        "Verisure": "#8A94A3",
+        "Gastos comunes": "#22C55E",
+        "CGE": "#F59E0B",
+        "Verisure": "#0E7490",
         "Administrativo": "#F87171",
         "Garantia": "#2563EB",
         "Deuda": "#DC2626",
@@ -6435,21 +6626,36 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     x=chart_df[c],
                     orientation="h",
                     name=c,
-                    marker_color=color_map.get(c, "#64748B"),
+                    marker=dict(
+                        color=color_map.get(c, "rgba(100,116,139,0.42)"),
+                        line=dict(color=line_color_map.get(c, "#64748B"), width=0.6),
+                    ),
+                    opacity=0.86,
                     hovertemplate="<b>%{y}</b><br>" + c + ": $%{x:,.0f}<extra></extra>",
                 )
             )
         total_single = float(chart_df["Total a cancelar"].iloc[0])
+        fig_cancel.add_trace(
+            go.Scatter(
+                x=[total_single],
+                y=chart_df["Espacio"],
+                mode="markers",
+                name="Total a cancelar",
+                marker=dict(size=11, color="#2563EB", line=dict(color="#FFFFFF", width=1.6)),
+                hovertemplate="<b>%{y}</b><br>Total: $%{x:,.0f}<extra></extra>",
+            )
+        )
         fig_cancel.add_annotation(
             x=total_single,
             y=chart_df["Espacio"].iloc[0],
-            text=f"Total: ${total_single:,.0f}",
+            text=fmt_clp_largo(total_single),
             showarrow=False,
-            xshift=14,
-            font=dict(size=12, color="#0F172A"),
-            bgcolor="rgba(255,255,255,0.92)",
-            bordercolor="rgba(15,45,82,0.20)",
+            xshift=58,
+            font=dict(size=10.5, color="#2563EB"),
+            bgcolor="#EFF6FF",
+            bordercolor="#DBEAFE",
             borderwidth=1,
+            borderpad=4,
         )
     else:
         for c in chart_cols:
@@ -6458,7 +6664,11 @@ if active_section == "⚠️ Riesgo & Cobranza":
                     x=chart_df["Espacio"],
                     y=chart_df[c],
                     name=c,
-                    marker_color=color_map.get(c, "#64748B"),
+                    marker=dict(
+                        color=color_map.get(c, "rgba(100,116,139,0.42)"),
+                        line=dict(color=line_color_map.get(c, "#64748B"), width=0.6),
+                    ),
+                    opacity=0.84,
                     hovertemplate="<b>%{x}</b><br>" + c + ": $%{y:,.0f}<extra></extra>",
                 )
             )
@@ -6466,45 +6676,67 @@ if active_section == "⚠️ Riesgo & Cobranza":
             go.Scatter(
                 x=chart_df["Espacio"],
                 y=chart_df["Total a cancelar"],
-                mode="lines+markers+text",
+                mode="lines",
+                name="Total halo",
+                line=dict(color="rgba(37,99,235,0.18)", width=10, shape="spline"),
+                hoverinfo="skip",
+                showlegend=False,
+            )
+        )
+        fig_cancel.add_trace(
+            go.Scatter(
+                x=chart_df["Espacio"],
+                y=chart_df["Total a cancelar"],
+                mode="lines+markers",
                 name="Total a cancelar",
-                line=dict(color="#4B5563", width=3),
-                marker=dict(size=8, color="#4B5563"),
-                text=[f"${v:,.0f}" for v in chart_df["Total a cancelar"]],
-                textposition="top center",
+                line=dict(color="#2563EB", width=4.4, shape="spline"),
+                marker=dict(size=7, color="#2563EB", line=dict(color="#FFFFFF", width=1.5)),
                 hovertemplate="<b>%{x}</b><br>Total: $%{y:,.0f}<extra></extra>",
             )
         )
+        if not chart_df.empty:
+            last_total_row = chart_df.iloc[-1]
+            fig_cancel.add_annotation(
+                x=last_total_row["Espacio"],
+                y=last_total_row["Total a cancelar"],
+                text=fmt_clp_largo(float(last_total_row["Total a cancelar"])),
+                showarrow=False,
+                xshift=58,
+                bgcolor="#EFF6FF",
+                bordercolor="#DBEAFE",
+                borderwidth=1,
+                borderpad=4,
+                font=dict(size=10.5, color="#2563EB"),
+            )
 
     fig_cancel.update_layout(
         barmode="stack",
         template="plotly_white",
         autosize=False if single_month_one_space else True,
-        height=430 if single_month_one_space else (280 if single_space_view else 380),
-        margin=dict(l=20 if single_month_one_space else 20, r=20 if single_month_one_space else 20, t=40 if single_month_one_space else 92, b=20 if single_month_one_space else 18),
+        height=430 if single_month_one_space else (320 if single_space_view else 400),
+        margin=dict(l=20 if single_month_one_space else 0, r=20 if single_month_one_space else 78, t=40 if single_month_one_space else 38, b=20 if single_month_one_space else 12),
         showlegend=False if single_month_one_space else True,
         legend=dict(
             orientation="h",
             yanchor="top" if single_month_one_space else "bottom",
-            y=0.02 if single_month_one_space else 1.10,
+            y=0.02 if single_month_one_space else 1.015,
             x=0.5 if single_month_one_space else 0.01,
             xanchor="center" if single_month_one_space else "left",
-            bgcolor="rgba(255,255,255,0.85)",
-            bordercolor="rgba(15,45,82,0.15)",
-            borderwidth=1,
-            font=dict(size=9.5 if single_month_one_space else 12),
+            bgcolor="rgba(255,255,255,0)",
+            font=dict(size=9.5 if single_month_one_space else 10, color="#334155"),
         ),
         title=dict(
-            text="" if single_month_one_space else "📊 Composición de Cobro por Espacio",
+            text="",
             x=0.01,
             xanchor="left",
             font=dict(size=18, color="#0F2D52"),
             pad=dict(b=14),
         ),
-        xaxis_title=("Monto (CLP)" if single_space_view else "Espacio"),
-        yaxis_title=("" if single_space_view else "Monto (CLP)"),
+        xaxis_title=("Monto CLP" if single_space_view else ""),
+        yaxis_title=("" if single_space_view else "Cobro CLP"),
         hovermode="closest" if single_month_one_space else ("y unified" if single_space_view else "x unified"),
-        paper_bgcolor="#FFFFFF" if single_month_one_space else "#F8FAFC",
+        hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
+        paper_bgcolor="#FFFFFF" if single_month_one_space else "rgba(0,0,0,0)",
         plot_bgcolor="#FFFFFF",
     )
     if single_month_one_space:
@@ -6512,19 +6744,27 @@ if active_section == "⚠️ Riesgo & Cobranza":
         fig_cancel.update_yaxes(visible=False, showgrid=False, zeroline=False)
     elif single_space_view:
         fig_cancel.update_xaxes(
-            tickformat=",.0f",
-            gridcolor="rgba(15,45,82,0.10)",
+            tickprefix="$",
+            separatethousands=True,
+            gridcolor="rgba(180,190,210,0.12)",
             zeroline=False,
-            linecolor="rgba(15,45,82,0.20)",
+            showline=False,
+            ticks="",
+            title_font=dict(size=12, color="#334155"),
+            tickfont=dict(size=11, color="#475569"),
         )
-        fig_cancel.update_yaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+        fig_cancel.update_yaxes(showgrid=False, showline=False, ticks="", tickfont=dict(size=11, color="#475569"))
     else:
-        fig_cancel.update_xaxes(showgrid=False, linecolor="rgba(15,45,82,0.25)")
+        fig_cancel.update_xaxes(showgrid=False, showline=False, ticks="", tickfont=dict(size=11, color="#475569"))
         fig_cancel.update_yaxes(
-            tickformat=",.0f",
-            gridcolor="rgba(15,45,82,0.10)",
+            tickprefix="$",
+            separatethousands=True,
+            gridcolor="rgba(180,190,210,0.12)",
             zeroline=False,
-            linecolor="rgba(15,45,82,0.20)",
+            showline=False,
+            ticks="",
+            title_font=dict(size=12, color="#334155"),
+            tickfont=dict(size=11, color="#475569"),
         )
 
     if single_month_one_space and donut_panel_metrics:
@@ -7015,6 +7255,51 @@ if active_section == "🏢 Canon & Contratos":
         section_heading("🏢", "Canon mensual por Año y por Esp", weight_class="section-heading-title-soft"),
         unsafe_allow_html=True,
     )
+    st.markdown(
+        """
+        <style>
+        .canon-chart-card {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:14px 18px 12px 18px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            margin:10px 0 8px 0;
+        }
+        .canon-card-head {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:14px;
+            margin-bottom:4px;
+        }
+        .canon-card-title {
+            color:#081735;
+            font-size:16px;
+            line-height:1.15;
+            font-weight:950;
+            letter-spacing:-0.018em;
+        }
+        .canon-card-sub {
+            color:#64748b;
+            font-size:11.5px;
+            font-weight:650;
+            margin-top:5px;
+        }
+        .canon-note {
+            display:flex;
+            gap:8px;
+            align-items:flex-start;
+            color:#475569;
+            font-size:12px;
+            line-height:1.45;
+            font-weight:650;
+            margin:3px 0 10px 0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
     import plotly.graph_objects as go
 
@@ -7076,154 +7361,136 @@ if active_section == "🏢 Canon & Contratos":
             esp_sel_lbl = "Ninguno"
         st.markdown(
             f"""
-            <div style="
-                background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-                border-radius: 10px;
-                padding: 10px 14px;
-                margin: 8px 0 10px 0;
-                color: #FFFFFF;
-                font-size: 13px;
-                font-weight: 600;">
-                Evolución de canon mensual · Espacios seleccionados: {esp_sel_lbl}
+            <div class="canon-chart-card">
+                <div class="canon-card-head">
+                    <div>
+                        <div class="canon-card-title">Evolución de canon mensual · Espacios seleccionados: {esp_sel_lbl}</div>
+                        <div class="canon-card-sub">Serie mensual del canon registrado por espacio seleccionado</div>
+                    </div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
         palette = [
-            "#1D4ED8","#15803D","#B45309","#B42318","#475467",
-            "#0E7490","#334155","#0369A1","#854D0E","#166534",
-            "#9333EA","#BE123C"
+            "rgba(34,197,94,0.52)", "rgba(37,99,235,0.46)", "rgba(234,88,12,0.44)",
+            "rgba(248,113,113,0.42)", "rgba(15,118,110,0.43)", "rgba(109,40,217,0.40)",
+            "rgba(51,65,85,0.38)", "rgba(245,158,11,0.42)", "rgba(14,116,144,0.42)",
         ]
+        line_palette = ["#22C55E", "#2563EB", "#EA580C", "#F87171", "#0F766E", "#6D28D9", "#334155", "#F59E0B", "#0E7490"]
 
         fig_line = go.Figure()
-        end_labels = []
-
-        def _fmt_label_clp(v: float) -> str:
-            v = float(v)
-            s = f"{v:,.0f}".replace(",", ".")
-            return f"${s} CLP"
-
         for i, esp in enumerate(sorted(agg_full["Esp"].unique())):
             df_e = agg_full[agg_full["Esp"] == esp]
-            color_esp = palette[i % len(palette)]
-            fig_line.add_trace(go.Scatter(
+            bar_color = palette[i % len(palette)]
+            line_color = line_palette[i % len(line_palette)]
+            fig_line.add_trace(go.Bar(
                 x=df_e["Periodo"], y=df_e["Monto"],
-                mode="lines+markers",
                 name=f"Esp {esp}",
-                line=dict(width=2.4, color=color_esp),
-                marker=dict(
-                    size=4,
-                    opacity=0.75,
-                    color=color_esp,
-                    line=dict(width=0),
-                ),
+                marker=dict(color=bar_color, line=dict(color=line_color, width=0.6)),
+                opacity=0.82,
                 hovertemplate="<b>%{x|%b %Y}</b><br>Esp: "+str(esp)+"<br>Monto: $%{y:,.0f}<extra></extra>",
             ))
 
-            if not df_e.empty:
-                last_row = df_e.iloc[-1]
-                end_labels.append(
-                    {
-                        "x": last_row["Periodo"],
-                        "y": float(last_row["Monto"]),
-                        "text": f"Esp {esp}  {_fmt_label_clp(last_row['Monto'])}",
-                        "color": color_esp,
-                    }
-                )
-
-        # Etiquetas de cierre en columna derecha (fuera del plot), ordenadas mayor -> menor.
-        if end_labels:
-            labels_sorted = sorted(end_labels, key=lambda d: d["y"], reverse=True)
-            n = len(labels_sorted)
-            # Reparto vertical homogéneo en coordenadas del "paper" para lectura estable.
-            y_top = 0.88
-            y_bot = 0.22
-            if n == 1:
-                y_slots = [0.55]
-            else:
-                y_slots = list(np.linspace(y_top, y_bot, n))
-
-            for lbl, y_slot in zip(labels_sorted, y_slots):
-                fig_line.add_annotation(
-                    x=1.01,
-                    xref="paper",
-                    y=y_slot,
-                    yref="paper",
-                    text=lbl["text"],
-                    showarrow=False,
-                    xanchor="left",
-                    align="left",
-                    bgcolor="rgba(255,255,255,0.92)",
-                    bordercolor=lbl["color"],
-                    borderwidth=1,
-                    font=dict(color="#0F172A", size=11),
-                )
-
-        visibility_all = [True] * len(fig_line.data)
-        visibility_none = [False] * len(fig_line.data)
-        fig_line.update_layout(
-            updatemenus=[
-                dict(
-                    type="buttons",
-                    direction="right",
-                    x=1, xanchor="right", y=1.15, yanchor="top",
-                    buttons=[
-                        dict(label="Mostrar todo", method="update", args=[{"visible": visibility_all}]),
-                        dict(label="Ocultar todo", method="update", args=[{"visible": visibility_none}]),
-                    ]
-                )
-            ]
+        total_canon = (
+            agg_full.groupby("Periodo", as_index=False)["Monto"]
+            .sum()
+            .sort_values("Periodo")
         )
+        if not total_canon.empty:
+            fig_line.add_trace(go.Scatter(
+                x=total_canon["Periodo"],
+                y=total_canon["Monto"],
+                mode="lines",
+                name="Total canon halo",
+                line=dict(color="rgba(37,99,235,0.18)", width=10, shape="spline"),
+                hoverinfo="skip",
+                showlegend=False,
+            ))
+            fig_line.add_trace(go.Scatter(
+                x=total_canon["Periodo"],
+                y=total_canon["Monto"],
+                mode="lines+markers",
+                name="Total canon",
+                line=dict(color="#2563EB", width=4.4, shape="spline"),
+                marker=dict(size=7, color="#2563EB", line=dict(color="#FFFFFF", width=1.5)),
+                hovertemplate="<b>%{x|%b %Y}</b><br>Total canon: $%{y:,.0f}<extra></extra>",
+            ))
+            last_total_canon = total_canon.iloc[-1]
+            fig_line.add_annotation(
+                x=last_total_canon["Periodo"],
+                y=last_total_canon["Monto"],
+                text=fmt_clp_largo(float(last_total_canon["Monto"])),
+                showarrow=False,
+                xshift=58,
+                bgcolor="#EFF6FF",
+                bordercolor="#DBEAFE",
+                borderwidth=1,
+                borderpad=4,
+                font=dict(size=10.5, color="#2563EB"),
+            )
 
         fig_line.update_layout(
-            title=dict(
-                text="🏢 Canon mensual por Mes y Esp",
-                x=0.02,
-                xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
-            ),
-            xaxis_title="Período (Mes)",
-            yaxis_title="Monto (CLP)",
+            title=dict(text=""),
+            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
+            xaxis_title="",
+            yaxis_title="Canon CLP",
             hovermode="x unified",
             template="plotly_white",
-            margin=dict(l=20, r=180, t=78, b=20),
+            height=400,
+            margin=dict(l=0, r=78, t=38, b=6),
+            barmode="stack",
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=1.02,
+                y=1.015,
                 xanchor="left",
                 x=0.02,
-                bgcolor="rgba(255,255,255,0.85)",
-                bordercolor="rgba(15,45,82,0.15)",
-                borderwidth=1,
+                bgcolor="rgba(255,255,255,0)",
+                font=dict(size=10, color="#334155"),
             ),
-            paper_bgcolor="#F8FAFC",
+            hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
+            paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="#FFFFFF",
         )
         fig_line.update_xaxes(
+            tickfont=dict(size=11, color="#475569"),
             showgrid=False,
-            linecolor="rgba(15,45,82,0.25)",
+            showline=False,
+            ticks="",
             tickformat="%Y",
             tickformatstops=[
                 dict(dtickrange=[None, "M12"], value="%b %Y"),
                 dict(dtickrange=["M12", None], value="%Y"),
             ],
+            rangeslider=dict(visible=False),
         )
         fig_line.update_yaxes(
+            title_font=dict(size=12, color="#334155"),
+            tickfont=dict(size=11, color="#475569"),
             showgrid=True,
-            gridcolor="rgba(15,45,82,0.10)",
+            gridcolor="rgba(180,190,210,0.12)",
             zeroline=False,
-            tickformat=",.0f",
-            linecolor="rgba(15,45,82,0.20)",
+            tickprefix="$",
+            separatethousands=True,
+            showline=False,
+            ticks="",
         )
-        fig_line.update_layout(xaxis=dict(rangeslider=dict(visible=True)))
 
         st.plotly_chart(fig_line, use_container_width=True, config={
             "displaylogo": False,
-            "displayModeBar": True,
-            "modeBarButtonsToAdd": ["toImage","drawline","drawrect","eraseshape"]
+            "modeBarButtonsToAdd": ["toImage"],
         })
+        st.markdown(
+            """
+            <div class="canon-note">
+                <span>ⓘ</span>
+                <div>El canon mensual se calcula desde registros de ingreso clasificados como arriendo y observación canon mensual.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 # =========================================================
 # 🧩 CANON POR M² (integrado en TAB CANON)
@@ -7231,21 +7498,6 @@ if active_section == "🏢 Canon & Contratos":
 if active_section == "🏢 Canon & Contratos":
     st.markdown(
         section_heading("🧩", "Canon por m² — Canon Mensual (por Año y Esp)", weight_class="section-heading-title-soft"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        """
-        <div style="
-            background: linear-gradient(90deg, #0f2d52 0%, #1f4e78 100%);
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin: 8px 0 10px 0;
-            color: #FFFFFF;
-            font-size: 13px;
-            font-weight: 600;">
-            Control de valor por m² · Canon mensual por espacio y año
-        </div>
-        """,
         unsafe_allow_html=True,
     )
 
@@ -7348,14 +7600,27 @@ if active_section == "🏢 Canon & Contratos":
     if plot_df.empty:
         st.info("No hay datos para el filtro actual de 'canon mensual' o para los Esp seleccionados.")
     else:
+        titulo_y = "UF/m²" if moneda_m2 == "UF" else "CLP/m²"
+        titulo_esc = "mensual" if escala_m2 == "Mensual" else "diario"
+        st.markdown(
+            f"""
+            <div class="canon-chart-card">
+                <div class="canon-card-head">
+                    <div>
+                        <div class="canon-card-title">Canon por m² ({titulo_esc}) — {moneda_m2} · por Año y Esp</div>
+                        <div class="canon-card-sub">Control de valor unitario por espacio y año usando canon mensual</div>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         fig = go.Figure()
         x_years = plot_df.index.astype(int).values
-        end_labels_m2 = []
 
         palette = [
-            "#1D4ED8","#15803D","#B45309","#B42318","#475467",
-            "#0E7490","#334155","#0369A1","#854D0E","#166534",
-            "#9333EA","#BE123C","#0F766E","#7C3AED"
+            "#2563EB", "#22C55E", "#EA580C", "#F87171", "#0F766E",
+            "#6D28D9", "#334155", "#F59E0B", "#0E7490", "#BE123C",
         ]
 
         for i, esp in enumerate(plot_df.columns):
@@ -7366,71 +7631,70 @@ if active_section == "🏢 Canon & Contratos":
                 x=x_years, y=y_series, customdata=custom,
                 mode="lines+markers",
                 name=f"Esp {esp}",
-                line=dict(width=2.4, color=color_esp),
-                marker=dict(size=4, opacity=0.75, color=color_esp, line=dict(width=0)),
+                line=dict(width=2.6, color=color_esp, shape="spline"),
+                marker=dict(size=6, opacity=0.86, color=color_esp, line=dict(width=1.2, color="#FFFFFF")),
+                opacity=0.84,
                 hovertemplate="<b>Año %{x}</b><br>Esp: "+str(esp)+
                               "<br>Valor: %{y:,.2f}"+(" UF/m²" if moneda_m2=="UF" else " CLP/m²")+
                               "<br>%{customdata}<extra></extra>"
             ))
 
-            if len(y_series) and pd.notna(y_series[-1]):
-                end_labels_m2.append(
-                    {
-                        "y": float(y_series[-1]),
-                        "text": f"Esp {esp}  {y_series[-1]:,.2f}{' UF/m²' if moneda_m2=='UF' else ' CLP/m²'}",
-                        "color": color_esp,
-                    }
-                )
-
-        if end_labels_m2:
-            labels_sorted = sorted(end_labels_m2, key=lambda d: d["y"], reverse=True)
-            n = len(labels_sorted)
-            y_top = 0.88
-            y_bot = 0.22
-            y_slots = [0.55] if n == 1 else list(np.linspace(y_top, y_bot, n))
-            for lbl, y_slot in zip(labels_sorted, y_slots):
+        promedio_m2 = plot_df.replace(0, np.nan).mean(axis=1).fillna(0)
+        if len(promedio_m2):
+            fig.add_trace(go.Scatter(
+                x=x_years,
+                y=promedio_m2.values,
+                mode="lines",
+                name="Promedio m² halo",
+                line=dict(color="rgba(234,88,12,0.18)", width=10, shape="spline"),
+                hoverinfo="skip",
+                showlegend=False,
+            ))
+            fig.add_trace(go.Scatter(
+                x=x_years,
+                y=promedio_m2.values,
+                mode="lines+markers",
+                name="Promedio m²",
+                line=dict(color="#EA580C", width=4.0, dash="dash", shape="spline"),
+                marker=dict(size=7, color="#EA580C", line=dict(color="#FFFFFF", width=1.4)),
+                hovertemplate="<b>Año %{x}</b><br>Promedio: %{y:,.2f}"+(" UF/m²" if moneda_m2=="UF" else " CLP/m²")+"<extra></extra>",
+            ))
+            last_promedio_m2 = float(promedio_m2.iloc[-1])
+            if last_promedio_m2:
                 fig.add_annotation(
-                    x=1.01,
-                    xref="paper",
-                    y=y_slot,
-                    yref="paper",
-                    text=lbl["text"],
+                    x=x_years[-1],
+                    y=last_promedio_m2,
+                    text=f"{last_promedio_m2:,.0f} {titulo_y}",
                     showarrow=False,
-                    xanchor="left",
-                    align="left",
-                    bgcolor="rgba(255,255,255,0.92)",
-                    bordercolor=lbl["color"],
+                    xshift=58,
+                    bgcolor="#FFF7ED",
+                    bordercolor="#FED7AA",
                     borderwidth=1,
-                    font=dict(color="#0F172A", size=11),
+                    borderpad=4,
+                    font=dict(size=10.5, color="#EA580C"),
                 )
 
-        titulo_y = "UF/m²" if moneda_m2 == "UF" else "CLP/m²"
-        titulo_esc = "mensual" if escala_m2 == "Mensual" else "diario"
         fig.update_layout(
-            title=dict(
-                text=f"🧩 Canon por m² ({titulo_esc}) — {moneda_m2} · por Año y Esp",
-                x=0.02,
-                xanchor="left",
-                font=dict(size=18, color="#0F2D52"),
-            ),
+            title=dict(text=""),
+            font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
             xaxis_title="Año",
             yaxis_title=titulo_y,
             template="plotly_white",
-            hovermode="x",
-            margin=dict(l=20, r=220, t=78, b=20),
+            hovermode="x unified",
+            height=400,
+            margin=dict(l=0, r=78, t=38, b=6),
             legend=dict(
                 orientation="h",
-                y=1.02,
+                yanchor="bottom",
+                y=1.015,
+                xanchor="left",
                 x=0.02,
-                bgcolor="rgba(255,255,255,0.85)",
-                bordercolor="rgba(15,45,82,0.15)",
-                borderwidth=1,
+                bgcolor="rgba(255,255,255,0)",
+                font=dict(size=10, color="#334155"),
             ),
-            paper_bgcolor="#F8FAFC",
+            hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
+            paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="#FFFFFF",
-            updatemenus=[dict(type="buttons", direction="right", x=1, xanchor="right", y=1.15, yanchor="top",
-                              buttons=[dict(label="Mostrar todo", method="update", args=[{"visible":[True]*len(plot_df.columns)}]),
-                                       dict(label="Ocultar todo", method="update", args=[{"visible":[False]*len(plot_df.columns)}])])]
         )
 
         if len(x_years):
@@ -7441,7 +7705,10 @@ if active_section == "🏢 Canon & Contratos":
                 dtick=1,
                 range=[int(x_years.min()) - 0.5, int(x_years.max()) + 0.5],
                 showgrid=False,
-                linecolor="rgba(15,45,82,0.25)"
+                showline=False,
+                ticks="",
+                title_font=dict(size=12, color="#334155"),
+                tickfont=dict(size=11, color="#475569"),
             )
 
         y_min = 0
@@ -7450,15 +7717,27 @@ if active_section == "🏢 Canon & Contratos":
         fig.update_yaxes(
             range=[y_min, y_max],
             showgrid=True,
-            gridcolor="rgba(15,45,82,0.10)",
+            gridcolor="rgba(180,190,210,0.12)",
             zeroline=False,
-            linecolor="rgba(15,45,82,0.20)",
+            showline=False,
+            ticks="",
+            title_font=dict(size=12, color="#334155"),
+            tickfont=dict(size=11, color="#475569"),
         )
 
         st.plotly_chart(
             fig, use_container_width=True,
             config={"displaylogo": False, "displayModeBar": True,
-                    "modeBarButtonsToAdd": ["toImage","drawline","drawrect","eraseshape"]}
+                    "modeBarButtonsToAdd": ["toImage"]}
+        )
+        st.markdown(
+            """
+            <div class="canon-note">
+                <span>ⓘ</span>
+                <div>El valor por m² divide el canon mensual por la superficie definida para cada espacio.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
     # --- Tabla + Excel ---
@@ -7505,34 +7784,194 @@ if active_section == "🏢 Canon & Contratos":
         df_x = df_x.loc[mask_has_data].copy()
         df_display = df_display.loc[mask_has_data.values].copy()
 
-    # Fila m² justo debajo de la primera fila del dataset
-    cols_esp_display = [c for c in df_display.columns if c != "Año"]
-    fila_m2 = {"Año": "m²"}
-    for col_name in cols_esp_display:
-        esp_txt = str(col_name)
-        esp_num = pd.to_numeric(esp_txt.replace("Esp ", "").split(" ")[0], errors="coerce")
-        if pd.notna(esp_num):
-            m2_val = M2_MAP.get(int(esp_num))
-            fila_m2[col_name] = f"{int(m2_val):,} m²".replace(",", ".") if m2_val is not None else "-"
-        else:
-            fila_m2[col_name] = "-"
+    table_unit = "CLP/m²" if moneda_m2 == "CLP" else "UF/m²"
+    latest_row_m2 = df_x.iloc[-1] if not df_x.empty else None
+    numeric_m2 = df_x[esp_cols_x].replace(0, np.nan) if not df_x.empty and esp_cols_x else pd.DataFrame()
+    avg_m2_value = float(numeric_m2.stack().mean()) if not numeric_m2.empty and numeric_m2.stack().notna().any() else 0.0
+    max_m2_value = float(numeric_m2.stack().max()) if not numeric_m2.empty and numeric_m2.stack().notna().any() else 0.0
+    min_m2_value = float(numeric_m2.stack().min()) if not numeric_m2.empty and numeric_m2.stack().notna().any() else 0.0
+    latest_year_label = str(int(latest_row_m2["Año"])) if latest_row_m2 is not None and pd.notna(latest_row_m2["Año"]) else "-"
 
-    if not df_display.empty:
-        df_display = pd.concat(
-            [pd.DataFrame([fila_m2]), df_display],
-            ignore_index=True,
+    if latest_row_m2 is not None and esp_cols_x:
+        latest_values_m2 = latest_row_m2[esp_cols_x].replace(0, np.nan).dropna()
+        if not latest_values_m2.empty:
+            top_latest_esp = int(latest_values_m2.astype(float).idxmax())
+            top_latest_value = float(latest_values_m2.max())
+        else:
+            top_latest_esp = None
+            top_latest_value = 0.0
+    else:
+        top_latest_esp = None
+        top_latest_value = 0.0
+
+    def _fmt_m2_value(value: float) -> str:
+        if moneda_m2 == "CLP":
+            return f"${miles_punto(float(value))}"
+        return uf_chileno(float(value))
+
+    surface_chips = []
+    for esp in esp_cols_x:
+        m2_val = M2_MAP.get(int(esp)) if pd.notna(pd.to_numeric(str(esp), errors="coerce")) else None
+        if m2_val is not None:
+            surface_chips.append(f"<span>Esp {int(esp)} · {int(m2_val)} m²</span>")
+    surface_html = "".join(surface_chips) if surface_chips else "<span>Sin superficies seleccionadas</span>"
+
+    top_latest_label = (
+        f"Esp {top_latest_esp} · {_fmt_m2_value(top_latest_value)}"
+        if top_latest_esp is not None
+        else "-"
+    )
+
+    st.markdown(
+        f"""
+        <style>
+        .canon-data-card {{
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:14px 16px 13px 16px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            margin:8px 0 10px 0;
+        }}
+        .canon-data-head {{
+            display:flex;
+            justify-content:space-between;
+            gap:14px;
+            align-items:flex-start;
+            margin-bottom:10px;
+        }}
+        .canon-data-title {{
+            color:#081735;
+            font-size:15px;
+            line-height:1.15;
+            font-weight:950;
+            letter-spacing:-0.014em;
+        }}
+        .canon-data-sub {{
+            color:#64748b;
+            font-size:11.5px;
+            font-weight:650;
+            margin-top:4px;
+        }}
+        .canon-data-grid {{
+            display:grid;
+            grid-template-columns:repeat(4, minmax(0, 1fr));
+            border:1px solid #e5ebf3;
+            border-radius:9px;
+            overflow:hidden;
+            margin-top:8px;
+        }}
+        .canon-data-kpi {{
+            padding:9px 11px;
+            background:#fbfdff;
+            border-left:1px solid #e5ebf3;
+        }}
+        .canon-data-kpi:first-child {{ border-left:0; }}
+        .canon-data-label {{
+            color:#64748b;
+            font-size:9.2px;
+            line-height:1;
+            font-weight:950;
+            text-transform:uppercase;
+            letter-spacing:.04em;
+        }}
+        .canon-data-value {{
+            color:var(--metric);
+            font-size:16px;
+            line-height:1;
+            font-weight:950;
+            margin-top:7px;
+            letter-spacing:-0.02em;
+        }}
+        .canon-data-note {{
+            color:#64748b;
+            font-size:10px;
+            font-weight:700;
+            margin-top:5px;
+        }}
+        .canon-surface-row {{
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            margin:10px 0 2px 0;
+        }}
+        .canon-surface-row span {{
+            display:inline-flex;
+            align-items:center;
+            min-height:24px;
+            border-radius:999px;
+            border:1px solid #dbeafe;
+            background:#eff6ff;
+            color:#1d4ed8;
+            padding:0 9px;
+            font-size:10px;
+            font-weight:850;
+        }}
+        </style>
+        <div class="canon-data-card">
+            <div class="canon-data-head">
+                <div>
+                    <div class="canon-data-title">Dataset agregado · Canon por m²</div>
+                    <div class="canon-data-sub">Valores promedio por año y espacio, expresados en {table_unit} · {escala_lbl.lower()}.</div>
+                </div>
+            </div>
+            <div class="canon-data-grid">
+                <div class="canon-data-kpi" style="--metric:#2563EB;">
+                    <div class="canon-data-label">Último año</div>
+                    <div class="canon-data-value">{latest_year_label}</div>
+                    <div class="canon-data-note">último registro disponible</div>
+                </div>
+                <div class="canon-data-kpi" style="--metric:#EA580C;">
+                    <div class="canon-data-label">Mayor valor último año</div>
+                    <div class="canon-data-value">{top_latest_label}</div>
+                    <div class="canon-data-note">espacio con mayor canon/m²</div>
+                </div>
+                <div class="canon-data-kpi" style="--metric:#16A34A;">
+                    <div class="canon-data-label">Promedio histórico</div>
+                    <div class="canon-data-value">{_fmt_m2_value(avg_m2_value)}</div>
+                    <div class="canon-data-note">promedio entre espacios y años</div>
+                </div>
+                <div class="canon-data-kpi" style="--metric:#64748B;">
+                    <div class="canon-data-label">Rango observado</div>
+                    <div class="canon-data-value">{_fmt_m2_value(min_m2_value)} - {_fmt_m2_value(max_m2_value)}</div>
+                    <div class="canon-data-note">mínimo y máximo del período</div>
+                </div>
+            </div>
+            <div class="canon-surface-row">{surface_html}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    df_table_m2 = df_x.copy()
+    if not df_table_m2.empty:
+        df_table_m2 = df_table_m2.rename(columns={c: f"Esp {c}" for c in esp_cols_x})
+        table_cols_m2 = [c for c in df_table_m2.columns if c != "Año"]
+        fmt_table_m2 = {c: ("${:,.0f}" if moneda_m2 == "CLP" else "{:,.2f}") for c in table_cols_m2}
+        value_cmap = LinearSegmentedColormap.from_list(
+            "canon_m2_value_palette",
+            ["#F8FAFC", "#E0F2FE", "#BFDBFE", "#FDBA74"],
+        )
+        styler_m2 = (
+            df_table_m2.style
+            .format(fmt_table_m2)
+            .hide(axis="index")
+            .set_table_styles([
+                {"selector": "table", "props": [("border-collapse", "collapse"), ("width", "100%"), ("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif")]},
+                {"selector": "th", "props": [("background", "#F8FAFC"), ("color", "#64748B"), ("font-size", "10px"), ("font-weight", "950"), ("text-transform", "uppercase"), ("letter-spacing", ".035em"), ("border", "1px solid #E5EAF2"), ("padding", "8px 9px")]},
+                {"selector": "td", "props": [("border", "1px solid #E5EAF2"), ("padding", "8px 9px"), ("font-size", "12px"), ("color", "#334155"), ("font-weight", "720"), ("text-align", "right")]},
+            ])
+            .set_properties(subset=["Año"], **{"text-align": "center", "font-weight": "900", "color": "#0F172A", "background-color": "#F8FAFC"})
+            .background_gradient(subset=table_cols_m2, cmap=value_cmap)
+        )
+        st.dataframe(
+            styler_m2,
+            use_container_width=True,
+            hide_index=True,
+            height=min(390, 78 + 42 * max(len(df_table_m2), 1)),
         )
     else:
-        df_display = pd.DataFrame([fila_m2], columns=df_display.columns)
-
-    # Tabla estilo Electricidad
-    _render_table(
-        df_display,
-        header_bg="#1f4e78",
-        header_fg="white",
-        row_alt="#eef3fb",
-        compact=False,
-    )
+        st.info("No hay datos agregados para mostrar en la tabla.")
 
     excel_buffer = BytesIO()
     df_x_export = df_x.copy()
@@ -11046,145 +11485,150 @@ if active_section == "📈 Flujo Operacional":
                     x_tickprefix_risk = "$"
 
                 fig_top = go.Figure()
+                if view_metric_risk == "% del neto":
+                    base_dim["Y_ing"] = base_dim["Ingresos"] / denom_risk
+                    base_dim["Y_egr"] = -base_dim["Egresos_abs"] / denom_risk
+                    base_dim["Y_neto"] = base_dim["Neto"] / denom_risk
+                    y_title_risk = "% del neto"
+                    y_tickformat_risk = ".0%"
+                    y_tickprefix_risk = None
+                else:
+                    base_dim["Y_ing"] = base_dim["Ingresos"]
+                    base_dim["Y_egr"] = -base_dim["Egresos_abs"]
+                    base_dim["Y_neto"] = base_dim["Neto"]
+                    y_title_risk = "Exposición CLP"
+                    y_tickformat_risk = None
+                    y_tickprefix_risk = "$"
 
+                base_dim_plot = base_dim.sort_values("Impacto_abs", ascending=False).copy()
+                base_dim_plot["Dim_label"] = base_dim_plot[dim].astype(str).map(lambda v: risk_short_label(v, 18))
+                top3_dim = base_dim_plot[base_dim_plot["Es_top3"]].copy()
+
+                fig_top.add_trace(
+                    go.Bar(
+                        x=base_dim_plot["Dim_label"],
+                        y=base_dim_plot["Y_ing"],
+                        name="Ingresos",
+                        marker=dict(color="rgba(34,197,94,0.52)", line=dict(color="rgba(34,197,94,0.72)", width=0.8)),
+                        opacity=0.86,
+                        customdata=base_dim_plot[["Tooltip"]],
+                        hovertemplate="<b>%{x}</b><br>%{customdata[0]}<extra></extra>",
+                    )
+                )
+                fig_top.add_trace(
+                    go.Bar(
+                        x=base_dim_plot["Dim_label"],
+                        y=base_dim_plot["Y_egr"],
+                        name="Egresos",
+                        marker=dict(color="rgba(248,113,113,0.46)", line=dict(color="rgba(248,113,113,0.62)", width=0.5)),
+                        opacity=0.78,
+                        customdata=base_dim_plot[["Tooltip"]],
+                        hovertemplate="<b>%{x}</b><br>%{customdata[0]}<extra></extra>",
+                    )
+                )
                 fig_top.add_trace(
                     go.Scatter(
-                        x=base_dim["X_neto"],
-                        y=base_dim[dim],
-                        mode="markers",
-                        name="Resumen",
-                        marker=dict(size=18, color="rgba(0,0,0,0)"),
+                        x=base_dim_plot["Dim_label"],
+                        y=base_dim_plot["Y_neto"],
+                        mode="lines",
+                        name="Neto halo",
+                        line=dict(color="rgba(37,99,235,0.18)", width=10, shape="spline"),
+                        hoverinfo="skip",
                         showlegend=False,
-                        customdata=base_dim[["Tooltip"]],
-                        hovertemplate="<b>%{y}</b><br>%{customdata[0]}<extra></extra>",
-                    )
-                )
-
-                fig_top.add_trace(
-                    go.Bar(
-                        x=base_dim["X_pos"],
-                        y=base_dim[dim],
-                        orientation="h",
-                        name="Netos positivos (ingresos > egresos)",
-                        width=0.74,
-                        marker=dict(
-                            color=base_dim["Color_pos"],
-                            line=dict(color=base_dim["Line_pos"], width=np.where(base_dim["Es_top3"], 1.2, 0)),
-                        ),
-                        hoverinfo="skip",
                     )
                 )
                 fig_top.add_trace(
-                    go.Bar(
-                        x=base_dim["X_neg"],
-                        y=base_dim[dim],
-                        orientation="h",
-                        name="Netos negativos (egresos > ingresos)",
-                        width=0.74,
-                        marker=dict(
-                            color=base_dim["Color_neg"],
-                            line=dict(color=base_dim["Line_neg"], width=np.where(base_dim["Es_top3"], 1.2, 0)),
-                        ),
-                        hoverinfo="skip",
+                    go.Scatter(
+                        x=base_dim_plot["Dim_label"],
+                        y=base_dim_plot["Y_neto"],
+                        mode="lines+markers",
+                        name="Neto exposición",
+                        line=dict(color="#2563EB", width=4.4, shape="spline"),
+                        marker=dict(size=7, color="#2563EB", line=dict(color="#FFFFFF", width=1.5)),
+                        customdata=base_dim_plot[["Tooltip"]],
+                        hovertemplate="<b>%{x}</b><br>%{customdata[0]}<extra></extra>",
                     )
                 )
-                top3_dim = base_dim[base_dim["Es_top3"]]
                 if not top3_dim.empty:
                     fig_top.add_trace(
                         go.Scatter(
-                            x=top3_dim["X_neto"],
-                            y=top3_dim[dim],
+                            x=top3_dim["Dim_label"],
+                            y=top3_dim["Y_neto"],
                             mode="markers",
                             name="Top 3 exposición",
                             marker=dict(
-                                size=24,
-                                color="rgba(15,23,42,0)",
-                                line=dict(color="rgba(15,23,42,0.32)", width=2.2),
+                                size=18,
+                                color="rgba(234,88,12,0.94)",
+                                line=dict(color="#FFFFFF", width=1.8),
                                 symbol="diamond",
                             ),
                             hoverinfo="skip",
-                            showlegend=False,
                         )
                     )
-                fig_top.add_trace(
-                    go.Scatter(
-                        x=base_dim["X_neto"],
-                        y=base_dim[dim],
-                        mode="markers",
-                        name="Neto",
-                        marker=dict(
-                            size=np.where(base_dim["Es_top3"], 16, 13),
-                            color=base_dim["Neto_color"],
-                            line=dict(color="#FFFFFF", width=np.where(base_dim["Es_top3"], 2.4, 1.8)),
-                            symbol="diamond",
-                        ),
-                        hoverinfo="skip",
-                    )
-                )
+                    for _, row_risk in top3_dim.iterrows():
+                        fig_top.add_annotation(
+                            x=row_risk["Dim_label"],
+                            y=row_risk["Y_neto"],
+                            text=(f"{row_risk['Y_neto']:.1%}" if view_metric_risk == "% del neto" else fmt_clp_largo(row_risk["Neto"])),
+                            showarrow=False,
+                            yshift=16 if row_risk["Y_neto"] >= 0 else -16,
+                            bgcolor="#FFF7ED",
+                            bordercolor="#FED7AA",
+                            borderwidth=1,
+                            borderpad=4,
+                            font=dict(size=10.5, color="#EA580C"),
+                        )
 
                 max_abs_riesgo = max(
-                    float(base_dim["X_pos"].abs().max()) if not base_dim.empty else 0.0,
-                    float(base_dim["X_neg"].abs().max()) if not base_dim.empty else 0.0,
-                    float(base_dim["X_neto"].abs().max()) if not base_dim.empty else 0.0,
+                    float(base_dim_plot["Y_ing"].abs().max()) if not base_dim_plot.empty else 0.0,
+                    float(base_dim_plot["Y_egr"].abs().max()) if not base_dim_plot.empty else 0.0,
+                    float(base_dim_plot["Y_neto"].abs().max()) if not base_dim_plot.empty else 0.0,
                     1.0,
                 )
-                for _, row_risk in base_dim.iterrows():
-                    if row_risk["X_neto"] == 0:
-                        continue
-                    fig_top.add_annotation(
-                        x=row_risk["X_neto"],
-                        y=row_risk[dim],
-                        text=(f"{row_risk['X_neto']:.1%}" if view_metric_risk == "% del neto" else fmt_clp_largo(row_risk["Neto"])),
-                        showarrow=False,
-                        xshift=31 if row_risk["X_neto"] >= 0 else -31,
-                        bgcolor="rgba(255,255,255,0.82)" if row_risk["Es_top3"] else "rgba(255,255,255,0)",
-                        bordercolor="rgba(15,23,42,0.12)" if row_risk["Es_top3"] else "rgba(255,255,255,0)",
-                        borderwidth=1 if row_risk["Es_top3"] else 0,
-                        font=dict(size=12 if row_risk["Es_top3"] else 10, color="#081735" if row_risk["Es_top3"] else "#334155"),
-                    )
-
+                fig_top.add_hline(y=0, line_width=1, line_color="#CBD5E1")
                 fig_top.update_layout(
                     title=dict(text=""),
                     template="plotly_white",
-                    height=max(450, 34 * len(base_dim) + 98),
-                    margin=dict(l=22, r=42, t=28, b=28),
+                    height=400,
+                    margin=dict(l=0, r=78, t=38, b=28),
                     legend=dict(
                         orientation="h",
                         yanchor="bottom",
-                        y=1.02,
+                        y=1.015,
                         xanchor="left",
-                        x=0.01,
+                        x=0.02,
                         bgcolor="rgba(255,255,255,0)",
-                        font=dict(size=11, color="#334155"),
+                        font=dict(size=10, color="#334155"),
                     ),
-                    hovermode="closest",
+                    hovermode="x unified",
                     font=dict(family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color="#334155"),
-                    paper_bgcolor="#FFFFFF",
+                    paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="#FFFFFF",
                     barmode="relative",
-                    bargap=0.14,
+                    bargap=0.34,
+                    bargroupgap=0.08,
                 )
-                fig_top.add_vline(x=0, line_width=1.2, line_color=CHART_GRAY, opacity=0.75)
                 fig_top.update_xaxes(
-                    title_text=x_title_risk,
-                    showgrid=True,
-                    gridcolor="rgba(180,190,210,0.14)",
-                    zeroline=False,
-                    tickprefix=x_tickprefix_risk,
-                    tickformat=x_tickformat_risk,
-                    separatethousands=True,
-                    range=[-max_abs_riesgo * 1.18, max_abs_riesgo * 1.18],
-                    linecolor="#CBD5E1",
-                    title_font=dict(size=12, color="#334155"),
-                    tickfont=dict(size=11, color="#475569"),
+                    title_text="",
+                    showgrid=False,
+                    showline=False,
+                    ticks="",
+                    tickangle=-18,
+                    tickfont=dict(size=10.5, color="#475569"),
                 )
                 fig_top.update_yaxes(
-                    title_text=dim,
-                    showgrid=False,
-                    linecolor="#CBD5E1",
+                    title_text=y_title_risk,
+                    showgrid=True,
+                    gridcolor="rgba(180,190,210,0.12)",
+                    zeroline=False,
+                    tickprefix=y_tickprefix_risk,
+                    tickformat=y_tickformat_risk,
+                    separatethousands=True,
+                    range=[-max_abs_riesgo * 1.25, max_abs_riesgo * 1.25],
+                    showline=False,
+                    ticks="",
                     title_font=dict(size=12, color="#334155"),
                     tickfont=dict(size=11, color="#475569"),
-                    automargin=True,
                 )
 
                 ingresos_total_dim = float(base_dim["Ingresos"].sum()) if not base_dim.empty else 0.0
@@ -12163,9 +12607,114 @@ if active_section == "📈 Flujo Operacional":
                             use_container_width=True,
                         )
 
-                visible_rows = 12
-                row_height_px = 28
-                header_px = 32
+                total_ing_det_view = float(df_det_view.loc[df_det_view["CC"].astype(str).str.upper().eq("INGRESO"), "Monto"].sum()) if "CC" in df_det_view.columns and not df_det_view.empty else 0.0
+                total_egr_det_view = abs(float(df_det_view.loc[df_det_view["CC"].astype(str).str.upper().eq("EGRESO"), "Monto"].sum())) if "CC" in df_det_view.columns and not df_det_view.empty else 0.0
+                neto_det_view = total_ing_det_view - total_egr_det_view
+                no_pagado_count_det = int(df_det_view["Sit"].astype(str).str.upper().eq("NO PAGADO").sum()) if "Sit" in df_det_view.columns else 0
+                top_resp_det = "Sin responsable"
+                top_resp_monto_det = 0.0
+                if "Responsable" in df_det_view.columns and not df_det_view.empty:
+                    resp_det_base = df_det_view.copy()
+                    resp_det_base["Monto_abs"] = pd.to_numeric(resp_det_base["Monto"], errors="coerce").fillna(0).abs()
+                    resp_det_rank = resp_det_base.groupby("Responsable")["Monto_abs"].sum().sort_values(ascending=False)
+                    if not resp_det_rank.empty:
+                        top_resp_det = escape(str(resp_det_rank.index[0]))
+                        top_resp_monto_det = float(resp_det_rank.iloc[0])
+
+                st.markdown(
+                    f"""
+                    <style>
+                    .detalle-table-card {{
+                        border:1px solid #dbe3ee;
+                        border-radius:10px;
+                        background:#ffffff;
+                        padding:14px 16px 13px 16px;
+                        box-shadow:0 12px 28px rgba(15,23,42,0.05);
+                        margin:10px 0 10px 0;
+                    }}
+                    .detalle-table-title {{
+                        color:#081735;
+                        font-size:15px;
+                        line-height:1.15;
+                        font-weight:950;
+                        letter-spacing:-0.014em;
+                    }}
+                    .detalle-table-sub {{
+                        color:#64748b;
+                        font-size:11.5px;
+                        font-weight:650;
+                        margin-top:4px;
+                    }}
+                    .detalle-table-grid {{
+                        display:grid;
+                        grid-template-columns:repeat(4, minmax(0, 1fr));
+                        border:1px solid #e5ebf3;
+                        border-radius:9px;
+                        overflow:hidden;
+                        margin-top:10px;
+                    }}
+                    .detalle-table-kpi {{
+                        padding:9px 11px;
+                        background:#fbfdff;
+                        border-left:1px solid #e5ebf3;
+                    }}
+                    .detalle-table-kpi:first-child {{ border-left:0; }}
+                    .detalle-table-label {{
+                        color:#64748b;
+                        font-size:9.2px;
+                        line-height:1;
+                        font-weight:950;
+                        text-transform:uppercase;
+                        letter-spacing:.04em;
+                    }}
+                    .detalle-table-value {{
+                        color:var(--metric);
+                        font-size:16px;
+                        line-height:1;
+                        font-weight:950;
+                        margin-top:7px;
+                        letter-spacing:-0.02em;
+                    }}
+                    .detalle-table-note {{
+                        color:#64748b;
+                        font-size:10px;
+                        font-weight:700;
+                        margin-top:5px;
+                    }}
+                    </style>
+                    <div class="detalle-table-card">
+                        <div class="detalle-table-title">Detalle operacional filtrado</div>
+                        <div class="detalle-table-sub">Lectura transaccional con foco en responsable, estado y monto bajo los filtros activos.</div>
+                        <div class="detalle-table-grid">
+                            <div class="detalle-table-kpi" style="--metric:#2563EB;">
+                                <div class="detalle-table-label">Movimientos</div>
+                                <div class="detalle-table-value">{len(df_det_view):,}</div>
+                                <div class="detalle-table-note">registros visibles</div>
+                            </div>
+                            <div class="detalle-table-kpi" style="--metric:{'#16A34A' if neto_det_view >= 0 else '#DC2626'};">
+                                <div class="detalle-table-label">Neto filtro</div>
+                                <div class="detalle-table-value">{fmt_clp_largo(neto_det_view)}</div>
+                                <div class="detalle-table-note">ingresos menos egresos</div>
+                            </div>
+                            <div class="detalle-table-kpi" style="--metric:#EA580C;">
+                                <div class="detalle-table-label">No pagados</div>
+                                <div class="detalle-table-value">{no_pagado_count_det}</div>
+                                <div class="detalle-table-note">movimientos pendientes</div>
+                            </div>
+                            <div class="detalle-table-kpi" style="--metric:#64748B;">
+                                <div class="detalle-table-label">Mayor responsable</div>
+                                <div class="detalle-table-value">{top_resp_det}</div>
+                                <div class="detalle-table-note">{fmt_clp_largo(top_resp_monto_det)} acumulado</div>
+                            </div>
+                        </div>
+                    </div>
+                    """.replace(",", "."),
+                    unsafe_allow_html=True,
+                )
+
+                visible_rows = 15
+                row_height_px = 30
+                header_px = 36
                 table_height = header_px + (visible_rows * row_height_px)
                 left_cols_det = [c for c in ["Responsable", "CC1", "Obs"] if c in df_det_show.columns]
                 responsable_cols_det = [c for c in ["Responsable"] if c in df_det_show.columns]
@@ -12233,22 +12782,23 @@ if active_section == "📈 Flujo Operacional":
                                 ("position", "sticky"),
                                 ("top", "0"),
                                 ("z-index", "2"),
-                                ("background", "linear-gradient(180deg,#F8FAFC 0%,#EEF3F8 100%)"),
-                                ("color", "#475569"),
-                                ("font-weight", "780"),
-                                ("font-size", "10.8px"),
-                                ("border-bottom", "1px solid rgba(148,163,184,0.24)"),
+                                ("background", "#F8FAFC"),
+                                ("color", "#64748B"),
+                                ("font-weight", "950"),
+                                ("font-size", "10px"),
+                                ("text-transform", "uppercase"),
+                                ("border", "1px solid #E5EAF2"),
                                 ("text-align", "center"),
-                                ("padding", "5px 7px"),
-                                ("letter-spacing", ".02em"),
+                                ("padding", "8px 9px"),
+                                ("letter-spacing", ".035em"),
                             ],
                         },
                         {
                             "selector": "tbody td",
                             "props": [
-                                ("font-size", "11px"),
-                                ("padding", "4px 7px"),
-                                ("border-bottom", "1px solid rgba(226,232,240,0.36)"),
+                                ("font-size", "12px"),
+                                ("padding", "8px 9px"),
+                                ("border", "1px solid #E5EAF2"),
                                 ("vertical-align", "middle"),
                             ],
                         },
@@ -12296,10 +12846,10 @@ if active_section == "📈 Flujo Operacional":
                     styler_det = styler_det.map(_style_cc, subset=cc_cols_det)
                 if monto_cols_det:
                     styler_det = styler_det.map(_style_monto, subset=monto_cols_det)
-                st.caption("Detalle transaccional secundario: foco visual en responsable, estado operativo y monto.")
                 st.dataframe(
                     styler_det,
                     use_container_width=True,
+                    hide_index=True,
                     height=table_height,
                 )
 

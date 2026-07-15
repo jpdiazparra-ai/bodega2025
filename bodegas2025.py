@@ -1328,7 +1328,7 @@ def build_detalle_movimientos_excel(
             errors="coerce",
         ).dt.strftime("%Y-%m")
         chart_cols_export = [
-            c for c in ["Periodo", "Registros", "Pagado", "No pagado", "Abono", "RESULTADO", "Deuda a la fecha"]
+            c for c in ["Periodo", "Registros", "Pagado", "No pagado", "Abono", "RESULTADO", "Neto financiero", "Deuda a la fecha"]
             if c in grafico_obs_export.columns
         ]
         grafico_obs_export = grafico_obs_export[chart_cols_export]
@@ -1384,7 +1384,7 @@ def build_detalle_movimientos_excel(
                 for col_idx, col_name in enumerate(grafico_obs_export.columns):
                     ws_chart.write(0, col_idx, col_name, head_fmt)
                     width = 18 if col_name != "Periodo" else 14
-                    if col_name in {"Pagado", "No pagado", "Abono", "RESULTADO", "Deuda a la fecha"}:
+                    if col_name in {"Pagado", "No pagado", "Abono", "RESULTADO", "Neto financiero", "Deuda a la fecha"}:
                         ws_chart.set_column(col_idx, col_idx, width, money_fmt)
                     else:
                         ws_chart.set_column(col_idx, col_idx, width)
@@ -1401,12 +1401,13 @@ def build_detalle_movimientos_excel(
                                 "fill": {"color": color},
                                 "border": {"color": color},
                             })
-                    if "Deuda a la fecha" in col_lookup:
+                    line_col_name = "Neto financiero" if "Neto financiero" in col_lookup else "Deuda a la fecha"
+                    if line_col_name in col_lookup:
                         chart_line = wb.add_chart({"type": "line"})
                         chart_line.add_series({
-                            "name": ["grafico_obs", 0, col_lookup["Deuda a la fecha"]],
+                            "name": ["grafico_obs", 0, col_lookup[line_col_name]],
                             "categories": ["grafico_obs", 1, col_lookup["Periodo"], len(grafico_obs_export), col_lookup["Periodo"]],
-                            "values": ["grafico_obs", 1, col_lookup["Deuda a la fecha"], len(grafico_obs_export), col_lookup["Deuda a la fecha"]],
+                            "values": ["grafico_obs", 1, col_lookup[line_col_name], len(grafico_obs_export), col_lookup[line_col_name]],
                             "line": {"color": CHART_DARK, "width": 2.5},
                             "marker": {"type": "circle", "size": 6, "border": {"color": CHART_DARK}, "fill": {"color": CHART_DARK}},
                         })
@@ -1480,7 +1481,7 @@ def build_detalle_movimientos_excel(
                     cell.font = font
                 for col_idx, col_name in enumerate(grafico_obs_export.columns, start=1):
                     ws_chart.column_dimensions[get_column_letter(col_idx)].width = 18 if col_name != "Periodo" else 14
-                    if col_name in {"Pagado", "No pagado", "Abono", "RESULTADO", "Deuda a la fecha"}:
+                    if col_name in {"Pagado", "No pagado", "Abono", "RESULTADO", "Neto financiero", "Deuda a la fecha"}:
                         for cell in ws_chart[get_column_letter(col_idx)][1:]:
                             cell.number_format = "$#,##0"
                 ws_chart.freeze_panes = "A2"
@@ -1502,11 +1503,12 @@ def build_detalle_movimientos_excel(
                     bar.x_axis.title = "Periodo"
                     bar.height = 9
                     bar.width = 19
-                    if "Deuda a la fecha" in col_lookup:
+                    line_col_name = "Neto financiero" if "Neto financiero" in col_lookup else "Deuda a la fecha"
+                    if line_col_name in col_lookup:
                         line = LineChart()
                         line_data = Reference(
                             ws_chart,
-                            min_col=col_lookup["Deuda a la fecha"],
+                            min_col=col_lookup[line_col_name],
                             min_row=1,
                             max_row=len(grafico_obs_export) + 1,
                         )
@@ -1669,10 +1671,11 @@ def build_detalle_movimientos_pdf(
                     ax.bar(x_pos - width, chart_pdf["Pagado"], width, label="Pagado", color=CHART_TEAL)
                     ax.bar(x_pos, chart_pdf["No pagado"], width, label="No pagado", color=CHART_RED)
                     ax.bar(x_pos + width, chart_pdf["Abono"], width, label="Abono", color=CHART_GOLD)
+                    line_col_pdf = "Neto financiero" if "Neto financiero" in chart_pdf.columns else "Deuda a la fecha"
                     ax.plot(
                         x_pos,
-                        chart_pdf["Deuda a la fecha"],
-                        label="Deuda a la fecha",
+                        chart_pdf[line_col_pdf],
+                        label="Neto financiero",
                         color=CHART_DARK,
                         linewidth=2.4,
                         marker="o",
@@ -2039,11 +2042,12 @@ def fmt_short(v: float) -> str:
 def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
     import plotly.graph_objects as go
 
+    line_metric = "Neto financiero" if "Neto financiero" in chart_periodo.columns else "Deuda a la fecha"
     fig_obs_periodo = go.Figure()
     fig_obs_periodo.add_trace(
         go.Scatter(
             x=chart_periodo["Periodo_chart"],
-            y=chart_periodo["Deuda a la fecha"],
+            y=chart_periodo[line_metric],
             mode="markers",
             name="Resumen",
             marker=dict(size=18, color="rgba(0,0,0,0)"),
@@ -2072,8 +2076,8 @@ def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
     fig_obs_periodo.add_trace(
         go.Scatter(
             x=chart_periodo["Periodo_chart"],
-            y=chart_periodo["Deuda a la fecha"],
-            name="Tendencia deuda",
+            y=chart_periodo[line_metric],
+            name="Tendencia neto financiero",
             mode="lines",
             line=dict(color="rgba(15,45,82,0.18)", width=10, shape="spline"),
             hoverinfo="skip",
@@ -2083,8 +2087,8 @@ def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
     fig_obs_periodo.add_trace(
         go.Scatter(
             x=chart_periodo["Periodo_chart"],
-            y=chart_periodo["Deuda a la fecha"],
-            name="Deuda a la fecha",
+            y=chart_periodo[line_metric],
+            name="Neto financiero",
             mode="lines+markers",
             line=dict(color="#0F2D52", width=5.2, shape="spline"),
             marker=dict(size=10, color="#0F2D52", line=dict(width=2.4, color="white")),
@@ -2093,14 +2097,14 @@ def build_obs_periodo_figure(chart_periodo: pd.DataFrame):
     )
     if not chart_periodo.empty:
         last_obs = chart_periodo.iloc[-1]
-        debt_delta = float(chart_periodo["Deuda a la fecha"].diff().fillna(0).iloc[-1]) if len(chart_periodo) > 1 else 0.0
-        debt_trend_txt = "Presión al alza" if debt_delta > 0 else ("Presión a la baja" if debt_delta < 0 else "Presión estable")
-        debt_badge_bg = "#FEE2E2" if debt_delta > 0 else ("#DCFCE7" if debt_delta < 0 else "#E2E8F0")
-        debt_badge_fg = "#B42318" if debt_delta > 0 else ("#047857" if debt_delta < 0 else "#334155")
+        debt_delta = float(chart_periodo[line_metric].diff().fillna(0).iloc[-1]) if len(chart_periodo) > 1 else 0.0
+        debt_trend_txt = "Neto al alza" if debt_delta > 0 else ("Neto a la baja" if debt_delta < 0 else "Neto estable")
+        debt_badge_bg = "#DCFCE7" if debt_delta > 0 else ("#FEE2E2" if debt_delta < 0 else "#E2E8F0")
+        debt_badge_fg = "#047857" if debt_delta > 0 else ("#B42318" if debt_delta < 0 else "#334155")
         fig_obs_periodo.add_annotation(
             x=last_obs["Periodo_chart"],
-            y=last_obs["Deuda a la fecha"],
-            text=f"<b>{debt_trend_txt}</b><br>{float(last_obs['Deuda a la fecha']):,.0f}",
+            y=last_obs[line_metric],
+            text=f"<b>{debt_trend_txt}</b><br>{float(last_obs[line_metric]):,.0f}",
             showarrow=True,
             arrowhead=2,
             ax=44,
@@ -3390,6 +3394,7 @@ if active_section == "🏠 Overview Ejecutivo Legacy":
         neto_home_cmp = neto_home_fin.merge(neto_home_con, on="Periodo", how="outer").sort_values("Periodo").fillna(0)
 
         fig_flow = go.Figure()
+        bar_width_flow = 1000 * 60 * 60 * 24 * 9
         if not flujo_home_fin.empty:
             fig_flow.add_trace(
                 go.Bar(
@@ -3398,6 +3403,7 @@ if active_section == "🏠 Overview Ejecutivo Legacy":
                     name="Ingresos",
                     marker=dict(color="rgba(34,197,94,0.50)", line=dict(color="rgba(34,197,94,0.72)", width=1)),
                     hovertemplate="<b>%{x|%b %Y}</b><br>Ingresos: $%{y:,.0f}<extra></extra>",
+                    width=bar_width_flow,
                 )
             )
             fig_flow.add_trace(
@@ -3407,6 +3413,7 @@ if active_section == "🏠 Overview Ejecutivo Legacy":
                     name="Egresos",
                     marker=dict(color="rgba(248,113,113,0.56)", line=dict(color="rgba(248,113,113,0.75)", width=1)),
                     hovertemplate="<b>%{x|%b %Y}</b><br>Egresos: $%{y:,.0f}<extra></extra>",
+                    width=bar_width_flow,
                 )
             )
         if not neto_home_cmp.empty:
@@ -3459,6 +3466,7 @@ if active_section == "🏠 Overview Ejecutivo Legacy":
             ),
             hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
             hovermode="x unified",
+            bargap=0.48,
         )
         fig_flow.update_yaxes(
             title_text="Flujo CLP",
@@ -4675,7 +4683,7 @@ if active_section == "🏠 Overview Ejecutivo":
 
     flow_ov2 = data_v2.dropna(subset=["Monto", "Periodo_ref"]).copy()
     flow_ov2 = flow_ov2[flow_ov2["CC_norm"].isin(["INGRESO", "EGRESO"])]
-    flow_ov2 = flow_ov2[flow_ov2["Sit_norm"].isin(["PAGADO", "NO PAGADO", "ABONO"])]
+    flow_ov2 = flow_ov2[flow_ov2["Sit_norm"].isin(["PAGADO", "NO PAGADO"])]
     flow_ov2["Periodo"] = flow_ov2["Periodo_ref"].dt.to_period("M").dt.to_timestamp()
     agg_ov2 = flow_ov2.groupby(["Periodo", "CC_norm"], as_index=False)["Monto"].sum()
     ing_ov2 = agg_ov2[agg_ov2["CC_norm"] == "INGRESO"].rename(columns={"Monto": "Ingresos"})
@@ -8417,26 +8425,28 @@ if active_section == "📈 Flujo Operacional":
                 gap:0 !important;
             }
             .ie-kpi-card {
-                min-height:102px;
+                min-height:92px;
+                width:100%;
+                box-sizing:border-box;
                 border-radius:14px;
                 border:1px solid rgba(219,227,238,0.72);
                 background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
-                padding:10px 12px 9px 12px;
+                padding:8px 12px 7px 12px;
                 box-shadow:0 4px 18px rgba(15,23,42,0.045);
                 display:flex;
                 flex-direction:column;
                 justify-content:space-between;
             }
             .ie-kpi-card-critical {
-                border:1.5px solid var(--accent);
-                box-shadow:0 8px 24px rgba(15,23,42,0.07), inset 0 0 0 1px rgba(255,255,255,0.62);
-                background:linear-gradient(135deg, #ffffff 0%, var(--soft) 82%);
+                border:1px solid rgba(219,227,238,0.72);
+                box-shadow:0 4px 18px rgba(15,23,42,0.045);
+                background:linear-gradient(135deg, #ffffff 0%, var(--soft) 100%);
             }
             .ie-kpi-head {
                 display:flex;
                 align-items:center;
                 gap:8px;
-                margin-bottom:5px;
+                margin-bottom:4px;
             }
             .ie-kpi-icon {
                 width:27px;
@@ -8468,12 +8478,12 @@ if active_section == "📈 Flujo Operacional":
                 white-space:nowrap;
             }
             .ie-kpi-card-critical .ie-kpi-value {
-                font-size:23px;
-                letter-spacing:-0.01em;
+                font-size:20px;
+                letter-spacing:0;
             }
             .ie-kpi-card-critical .ie-kpi-title {
                 color:#081735;
-                font-size:10.5px;
+                font-size:10px;
             }
             .ie-kpi-sub {
                 color:#516179;
@@ -8484,8 +8494,8 @@ if active_section == "📈 Flujo Operacional":
             }
             .ie-kpi-spark {
                 width:100%;
-                height:18px;
-                margin-top:5px;
+                height:15px;
+                margin-top:4px;
                 display:block;
             }
             .ie-kpi-spark path,
@@ -8507,10 +8517,36 @@ if active_section == "📈 Flujo Operacional":
                 white-space:nowrap;
             }
             .ie-kpi-card-critical .ie-kpi-badge {
-                padding:4px 8px;
-                border-radius:999px;
-                font-size:10px;
-                box-shadow:0 4px 12px rgba(15,23,42,0.06);
+                padding:3px 7px;
+                border-radius:5px;
+                font-size:9.5px;
+                box-shadow:none;
+            }
+            .ie-kpi-frame-anchor {
+                height:0;
+                min-height:0;
+                margin:0;
+                padding:0;
+                overflow:hidden;
+            }
+            div[data-testid="stVerticalBlock"]:has(.ie-kpi-frame-anchor) > div[data-testid="stHorizontalBlock"] {
+                width:100%;
+                box-sizing:border-box;
+                border:1px solid rgba(219,227,238,0.78);
+                border-radius:16px;
+                background:rgba(255,255,255,0.72);
+                box-shadow:0 8px 26px rgba(15,23,42,0.045);
+                padding:12px 12px 22px 12px;
+                gap:0.55rem;
+                margin:0 0 14px 0;
+                overflow:visible;
+            }
+            div[data-testid="stVerticalBlock"]:has(.ie-kpi-frame-anchor) > div[data-testid="stHorizontalBlock"] [data-testid="column"] {
+                min-width:0;
+                padding:0 !important;
+            }
+            div[data-testid="stVerticalBlock"]:has(.ie-kpi-frame-anchor) div[data-testid="stElementContainer"] {
+                width:100%;
             }
             .ie-analysis-card {
                 border:1px solid rgba(219,227,238,0.72);
@@ -8579,63 +8615,71 @@ if active_section == "📈 Flujo Operacional":
             .ie-analysis-list {
                 display:flex;
                 flex-direction:column;
-                gap:6px;
+                gap:7px;
                 flex:1 1 auto;
                 min-height:0;
             }
             .ie-analysis-row {
                 display:grid;
-                grid-template-columns:31px minmax(0, 1fr);
-                gap:8px;
+                grid-template-columns:28px minmax(0, 1fr);
+                gap:9px;
                 align-items:center;
-                border:1px solid rgba(229,235,243,0.82);
-                border-radius:10px;
-                padding:8px 8px;
-                background:#fbfdff;
+                border:1px solid rgba(226,232,240,0.78);
+                border-left:3px solid var(--accent);
+                border-radius:9px;
+                padding:8px 9px 8px 8px;
+                background:linear-gradient(135deg,#ffffff 0%,rgba(248,250,252,0.92) 100%);
+                box-shadow:0 2px 9px rgba(15,23,42,0.035);
                 flex:1 1 0;
                 min-height:0;
             }
             .ie-analysis-icon {
-                width:25px;
-                height:25px;
+                width:24px;
+                height:24px;
                 border-radius:999px;
                 display:flex;
                 align-items:center;
                 justify-content:center;
                 background:var(--soft);
                 color:var(--accent);
-                font-size:12px;
+                font-size:11.5px;
                 font-weight:900;
+            }
+            .ie-analysis-icon svg {
+                width:13px;
+                height:13px;
             }
             .ie-analysis-label {
                 color:#0f1f3d;
-                font-size:11px;
-                line-height:1.12;
-                font-weight:900;
+                font-size:10.3px;
+                line-height:1.08;
+                font-weight:950;
+                text-transform:uppercase;
+                letter-spacing:.01em;
             }
             .ie-analysis-sub {
-                margin-top:2px;
+                margin-top:3px;
                 color:#64748b;
-                font-size:9.4px;
-                line-height:1.16;
-                font-weight:650;
+                font-size:9.2px;
+                line-height:1.18;
+                font-weight:700;
             }
             .ie-analysis-value {
-                margin-top:5px;
-                color:#0f1f3d;
-                font-size:12.5px;
+                margin-top:4px;
+                color:var(--accent);
+                font-size:13.2px;
                 line-height:1;
-                font-weight:900;
+                font-weight:950;
                 white-space:nowrap;
             }
             .ie-risk-pill {
                 display:inline-flex;
-                padding:4px 7px;
-                border-radius:6px;
+                padding:4px 8px;
+                border-radius:999px;
                 background:#fee2e2;
                 color:#B91C1C;
-                font-size:10px;
-                font-weight:900;
+                font-size:9.5px;
+                font-weight:950;
             }
             .ie-bottom-grid {
                 display:grid;
@@ -9376,6 +9420,7 @@ if active_section == "📈 Flujo Operacional":
                 </div>
                 """
 
+            st.markdown('<div class="ie-kpi-frame-anchor"></div>', unsafe_allow_html=True)
             k1, k2, k3, k4, k5 = st.columns(5)
             with k1:
                 st.markdown(
@@ -9479,6 +9524,7 @@ if active_section == "📈 Flujo Operacional":
             )
 
             fig_ie = make_subplots(specs=[[{"secondary_y": False}]])
+            bar_width_ie = 1000 * 60 * 60 * 24 * (9 if periodo == "Mensual" else 70)
 
             fig_ie.add_trace(
                 go.Scatter(
@@ -9505,6 +9551,7 @@ if active_section == "📈 Flujo Operacional":
                     ),
                     hoverinfo="skip",
                     offsetgroup="flujo",
+                    width=bar_width_ie,
                 ),
                 secondary_y=False,
             )
@@ -9519,6 +9566,7 @@ if active_section == "📈 Flujo Operacional":
                     ),
                     hoverinfo="skip",
                     offsetgroup="flujo",
+                    width=bar_width_ie,
                 ),
                 secondary_y=False,
             )
@@ -9544,8 +9592,8 @@ if active_section == "📈 Flujo Operacional":
                     y=base["Neto_acumulado"],
                     mode="lines+markers",
                     name="Neto acumulado",
-                    line=dict(color="#F59E0B", width=2.1, dash="dash", shape="spline"),
-                    marker=dict(size=5.8, color="#F59E0B", line=dict(color="#FFFFFF", width=1.15)),
+                    line=dict(color="#EA580C", width=3.0, dash="dash", shape="spline"),
+                    marker=dict(size=6.8, color="#EA580C", line=dict(color="#FFFFFF", width=1.45)),
                     hoverinfo="skip",
                 ),
                 secondary_y=False,
@@ -9587,7 +9635,7 @@ if active_section == "📈 Flujo Operacional":
                 hovermode="x unified",
                 paper_bgcolor="#FFFFFF",
                 plot_bgcolor="#FFFFFF",
-                bargap=0.20,
+                bargap=0.48,
             )
 
             fig_ie.update_xaxes(
@@ -9741,7 +9789,7 @@ if active_section == "📈 Flujo Operacional":
                                     <div class="ie-analysis-value">{fmt_clp_largo(total_neto)}</div>
                                 </div>
                             </div>
-                            <div class="ie-analysis-row" style="--accent:#B7791F;--soft:#FEF3C7;">
+                            <div class="ie-analysis-row" style="--accent:#EA580C;--soft:#FFEDD5;">
                                 <div class="ie-analysis-icon">{ie_icon_svg("percent")}</div>
                                 <div>
                                     <div class="ie-analysis-label">Tendencia</div>
@@ -11574,14 +11622,8 @@ if active_section == "📈 Flujo Operacional":
                     .rename(columns={"Obs_resumen": "OBS"})
                 )
                 resumen_obs_tbl["RESULTADO"] = resumen_obs_tbl["Pagado"] + resumen_obs_tbl["No pagado"]
-                resumen_obs_tbl["Deuda a la fecha"] = np.where(
-                    (resumen_obs_tbl["Pagado"] < 0) & (resumen_obs_tbl["No pagado"] < 0),
-                    resumen_obs_tbl["No pagado"] + resumen_obs_tbl["Abono"],
-                    np.where(
-                        resumen_obs_tbl["Pagado"] < 0,
-                        resumen_obs_tbl["Pagado"] + resumen_obs_tbl["Abono"],
-                        resumen_obs_tbl["No pagado"] - resumen_obs_tbl["Abono"],
-                    ),
+                resumen_obs_tbl["Deuda a la fecha"] = (
+                    resumen_obs_tbl["Pagado"] - resumen_obs_tbl["No pagado"].abs() + resumen_obs_tbl["Abono"]
                 )
                 resumen_obs_tbl = (
                     resumen_obs_tbl.sort_values("Pagado", ascending=True)
@@ -11603,13 +11645,9 @@ if active_section == "📈 Flujo Operacional":
                                             "RESULTADO": resumen_obs["Monto_pagado_obs"].sum() + resumen_obs["Monto_no_pagado_obs"].sum(),
                                             "Abono": resumen_obs["Monto_abono_obs"].sum(),
                                             "Deuda a la fecha": (
-                                                resumen_obs["Monto_no_pagado_obs"].sum() + resumen_obs["Monto_abono_obs"].sum()
-                                                if resumen_obs["Monto_pagado_obs"].sum() < 0 and resumen_obs["Monto_no_pagado_obs"].sum() < 0
-                                                else (
-                                                    resumen_obs["Monto_pagado_obs"].sum() + resumen_obs["Monto_abono_obs"].sum()
-                                                    if resumen_obs["Monto_pagado_obs"].sum() < 0
-                                                    else resumen_obs["Monto_no_pagado_obs"].sum() - resumen_obs["Monto_abono_obs"].sum()
-                                                )
+                                                resumen_obs["Monto_pagado_obs"].sum()
+                                                - abs(resumen_obs["Monto_no_pagado_obs"].sum())
+                                                + resumen_obs["Monto_abono_obs"].sum()
                                             ),
                                         }
                                     ]
@@ -11770,6 +11808,17 @@ if active_section == "📈 Flujo Operacional":
                         chart_obs = chart_obs.dropna(subset=["Periodo_chart"])
 
                     if not chart_obs.empty:
+                        sit_fin_obs = chart_obs["Sit_resumen"].isin(["PAGADO", "NO PAGADO"])
+                        chart_obs["Monto_ingreso_fin"] = np.where(
+                            chart_obs["CC_norm"].eq("INGRESO") & sit_fin_obs,
+                            chart_obs["Monto"],
+                            0.0,
+                        )
+                        chart_obs["Monto_egreso_fin"] = np.where(
+                            chart_obs["CC_norm"].eq("EGRESO") & sit_fin_obs,
+                            chart_obs["Monto"],
+                            0.0,
+                        )
                         chart_periodo = (
                             chart_obs.groupby("Periodo_chart", as_index=False)
                             .agg(
@@ -11777,26 +11826,23 @@ if active_section == "📈 Flujo Operacional":
                                 Pagado=("Monto_pagado_obs", "sum"),
                                 **{"No pagado": ("Monto_no_pagado_obs", "sum")},
                                 Abono=("Monto_abono_obs", "sum"),
+                                Ingresos_financieros=("Monto_ingreso_fin", "sum"),
+                                Egresos_financieros=("Monto_egreso_fin", "sum"),
                             )
                             .sort_values("Periodo_chart")
                         )
                         chart_periodo["RESULTADO"] = chart_periodo["Pagado"] + chart_periodo["No pagado"]
-                        chart_periodo["Deuda a la fecha"] = np.where(
-                            (chart_periodo["Pagado"] < 0) & (chart_periodo["No pagado"] < 0),
-                            chart_periodo["No pagado"] + chart_periodo["Abono"],
-                            np.where(
-                                chart_periodo["Pagado"] < 0,
-                                chart_periodo["Pagado"] + chart_periodo["Abono"],
-                                chart_periodo["No pagado"] - chart_periodo["Abono"],
-                            ),
+                        chart_periodo["Neto financiero"] = (
+                            chart_periodo["Ingresos_financieros"] - chart_periodo["Egresos_financieros"].abs()
                         )
+                        chart_periodo["Deuda a la fecha"] = chart_periodo["Neto financiero"]
                         chart_periodo["Periodo_txt"] = chart_periodo["Periodo_chart"].dt.strftime("%Y-%m")
                         chart_periodo["Hover"] = (
                             "Registros: " + chart_periodo["Registros"].astype(int).astype(str)
                             + "<br>Pagado: $" + chart_periodo["Pagado"].map(lambda v: f"{v:,.0f}")
                             + "<br>No pagado: $" + chart_periodo["No pagado"].map(lambda v: f"{v:,.0f}")
                             + "<br>Abono: $" + chart_periodo["Abono"].map(lambda v: f"{v:,.0f}")
-                            + "<br>Deuda: $" + chart_periodo["Deuda a la fecha"].map(lambda v: f"{v:,.0f}")
+                            + "<br>Neto financiero: $" + chart_periodo["Neto financiero"].map(lambda v: f"{v:,.0f}")
                         )
 
                         st.markdown(
@@ -11815,15 +11861,15 @@ if active_section == "📈 Flujo Operacional":
 
                         temporal_insights = []
                         temporal_base = chart_periodo.copy().sort_values("Periodo_chart")
-                        temporal_base["Deuda_abs"] = temporal_base["Deuda a la fecha"].abs()
+                        temporal_base["Neto_financiero_abs"] = temporal_base["Neto financiero"].abs()
                         temporal_base["Mora_abs"] = temporal_base["No pagado"].abs()
 
-                        if not temporal_base.empty and temporal_base["Deuda_abs"].max() > 0:
-                            peak_row = temporal_base.loc[temporal_base["Deuda_abs"].idxmax()]
+                        if not temporal_base.empty and temporal_base["Neto_financiero_abs"].max() > 0:
+                            peak_row = temporal_base.loc[temporal_base["Neto_financiero_abs"].idxmax()]
                             temporal_insights.append(
                                 (
-                                    "Crítico" if float(peak_row["Deuda_abs"]) >= float(temporal_base["Deuda_abs"].quantile(0.75)) else "Presión",
-                                    f"Peak histórico de deuda en {pd.to_datetime(peak_row['Periodo_chart']).strftime('%b %Y')}: {fmt_clp_largo(float(peak_row['Deuda_abs']))}.",
+                                    "Crítico" if float(peak_row["Neto_financiero_abs"]) >= float(temporal_base["Neto_financiero_abs"].quantile(0.75)) else "Presión",
+                                    f"Mayor variación absoluta del neto financiero en {pd.to_datetime(peak_row['Periodo_chart']).strftime('%b %Y')}: {fmt_clp_largo(float(peak_row['Neto_financiero_abs']))}.",
                                 )
                             )
 
@@ -11831,7 +11877,7 @@ if active_section == "📈 Flujo Operacional":
                             last_row_tmp = temporal_base.iloc[-1]
                             prev_row_tmp = temporal_base.iloc[-2]
                             mora_delta = float(last_row_tmp["Mora_abs"] - prev_row_tmp["Mora_abs"])
-                            deuda_delta = float(last_row_tmp["Deuda_abs"] - prev_row_tmp["Deuda_abs"])
+                            neto_delta = float(last_row_tmp["Neto financiero"] - prev_row_tmp["Neto financiero"])
                             if mora_delta > 0:
                                 temporal_insights.append(
                                     (
@@ -11847,31 +11893,38 @@ if active_section == "📈 Flujo Operacional":
                                     )
                                 )
 
-                            if deuda_delta < 0:
+                            if neto_delta > 0:
                                 temporal_insights.append(
                                     (
                                         "Saludable",
-                                        f"La deuda a la fecha disminuye {fmt_clp_largo(abs(deuda_delta))}; tendencia reciente favorable.",
+                                        f"El neto financiero mejora {fmt_clp_largo(abs(neto_delta))}; tendencia reciente favorable.",
+                                    )
+                                )
+                            elif neto_delta < 0:
+                                temporal_insights.append(
+                                    (
+                                        "Presión",
+                                        f"El neto financiero baja {fmt_clp_largo(abs(neto_delta))} frente al período anterior.",
                                     )
                                 )
 
                         if len(temporal_base) >= 3:
-                            recent_debt = temporal_base["Deuda_abs"].tail(3)
-                            avg_recent_debt = float(recent_debt.mean())
-                            max_recent_debt = float(recent_debt.max())
-                            min_recent_debt = float(recent_debt.min())
-                            if avg_recent_debt > 0 and (max_recent_debt - min_recent_debt) <= max(avg_recent_debt * 0.10, 1):
+                            recent_net = temporal_base["Neto financiero"].tail(3)
+                            avg_recent_net_abs = float(recent_net.abs().mean())
+                            max_recent_net = float(recent_net.max())
+                            min_recent_net = float(recent_net.min())
+                            if avg_recent_net_abs > 0 and (max_recent_net - min_recent_net) <= max(avg_recent_net_abs * 0.10, 1):
                                 temporal_insights.append(
                                     (
                                         "Atención",
-                                        f"Estabilización detectada: deuda se mantiene en torno a {fmt_clp_largo(avg_recent_debt)} durante los últimos 3 períodos.",
+                                        f"Estabilización detectada: el neto financiero se mantiene en torno a {fmt_clp_largo(float(recent_net.mean()))} durante los últimos 3 períodos.",
                                     )
                                 )
-                            if (temporal_base["Deuda_abs"].tail(3) > 0).all():
+                            if (temporal_base["Neto financiero"].tail(3) < 0).all():
                                 temporal_insights.append(
                                     (
                                         "Presión",
-                                        "Presión persistente: la deuda permanece activa en los últimos 3 períodos observados.",
+                                        "Presión persistente: el neto financiero permanece negativo en los últimos 3 períodos observados.",
                                     )
                                 )
 
@@ -11906,7 +11959,7 @@ if active_section == "📈 Flujo Operacional":
                                 <div class="detalle-alerts-head">
                                     <div>
                                         <div class="detalle-alerts-title">Insights operacionales detectados</div>
-                                        <div class="detalle-alerts-sub">Lectura temporal automática sobre deuda, mora y presión operacional</div>
+                                        <div class="detalle-alerts-sub">Lectura temporal automática sobre neto financiero, mora y presión operacional</div>
                                     </div>
                                 </div>
                                 <div class="detalle-alerts-grid">{temporal_insights_html}</div>

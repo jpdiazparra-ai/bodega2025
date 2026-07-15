@@ -950,51 +950,131 @@ def _render_table(df_in: pd.DataFrame, header_bg="#1f4e78", header_fg="white",
     for i, row in enumerate(df_in.itertuples(index=False, name=None)):
         tds = []
         for c, value in zip(columns, row):
+            cell_classes = []
+            if c in cur_cols or c in int_cols or c in pct_cols:
+                cell_classes.append("num")
+            if c in cur_cols:
+                try:
+                    n = float(value)
+                    cell_classes.append("pos" if n >= 0 else "neg")
+                except Exception:
+                    pass
             v = _fmt_cell(
                 value,
                 is_pct=(c in pct_cols),
                 is_currency=(c in cur_cols),
                 is_int=(c in int_cols),
             )
-            tds.append(f"<td>{v}</td>")
+            cls_attr = f" class='{' '.join(cell_classes)}'" if cell_classes else ""
+            tds.append(f"<td{cls_attr}>{v}</td>")
         cls = "alt" if i % 2 == 0 else ""
         rows_html.append(f"<tr class='{cls}'>" + "".join(tds) + "</tr>")
 
     ths = "".join([f"<th>{c}</th>" for c in columns])
+    table_class = "elec-table elec-table-wide" if len(columns) >= 8 else "elec-table"
     table_html = f"""
+    <div class="elec-table-card">
     <div class="elec-table-wrap">
-      <table class="elec-table">
+      <table class="{table_class}">
         <thead><tr>{ths}</tr></thead>
         <tbody>{''.join(rows_html)}</tbody>
       </table>
+    </div>
     </div>
     """
 
     st.markdown(
         f"""
         <style>
-        .elec-table-wrap {{ overflow-x: auto; }}
+        .elec-table-card {{
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            padding:8px;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            margin:8px 0 12px 0;
+        }}
+        .elec-table-wrap {{
+            overflow-x:visible;
+            border:1px solid #E5EAF2;
+            border-radius:9px;
+        }}
         .elec-table {{
             border-collapse: collapse;
             width: 100%;
-            font-size: { "12px" if compact else "13px" };
+            table-layout: fixed;
+            font-size: { "11.5px" if compact else "12.2px" };
+            font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }}
         .elec-table th {{
-            background: {header_bg};
-            color: {header_fg};
+            background:#F8FAFC;
+            color:#64748B;
             text-align: center;
-            padding: 6px 8px;
-            border: 1px solid #d5d5d5;
-            font-weight: 700;
+            padding:8px 9px;
+            border:1px solid #E5EAF2;
+            font-weight:950;
+            text-transform:uppercase;
+            letter-spacing:.035em;
+            white-space:normal;
+            overflow-wrap:break-word;
+            word-break:normal;
+            line-height:1.12;
+            vertical-align:middle;
         }}
         .elec-table td {{
-            padding: 6px 8px;
-            border: 1px solid #d5d5d5;
+            padding:8px 9px;
+            border:1px solid #E5EAF2;
             text-align: center;
-            white-space: nowrap;
+            white-space:normal;
+            overflow-wrap:break-word;
+            line-height:1.18;
+            color:#334155;
+            font-weight:680;
+        }}
+        .elec-table-wide {{
+            font-size:10.4px;
+        }}
+        .elec-table-wide th {{
+            font-size:9px;
+            padding:7px 5px;
+            letter-spacing:.025em;
+            line-height:1.1;
+        }}
+        .elec-table-wide td {{
+            font-size:10.6px;
+            padding:7px 5px;
+            line-height:1.16;
         }}
         .elec-table tr.alt td {{
-            background: {row_alt};
+            background:#FCFDFF;
+        }}
+        .elec-table tr:hover td {{
+            background:#F5F9FF;
+            box-shadow:inset 2px 0 0 rgba(37,99,235,0.45);
+        }}
+        .elec-table td:first-child {{
+            color:#0F172A;
+            font-weight:850;
+            text-align:left;
+        }}
+        .elec-table td.num {{
+            text-align:right;
+            font-variant-numeric:tabular-nums;
+            font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight:820;
+            white-space:normal;
+        }}
+        .elec-table-wide td.num {{
+            font-size:10px;
+            letter-spacing:-0.02em;
+        }}
+        .elec-table td.pos {{
+            color:#166534;
+            background:#F0FDF4;
+        }}
+        .elec-table td.neg {{
+            color:#B91C1C;
+            background:#FEF2F2;
         }}
         </style>
         {table_html}
@@ -6088,7 +6168,56 @@ if active_section == "⚠️ Riesgo & Cobranza":
     years_cancel = sorted(df_cancel["Año_sel"].dropna().astype(int).unique().tolist())
     year_opts_cancel = ["Todos"] + years_cancel
 
-    c_can1, c_can2, c_can4, c_can5 = st.columns([1, 1, 1, 1.3])
+    st.markdown(
+        """
+        <style>
+        .gmail-filter-anchor {
+            height:0;
+            min-height:0;
+            margin:0;
+            padding:0;
+            overflow:hidden;
+        }
+        div[data-testid="stVerticalBlock"]:has(.gmail-filter-anchor) > div[data-testid="stHorizontalBlock"] {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            padding:9px 11px 7px 11px;
+            margin:8px 0 12px 0;
+            gap:0.65rem;
+            align-items:flex-end;
+        }
+        div[data-testid="stVerticalBlock"]:has(.gmail-filter-anchor) [data-testid="stSelectbox"] {
+            margin:0 !important;
+        }
+        div[data-testid="stVerticalBlock"]:has(.gmail-filter-anchor) [data-testid="stSelectbox"] > label {
+            color:#64748b !important;
+            font-size:9.4px !important;
+            line-height:1 !important;
+            font-weight:950 !important;
+            text-transform:uppercase !important;
+            letter-spacing:.04em !important;
+            padding-bottom:5px !important;
+        }
+        div[data-testid="stVerticalBlock"]:has(.gmail-filter-anchor) [data-baseweb="select"] > div {
+            min-height:34px !important;
+            height:34px !important;
+            border-radius:8px !important;
+            background:#fbfdff !important;
+            border-color:#dbe3ee !important;
+            box-shadow:none !important;
+        }
+        div[data-testid="stVerticalBlock"]:has(.gmail-filter-anchor) [data-baseweb="select"] div {
+            font-size:11px !important;
+            font-weight:820 !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="gmail-filter-anchor"></div>', unsafe_allow_html=True)
+    c_can1, c_can2, c_can4, c_can5 = st.columns([1, 1, 1, 1.3], gap="small")
     with c_can1:
         sel_year_cancel = st.selectbox(
             "Año (cancelación)",
@@ -7296,6 +7425,45 @@ if active_section == "🏢 Canon & Contratos":
             font-weight:650;
             margin:3px 0 10px 0;
         }
+        .canon-filter-anchor {
+            height:0;
+            min-height:0;
+            margin:0;
+            padding:0;
+            overflow:hidden;
+        }
+        div[data-testid="stVerticalBlock"]:has(.canon-filter-anchor) > div[data-testid="stMultiSelect"] {
+            border:1px solid #dbe3ee;
+            border-radius:10px;
+            background:#ffffff;
+            box-shadow:0 12px 28px rgba(15,23,42,0.05);
+            padding:9px 11px 7px 11px;
+            margin:8px 0 10px 0;
+        }
+        div[data-testid="stVerticalBlock"]:has(.canon-filter-anchor) [data-testid="stMultiSelect"] > label {
+            color:#64748b !important;
+            font-size:9.4px !important;
+            line-height:1 !important;
+            font-weight:950 !important;
+            text-transform:uppercase !important;
+            letter-spacing:.04em !important;
+            padding-bottom:5px !important;
+        }
+        div[data-testid="stVerticalBlock"]:has(.canon-filter-anchor) [data-baseweb="select"] > div {
+            min-height:34px !important;
+            border-radius:8px !important;
+            background:#fbfdff !important;
+            border-color:#dbe3ee !important;
+            box-shadow:none !important;
+        }
+        div[data-testid="stVerticalBlock"]:has(.canon-filter-anchor) [data-baseweb="tag"] {
+            background:#EFF6FF !important;
+            border:1px solid #DBEAFE !important;
+            color:#1D4ED8 !important;
+            border-radius:999px !important;
+            font-size:10.5px !important;
+            font-weight:850 !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -7311,8 +7479,9 @@ if active_section == "🏢 Canon & Contratos":
         .unique()
         .tolist()
     )
+    st.markdown('<div class="canon-filter-anchor"></div>', unsafe_allow_html=True)
     sel_esps_tab_canon = st.multiselect(
-        "Espacios (aplica a todos los gráficos de esta pestaña)",
+        "Espacios · aplica a todos los gráficos",
         options=esps_tab_canon,
         default=esps_tab_canon,
         key="sel_esps_tab_canon",
@@ -7574,13 +7743,7 @@ if active_section == "🏢 Canon & Contratos":
         except Exception as e:
             st.warning(f"No se pudo leer UF desde la URL: {e}")
 
-    monedas = ["CLP"] + (["UF"] if agg["UF_promedio"].notna().any() else [])
-    moneda_m2 = st.selectbox(
-        "Moneda",
-        monedas,
-        index=0,
-        key="moneda_m2_final",
-    )
+    moneda_m2 = "CLP"
 
     if moneda_m2 == "UF":
         agg["valor_m2"] = agg["valor_m2_clp"] / agg["UF_promedio"]
@@ -13923,13 +14086,49 @@ if active_section == "⚡ Consumos Energéticos":
     title_col, btn_col = st.columns([6, 1])
     with title_col:
         st.markdown(
-            tab_header("Consumos Energéticos", "Liquidación por bodega e inputs de facturación"),
+            tab_header("Consumos Energéticos", "Liquidación por bodega e inputs de facturación", show_download=False),
             unsafe_allow_html=True,
         )
         st.caption("Vista idéntica al Excel: inputs generales, boleta CGE, inputs por bodega y liquidación.")
     with btn_col:
-        st.markdown("")
-        st.markdown("")
+        st.markdown(
+            """
+            <style>
+            .elec-pdf-action-anchor {
+                height:0;
+                min-height:0;
+                margin:0;
+                padding:0;
+                overflow:hidden;
+            }
+            div[data-testid="stVerticalBlock"]:has(.elec-pdf-action-anchor) {
+                display:flex;
+                justify-content:flex-start;
+                padding-top:2px;
+            }
+            div[data-testid="stVerticalBlock"]:has(.elec-pdf-action-anchor) [data-testid="stDownloadButton"] button {
+                min-height:38px !important;
+                height:38px !important;
+                border-radius:7px !important;
+                border:1px solid #0B3A86 !important;
+                background:#0B3A86 !important;
+                color:#ffffff !important;
+                font-size:12px !important;
+                font-weight:900 !important;
+                padding:0 13px !important;
+                box-shadow:0 10px 20px rgba(11,58,134,0.18) !important;
+                white-space:nowrap !important;
+            }
+            div[data-testid="stVerticalBlock"]:has(.elec-pdf-action-anchor) [data-testid="stDownloadButton"] button:hover {
+                background:#082F6F !important;
+                border-color:#082F6F !important;
+                color:#ffffff !important;
+            }
+            </style>
+            <div class="elec-pdf-action-anchor"></div>
+            """,
+            unsafe_allow_html=True,
+        )
         # Placeholder for PDF button (se setea más abajo cuando tengamos los datos)
         pdf_btn_placeholder = st.empty()
 
@@ -14101,11 +14300,25 @@ if active_section == "⚡ Consumos Energéticos":
         import plotly.graph_objects as go
 
         palette = {
-            "$ Energía": "#7FA6A2",       # verde agua
-            "$ Punta": "#4B5563",         # gris pizarra
-            "$ Reactiva": "#DCAA67",      # mostaza
-            "$ Cargos Fijos": "#D85E5D",  # coral
-            "$ Interés": "#A8A8A8",       # gris neutro
+            "$ Energía": "rgba(34,197,94,0.48)",
+            "$ Punta": "rgba(51,65,85,0.46)",
+            "$ Reactiva": "rgba(245,158,11,0.44)",
+            "$ Cargos Fijos": "rgba(248,113,113,0.42)",
+            "$ Interés": "rgba(100,116,139,0.36)",
+        }
+        palette_pdf = {
+            "$ Energía": "#86CDB0",
+            "$ Punta": "#94A3B8",
+            "$ Reactiva": "#F6C15B",
+            "$ Cargos Fijos": "#F6A0A0",
+            "$ Interés": "#CBD5E1",
+        }
+        line_palette_liq = {
+            "$ Energía": "#22C55E",
+            "$ Punta": "#334155",
+            "$ Reactiva": "#F59E0B",
+            "$ Cargos Fijos": "#F87171",
+            "$ Interés": "#64748B",
         }
 
         def build_liq_fig(df_plot: pd.DataFrame, x_axis, x_title, height=520, show_legend=True):
@@ -14116,10 +14329,11 @@ if active_section == "⚡ Consumos Energéticos":
                         x=x_axis,
                         y=df_plot[c],
                         name=c,
-                        marker=dict(color=palette.get(c, "#94a3b8")),
-                        text=df_plot[c],
-                        texttemplate="%{text:,.0f}",
-                        textposition="inside",
+                        marker=dict(
+                            color=palette.get(c, "rgba(100,116,139,0.42)"),
+                            line=dict(color=line_palette_liq.get(c, "#64748B"), width=0.6),
+                        ),
+                        opacity=0.84,
                         hovertemplate=f"<b>%{{x}}</b><br>{c}: $%{{y:,.0f}}<extra></extra>",
                     )
                 )
@@ -14128,40 +14342,71 @@ if active_section == "⚡ Consumos Energéticos":
                     go.Scatter(
                         x=x_axis,
                         y=df_plot[col_total],
-                        name="TOTAL c/IVA $",
-                        mode="lines+markers",
-                        line=dict(color="#4B5563", width=3),
-                        marker=dict(size=7, color="#4B5563"),
-                        hovertemplate="<b>%{x}</b><br>Total c/IVA: $%{y:,.0f}<extra></extra>",
-                        yaxis="y2",
+                        name="Total halo",
+                        mode="lines",
+                        line=dict(color="rgba(37,99,235,0.18)", width=10, shape="spline"),
+                        hoverinfo="skip",
+                        showlegend=False,
                     )
                 )
+                fig.add_trace(
+                    go.Scatter(
+                        x=x_axis,
+                        y=df_plot[col_total],
+                        name="TOTAL c/IVA $",
+                        mode="lines+markers",
+                        line=dict(color="#2563EB", width=4.4, shape="spline"),
+                        marker=dict(size=7, color="#2563EB", line=dict(color="#FFFFFF", width=1.5)),
+                        hovertemplate="<b>%{x}</b><br>Total c/IVA: $%{y:,.0f}<extra></extra>",
+                    )
+                )
+                if not df_plot.empty:
+                    last_total_liq = df_plot.iloc[-1]
+                    fig.add_annotation(
+                        x=x_axis.iloc[-1] if hasattr(x_axis, "iloc") else list(x_axis)[-1],
+                        y=last_total_liq[col_total],
+                        text=fmt_clp_largo(float(last_total_liq[col_total])),
+                        showarrow=False,
+                        xshift=58,
+                        bgcolor="#EFF6FF",
+                        bordercolor="#DBEAFE",
+                        borderwidth=1,
+                        borderpad=4,
+                        font=dict(size=10.5, color="#2563EB"),
+                    )
             fig.update_layout(
                 template="plotly_white",
                 barmode="stack",
                 height=height,
-                margin=dict(l=20, r=40, t=40, b=20),
+                margin=dict(l=0, r=78, t=38, b=14),
                 legend=dict(
                     orientation="h",
-                    y=1.2,
-                    x=0.5,
-                    xanchor="center",
+                    y=1.015,
+                    x=0.02,
+                    xanchor="left",
                     yanchor="bottom",
                     traceorder="normal",
-                    font=dict(size=11),
-                    entrywidth=120,
-                    entrywidthmode="pixels",
+                    bgcolor="rgba(255,255,255,0)",
+                    font=dict(size=10, color="#334155"),
                 ) if show_legend else None,
-                xaxis=dict(title=x_title, showgrid=False),
-                yaxis=dict(title="Costo (CLP)", tickformat=",.0f", gridcolor="rgba(148,163,184,0.25)"),
-                yaxis2=dict(
-                    title="Total c/IVA (CLP)",
-                    overlaying="y",
-                    side="right",
-                    tickformat=",.0f",
-                    showgrid=False,
+                xaxis=dict(title="", showgrid=False, showline=False, ticks="", tickfont=dict(size=11, color="#475569")),
+                yaxis=dict(
+                    title="Costo CLP",
+                    tickprefix="$",
+                    separatethousands=True,
+                    gridcolor="rgba(180,190,210,0.12)",
+                    zeroline=False,
+                    showline=False,
+                    ticks="",
+                    title_font=dict(size=12, color="#334155"),
+                    tickfont=dict(size=11, color="#475569"),
                 ),
                 hovermode="x unified",
+                hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#CBD5E1", font=dict(size=11, color="#0F172A")),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="#FFFFFF",
+                bargap=0.34,
+                bargroupgap=0.08,
             )
             return fig
 
@@ -14235,7 +14480,7 @@ if active_section == "⚡ Consumos Energéticos":
                     "title": f"{b}",
                     "cols_costos": cols_costos,
                     "col_total": col_total,
-                    "palette": palette,
+                    "palette": palette_pdf,
                     "chart_type": "stacked",
                 })
         elif single_month_single_bodega:
@@ -14247,7 +14492,7 @@ if active_section == "⚡ Consumos Energéticos":
                 "title": "",
                 "cols_costos": cols_costos,
                 "col_total": col_total,
-                "palette": palette,
+                "palette": palette_pdf,
                 "chart_type": "donut",
             })
         else:
@@ -14261,7 +14506,7 @@ if active_section == "⚡ Consumos Energéticos":
                 "title": "",
                 "cols_costos": cols_costos,
                 "col_total": col_total,
-                "palette": palette,
+                "palette": palette_pdf,
                 "chart_type": "stacked",
             })
 
@@ -14278,7 +14523,7 @@ if active_section == "⚡ Consumos Energéticos":
                 charts=charts_for_pdf,
             )
             pdf_btn_placeholder.download_button(
-                "⬇️ Descargar PDF de Liquidación Eléctrica",
+                "⇩ Descargar reporte",
                 data=pdf_bytes,
                 file_name="liquidacion_electrica_bodega.pdf",
                 mime="application/pdf",
